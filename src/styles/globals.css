@@ -1,16 +1,100 @@
-html,
+:root {
+  --main-background: #0c0f19;
+  --seconday-background: #dddcda;
+  --info: #2c3e50;
+}
+
 body {
-  padding: 0;
+  background-color: var(--seconday-background);
+}
+
+ul {
+  list-style: none;
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-    Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  padding: 0;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
+.parent-container {
+  padding: 1rem 0rem;
 }
 
-* {
-  box-sizing: border-box;
+.navbar-toggler {
+  border: 0;
+}
+
+.navbar-toggler:focus {
+  border: 0;
+  box-shadow: none;
+}
+
+.right-align {
+  text-align: right;
+}
+
+.display-none_lg-screen {
+  display: none;
+}
+
+.react-date-picker__wrapper {
+  border: 1px solid hsl(0, 0%, 80%);
+  border-radius: 0.3rem;
+  padding: 0.5rem;
+}
+
+.react-date-picker__inputGroup {
+  border: none;
+  padding: 0rem;
+  border-right: 1px solid hsl(0, 0%, 80%);
+  border-radius: 0;
+}
+
+.react-date-picker__button {
+  margin-left: 0.3rem;
+}
+
+@media only screen and (min-width: 35.9rem) {
+  .main-card {
+    background-color: whitesmoke;
+    padding: 2rem;
+    margin: 1rem auto;
+    border-radius: 0.5rem;
+    box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+  }
+
+  .parent-container {
+    padding: 1rem 3rem;
+  }
+}
+
+@media only screen and (max-width: 50rem) {
+  .display-none_lg-screen {
+    display: inline-block;
+  }
+
+  .display-none_mobile {
+    display: none;
+  }
+
+  .btn-main {
+    height: min-content;
+    display: block;
+    width: 100%;
+    margin: auto;
+  }
+}
+
+@media all {
+  .page-break {
+    display: none;
+  }
+}
+
+.page-break {
+  display: block;
+  page-break-before: always;
+}
+
+@page {
+  size: auto;
+  margin: 10mm;
 }
