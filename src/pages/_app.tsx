@@ -5,15 +5,29 @@ import 'react-toastify/dist/ReactToastify.css';
 
 import '@styles/bootstrap.min.css';
 
+import DashboardLayout from '@/components/Layouts/Dashboard';
+import StandardLayout from '@/components/Layouts/Standard';
 import { store } from '@/components/store';
 import { theme } from '@/components/theme';
 import '@/styles/globals.css';
-import { Auth0Provider } from '@auth0/auth0-react';
+import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
 import { Provider } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import { ThemeProvider } from 'styled-components';
 
 const MyApp: AppType = ({ Component, pageProps }) => {
+  const { isAuthenticated } = useAuth0();
+
+  const WrappedComponent = isAuthenticated ? (
+    <DashboardLayout>
+      <Component {...pageProps} />
+    </DashboardLayout>
+  ) : (
+    <StandardLayout>
+      <Component {...pageProps} />
+    </StandardLayout>
+  );
+
   return (
     <Auth0Provider
       domain={env.NEXT_PUBLIC_AUTH0_DOMAIN}
@@ -26,7 +40,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
       <Provider store={store}>
         <ThemeProvider theme={theme}>
           <ToastContainer theme="colored" />
-          <Component {...pageProps} />
+          {WrappedComponent}
         </ThemeProvider>
       </Provider>
     </Auth0Provider>
