@@ -98,6 +98,7 @@ const config = {
     'no-useless-concat': 'error',
     'no-template-curly-in-string': 'error',
     'no-multi-str': 'error',
+    'react/self-closing-comp': 'error',
   },
 };
 
