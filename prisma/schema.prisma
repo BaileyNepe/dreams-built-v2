@@ -1,0 +1,139 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "mongodb"
+    url      = env("DATABASE_URL")
+}
+
+type ClientsContact {
+    email String?
+    name  String?
+}
+
+model clients {
+    id         String          @id @default(auto()) @map("_id") @db.ObjectId
+    v          Int             @map("__v")
+    clientName String          @unique(map: "clientName_1")
+    color      String?
+    contact    ClientsContact?
+    createdAt  DateTime        @default(now()) @db.Date
+    updatedAt  DateTime        @default(now()) @updatedAt @db.Date
+    jobdetails jobdetails[]
+}
+
+model contractors {
+    id          String        @id @default(auto()) @map("_id") @db.ObjectId
+    v           Int           @map("__v")
+    contact     String?
+    contractor  String        @unique(map: "contractor_1")
+    email       String?
+    phone       String?
+    updatedAt   DateTime      @default(now()) @updatedAt @db.Date
+    createdAt   DateTime      @default(now()) @db.Date
+    jobduedates jobduedates[]
+}
+
+model jobdetails {
+    id               String             @id @default(auto()) @map("_id") @db.ObjectId
+    v                Int                @map("__v")
+    address          String             @unique(map: "address_1")
+    area             Float
+    city             String?
+    client           String             @db.ObjectId
+    color            String
+    createdAt        DateTime           @db.Date
+    endClient        String?
+    isInvoiced       Boolean            @default(false)
+    jobNumber        Int                @unique(map: "jobNumber_1")
+    updatedAt        DateTime           @db.Date
+    clientObject     clients            @relation(fields: [client], references: [id])
+    jobduedates      jobduedates[]
+    timesheetentries timesheetentries[]
+}
+
+model jobduedates {
+    id           String     @id @default(auto()) @map("_id") @db.ObjectId
+    v            Int        @map("__v")
+    contractors  String?    @db.ObjectId
+    createdAt    DateTime   @default(now()) @db.Date
+    details      String?
+    dueDate      String?
+    dueDateRange DateTime[]
+    job          String     @db.ObjectId
+    jobPartTitle String     @db.ObjectId
+    startDate    String
+    updatedAt    DateTime   @default(now()) @updatedAt @db.Date
+
+    contractorsObject  contractors? @relation(fields: [contractors], references: [id])
+    jobObject          jobdetails   @relation(fields: [job], references: [id])
+    jobPartTitleObject jobparts     @relation(fields: [jobPartTitle], references: [id])
+
+    @@index([updatedAt], map: "updatedAt_1")
+}
+
+model jobparts {
+    id             String        @id @default(auto()) @map("_id") @db.ObjectId
+    v              Int           @map("__v")
+    createdAt      DateTime      @default(now()) @db.Date
+    jobDescription String?
+    jobOrder       Int
+    jobPartTitle   String
+    updatedAt      DateTime      @default(now()) @updatedAt @db.Date
+    jobduedates    jobduedates[]
+}
+
+model timesheetcomments {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    v         Int      @map("__v")
+    comments  String?
+    createdAt DateTime @default(now()) @db.Date
+    day       String
+    updatedAt DateTime @default(now()) @updatedAt @db.Date
+    user      String   @db.ObjectId
+    weekStart String
+
+    userObject users @relation(fields: [user], references: [id])
+
+    @@index([updatedAt], map: "updatedAt_1")
+}
+
+model timesheetentries {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    v         Int      @map("__v")
+    createdAt DateTime @default(now()) @db.Date
+    day       String
+    endTime   String
+    entryId   String
+    isArchive Boolean  @default(false)
+    job       String   @db.ObjectId
+    jobNumber Int
+    /// Multiple data types found: Float: 41.9%, Int: 58.1% out of 1000 sampled entries
+    jobTime   Float
+    startTime String
+    updatedAt DateTime @default(now()) @updatedAt @db.Date
+    user      String   @db.ObjectId
+    userId    String
+    weekEnd   String?
+    weekStart String
+
+    jobObject  jobdetails @relation(fields: [job], references: [id])
+    userObject users      @relation(fields: [user], references: [id])
+
+    @@index([updatedAt], map: "updatedAt_1")
+}
+
+model users {
+    id                String              @id @default(auto()) @map("_id") @db.ObjectId
+    v                 Int                 @map("__v")
+    auth0Email        String
+    createdAt         DateTime            @default(now()) @db.Date
+    firstName         String?             @default("")
+    hourlyRate        Float?              @default(21.5)
+    lastName          String?             @default("")
+    updatedAt         DateTime            @db.Date
+    userId            String              @unique(map: "userId_1")
+    timesheetcomments timesheetcomments[]
+    timesheetentries  timesheetentries[]
+}
