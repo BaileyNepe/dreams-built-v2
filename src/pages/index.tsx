@@ -1,5 +1,6 @@
 import { useAuth0 } from '@auth0/auth0-react';
 import { type NextPage } from 'next';
+import { Container } from 'react-bootstrap';
 
 const Home: NextPage = () => {
   const { isAuthenticated } = useAuth0();
@@ -11,10 +12,7 @@ const Home: NextPage = () => {
           <p>Logged in</p>
         </div>
       ) : (
-        <div>
-          <h1>Home</h1>
-          <p>Not logged in</p>
-        </div>
+        <Container />
       )}
     </>
   );

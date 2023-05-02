@@ -18,13 +18,7 @@ import { ToastContainer } from 'react-toastify';
 import { ThemeProvider } from 'styled-components';
 
 const MyApp: AppType = ({ Component, pageProps }) => {
-  const { isAuthenticated, isLoading, error } = useAuth0();
-
-  console.log({
-    isAuthenticated,
-    isLoading,
-    error,
-  });
+  const { isAuthenticated, isLoading } = useAuth0();
 
   const WrappedComponent = isAuthenticated ? (
     <DashboardLayout>
