@@ -31,8 +31,13 @@ export const paths = {
   profile: {
     root: '/profile',
   },
+  healthAndSafety: {
+    root: '/health-and-safety',
+  },
   reports: {
     timesheets: '/reports/timesheets/employees',
     jobs: '/reports/timesheets/jobs',
   },
+  logout: '/api/auth/logout',
+  login: '/api/auth/login',
 };

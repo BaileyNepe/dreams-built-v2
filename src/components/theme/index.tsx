@@ -19,6 +19,7 @@ const colors = {
     foreground: '#8c99e3',
     background: '#5562ae',
   },
+  iconColor: '#ffffff',
 };
 
 const fontSizes = {

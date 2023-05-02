@@ -20,6 +20,7 @@ export const env = createEnv({
     NEXT_PUBLIC_AUTH0_DOMAIN: z.string().min(1),
     NEXT_PUBLIC_AUTH0_CLIENT_ID: z.string().min(1),
     NEXT_PUBLIC_AUTH0_AUDIENCE: z.string().min(1),
+    NEXT_PUBLIC_CUSTOM_DOMAIN: z.string().min(1),
   },
 
   /**
@@ -32,5 +33,6 @@ export const env = createEnv({
     NEXT_PUBLIC_AUTH0_DOMAIN: process.env.NEXT_PUBLIC_AUTH0_DOMAIN,
     NEXT_PUBLIC_AUTH0_CLIENT_ID: process.env.NEXT_PUBLIC_AUTH0_CLIENT_ID,
     NEXT_PUBLIC_AUTH0_AUDIENCE: process.env.NEXT_PUBLIC_AUTH0_AUDIENCE,
+    NEXT_PUBLIC_CUSTOM_DOMAIN: process.env.NEXT_PUBLIC_CUSTOM_DOMAIN,
   },
 });
