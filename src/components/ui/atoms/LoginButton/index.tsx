@@ -1,10 +1,14 @@
-import { useAuth0 } from '@auth0/auth0-react';
+import { useRouter } from 'next/router';
 import { Button } from 'react-bootstrap';
 
 const LoginButton = () => {
-  const { loginWithRedirect } = useAuth0();
+  const router = useRouter();
 
-  return <Button onClick={() => loginWithRedirect()}>Log In</Button>;
+  const handleLogin = () => {
+    router.push('/api/auth/login');
+  };
+
+  return <Button onClick={handleLogin}>Log In</Button>;
 };
 
 export default LoginButton;

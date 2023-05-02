@@ -10,7 +10,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@auth0/auth0-react": "^2.0.2",
+    "@auth0/nextjs-auth0": "^2.5.0",
     "@prisma/client": "^4.11.0",
     "@reduxjs/toolkit": "^1.9.5",
     "@t3-oss/env-nextjs": "^0.2.1",

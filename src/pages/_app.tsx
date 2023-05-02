@@ -1,6 +1,6 @@
 import { env } from '@/env.mjs';
 import { api } from '@/utils/api';
-import { type AppType } from 'next/app';
+import { AppProps, type AppType } from 'next/app';
 import 'react-toastify/dist/ReactToastify.css';
 
 import './bootstrap.min.css';
@@ -9,20 +9,25 @@ import DashboardLayout from '@/components/Layouts/Dashboard';
 import StandardLayout from '@/components/Layouts/Standard';
 import { store } from '@/components/store';
 import { theme } from '@/components/theme';
-import Loader from '@/components/ui/atoms/Loader';
-import { paths } from '@/components/utils/paths';
 import '@/styles/globals.css';
-import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
+import { UserProvider, useUser } from '@auth0/nextjs-auth0/client';
 import { Provider } from 'react-redux';
 import { ToastContainer } from 'react-toastify';
 import { ThemeProvider } from 'styled-components';
 
-const MyApp: AppType = ({ Component, pageProps }) => {
-  const { isAuthenticated, isLoading } = useAuth0();
+const MyApp: AppType = ({ Component, pageProps, router }) => {
+  return (
+    <UserProvider>
+      <AppContent Component={Component} pageProps={pageProps} router={router} />
+    </UserProvider>
+  );
+};
 
-  const WrappedComponent = isAuthenticated ? (
+const AppContent = ({ Component, pageProps }: AppProps) => {
+  const { user } = useUser();
+  const WrappedComponent = user ? (
     <DashboardLayout>
-      <Component {...pageProps} />
+      <Component {...pageProps} user={user} />
     </DashboardLayout>
   ) : (
     <StandardLayout>
@@ -31,21 +36,12 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   );
 
   return (
-    <Auth0Provider
-      domain={env.NEXT_PUBLIC_AUTH0_DOMAIN}
-      clientId={env.NEXT_PUBLIC_AUTH0_CLIENT_ID}
-      authorizationParams={{
-        audience: env.NEXT_PUBLIC_AUTH0_AUDIENCE,
-        redirect_uri: paths.home,
-      }}
-    >
-      <Provider store={store}>
-        <ThemeProvider theme={theme}>
-          <ToastContainer theme="colored" />
-          {isLoading ? <Loader /> : WrappedComponent}
-        </ThemeProvider>
-      </Provider>
-    </Auth0Provider>
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <ToastContainer theme="colored" />
+        {WrappedComponent}
+      </ThemeProvider>
+    </Provider>
   );
 };
 

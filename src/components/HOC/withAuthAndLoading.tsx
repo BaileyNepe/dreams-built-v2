@@ -1,12 +1,13 @@
-import { User, useAuth0, withAuthenticationRequired } from '@auth0/auth0-react';
 import React, { ComponentType } from 'react';
 
+import { useUser, withPageAuthRequired } from '@auth0/nextjs-auth0/client';
+import { UserProps } from '@auth0/nextjs-auth0/dist/client/with-page-auth-required';
 import Loader from '../ui/atoms/Loader';
 import Message from '../ui/atoms/Message';
 
-const withAuth = <P extends {}>(WrappedComponent: ComponentType<P>): React.FC<P> => {
+const withAuth = <P extends UserProps>(WrappedComponent: ComponentType<P>): React.FC<P> => {
   const AuthAndLoadingWrapper: React.FC<P> = (props) => {
-    const { isLoading, error } = useAuth0();
+    const { isLoading, error, user } = useUser();
 
     if (isLoading) {
       return <Loader />;
@@ -16,10 +17,10 @@ const withAuth = <P extends {}>(WrappedComponent: ComponentType<P>): React.FC<P>
       return <Message variant="danger">{error.message}</Message>;
     }
 
-    return <WrappedComponent {...props} />;
+    return <WrappedComponent {...props} user={user} />;
   };
 
-  return withAuthenticationRequired(AuthAndLoadingWrapper, {
+  return withPageAuthRequired(AuthAndLoadingWrapper, {
     onRedirecting: () => <Loader />,
   });
 };
