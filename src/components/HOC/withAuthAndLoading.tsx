@@ -1,7 +1,7 @@
-import React, { ComponentType } from 'react';
-
 import { useUser, withPageAuthRequired } from '@auth0/nextjs-auth0/client';
-import { UserProps } from '@auth0/nextjs-auth0/dist/client/with-page-auth-required';
+import { type UserProps } from '@auth0/nextjs-auth0/dist/client/with-page-auth-required';
+import { type ComponentType } from 'react';
+
 import Loader from '../ui/atoms/Loader';
 import Message from '../ui/atoms/Message';
 
@@ -14,7 +14,7 @@ const withAuth = <P extends UserProps>(WrappedComponent: ComponentType<P>): Reac
     }
 
     if (error) {
-      return <Message variant="danger">{error.message}</Message>;
+      return <Message variant='danger'>{error.message}</Message>;
     }
 
     return <WrappedComponent {...props} user={user} />;

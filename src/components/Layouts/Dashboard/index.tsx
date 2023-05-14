@@ -1,6 +1,6 @@
 import Sidebar from '@/components/ui/organisms/Sidebar';
 import Header from '@/components/ui/organisms/Sidebar/header';
-import { ReactNode, useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import styled from 'styled-components';
 
 const Grid = styled.div`
