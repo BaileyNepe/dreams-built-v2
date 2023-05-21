@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from '@/components/store';
 import { ordinal } from '@/components/utils/helpers';
 import { DateTime } from 'luxon';
 
-const generateWeekArray = (weekStart: DateTime) =>
+const generateWeekArray = (weekStart: string) =>
   Array.from({ length: 7 }, (_, i) => {
     const dateFormat = DateTime.fromFormat(weekStart, 'dd/MM/yyyy').plus({ days: i });
     const day = dateFormat.toFormat('d');
@@ -16,7 +16,7 @@ const generateWeekArray = (weekStart: DateTime) =>
     };
   });
 
-const TimesheetWeek = ({ weekStart }: { weekStart: DateTime }) => {
+const TimesheetWeek = ({ weekStart }: { weekStart: string }) => {
   const dispatch = useDispatch();
   const timesheetEntries = useSelector((state) => state.timesheet);
   const { loading, error, dayEntries, comments } = timesheetEntries;
