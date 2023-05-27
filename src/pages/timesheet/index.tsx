@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Button, Dropdown, Form } from 'react-bootstrap';
-import { useDispatch, useSelector } from 'react-redux';
+// import { useDispatch, useSelector } from 'react-redux';
 
 import withAuth from '@/components/HOC/withAuthAndLoading';
 import DropdownSelect from '@/components/ui/atoms/DropdownSelect';
@@ -11,22 +11,11 @@ import { api } from '@/utils/api';
 import { DateTime } from 'luxon';
 import styles from './timesheet.module.css';
 
-const generateTimesheetPeriods = (
-  startWeekInit: DateTime,
-  weekEndInit: DateTime,
-  numberOfPeriods = 4,
-) =>
-  // Generate an array of timesheet periods based on the start and end of the week.
-  Array.from({ length: numberOfPeriods }, (_, i) => ({
-    weekStart: startWeekInit.minus({ days: i * 7 }).toFormat('dd/MM/yyyy'),
-    weekEnd: weekEndInit.minus({ days: i * 7 }).toFormat('dd/MM/yyyy'),
-  }));
-
 /* COMPONENTS */
 
 const Timesheet = () => {
   const { user, isAdmin } = useUser();
-  const dispatch = useDispatch();
+  // const dispatch = useDispatch();
 
   if (!user || !user.sub) {
     throw new Error('User not found');
@@ -49,14 +38,14 @@ const Timesheet = () => {
     weekStart,
   });
 
-  const { dayEntries, comments } = data || { dayEntries: [], comments: '' };
+  const { dayEntries, comments } = data ?? { dayEntries: [], comments: '' };
 
   const timesheetPeriods = generateTimesheetPeriods(startWeekInit, weekEndInit);
 
   // useEffect(() => {
   //   (async () => {
   //     try {
-  //       const token = await getAccessTokenSilently();
+
   //       dispatch(getJobList(token));
   //       if (isAdmin) {
   //         dispatch(getEmployees(token));
@@ -69,11 +58,11 @@ const Timesheet = () => {
   //     }
   //   })();
   //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [dispatch, getAccessTokenSilently, user, weekStart, selectedUser]);
+  // }, [dispatch, user, weekStart, selectedUser]);
 
+  const submitHandler = () => {};
   // const submitHandler = async (event) => {
   //   event.preventDefault();
-  //   const token = await getAccessTokenSilently();
   //   role === 'admin'
   //     ? dispatch(handleSubmit(dayEntries, weekStart, weekEnd, token, selectedUser.value, comments))
   //     : dispatch(handleSubmit(dayEntries, weekStart, weekEnd, token, user.sub, comments));
