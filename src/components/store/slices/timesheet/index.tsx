@@ -1,7 +1,7 @@
 // slices/timesheetSlice.ts
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
-interface Entry {
+export interface Entry {
   entryId: string;
   day: string;
   startTime: string;

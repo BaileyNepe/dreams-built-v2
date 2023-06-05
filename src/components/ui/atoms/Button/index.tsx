@@ -5,12 +5,15 @@ const Button = ({
   text,
   variant,
   type,
+  onClick,
 }: {
   variant: Variant;
-  text: string;
+  text: string | JSX.Element;
   type: 'button' | 'submit';
+  onClick?: () => void;
+  width?: string;
 }) => (
-  <ButtonBase variant={variant} type={type}>
+  <ButtonBase variant={variant} type={type} onClick={onClick}>
     {text}
   </ButtonBase>
 );

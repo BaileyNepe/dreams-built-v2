@@ -19,17 +19,15 @@ const CustomModal = ({
   centered?: boolean;
   title: string;
   children: React.ReactNode;
-}) => {
-  return (
-    <Modal show={show} onHide={onHide} size={size} centered={centered}>
-      <Modal.Header closeButton>
-        <Modal.Title id="contained-modal-title-vcenter">
-          <Title>{title}</Title>
-        </Modal.Title>
-      </Modal.Header>
-      <Modal.Body>{children}</Modal.Body>
-    </Modal>
-  );
-};
+}) => (
+  <Modal show={show} onHide={onHide} size={size} centered={centered}>
+    <Modal.Header closeButton>
+      <Modal.Title id='contained-modal-title-vcenter'>
+        <Title>{title}</Title>
+      </Modal.Title>
+    </Modal.Header>
+    <Modal.Body>{children}</Modal.Body>
+  </Modal>
+);
 
 export default CustomModal;

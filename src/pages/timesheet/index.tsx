@@ -1,23 +1,45 @@
 import { useState } from 'react';
-import { Button, Dropdown, Form } from 'react-bootstrap';
+import { Dropdown, Form } from 'react-bootstrap';
 // import { useDispatch, useSelector } from 'react-redux';
 
 import withAuth from '@/components/HOC/withAuthAndLoading';
-import DropdownSelect from '@/components/ui/atoms/DropdownSelect';
+// import DropdownSelect from '@/components/ui/atoms/DropdownSelect';
+import { useDispatch } from '@/components/store';
+import Button from '@/components/ui/atoms/Button';
+import CustomMenu from '@/components/ui/atoms/CustomMenu';
 import PageState from '@/components/ui/molecules/PageState';
 import TimesheetWeek from '@/components/ui/organisms/Timesheet';
+import { generateWeeks } from '@/components/utils/helpers';
 import { useUser } from '@/components/utils/hooks/useUser';
 import { api } from '@/utils/api';
 import { DateTime } from 'luxon';
-import styles from './timesheet.module.css';
+import styled from 'styled-components';
+
+const GridContainer = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  @media only screen and (min-width: 50rem) {
+    .grid-card-top {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+`;
+
+const DropdownToggle = styled(Dropdown.Toggle)`
+  width: 100%;
+  @media only screen and (min-width: 50rem) {
+    width: max-content;
+  }
+`;
 
 /* COMPONENTS */
 
 const Timesheet = () => {
   const { user, isAdmin } = useUser();
-  // const dispatch = useDispatch();
+  const dispatch = useDispatch();
 
-  if (!user || !user.sub) {
+  if (!user?.sub) {
     throw new Error('User not found');
   }
 
@@ -33,14 +55,23 @@ const Timesheet = () => {
   const [weekStart, setWeekStart] = useState(startWeekInit.toFormat('dd/MM/yyyy'));
   const [weekEnd, setWeekEnd] = useState(weekEndInit.toFormat('dd/MM/yyyy'));
 
-  const { isLoading, data, error } = api.timesheet.getWeek.useQuery({
-    userId: selectedUser.value,
-    weekStart,
-  });
+  const { isLoading, error } = api.timesheet.getWeek.useQuery(
+    {
+      userId: selectedUser.value,
+      weekStart,
+    },
+    {
+      cacheTime: 0,
+      onSuccess: (apiData) => {
+        dispatch({
+          type: 'timesheet/setTimesheetEntries',
+          payload: apiData?.data?.timeSheetEntries,
+        });
+      },
+    },
+  );
 
-  const { dayEntries, comments } = data ?? { dayEntries: [], comments: '' };
-
-  const timesheetPeriods = generateTimesheetPeriods(startWeekInit, weekEndInit);
+  const timesheetPeriods = generateWeeks(startWeekInit, weekEndInit);
 
   // useEffect(() => {
   //   (async () => {
@@ -70,9 +101,9 @@ const Timesheet = () => {
 
   return (
     <div className='parent-container'>
-      <PageState loading={isLoading} error={error}>
+      <PageState loading={isLoading} error={error?.message}>
         <Form onSubmit={submitHandler} className='container'>
-          {isAdmin ? (
+          {/* {isAdmin ? (
             <div className={styles.users}>
               <DropdownSelect
                 defaultValue={selectedUser}
@@ -83,12 +114,12 @@ const Timesheet = () => {
                 }))}
               />
             </div>
-          ) : null}
-          <div className={styles['grid-card-top']}>
+          ) : null} */}
+          <GridContainer>
             <Dropdown>
-              <Dropdown.Toggle id='dropdown-button' variant='primary' className={styles.dropdown}>
+              <DropdownToggle id='dropdown-button' variant='primary'>
                 Week: {weekStart} - {weekEnd}
-              </Dropdown.Toggle>
+              </DropdownToggle>
               <Dropdown.Menu
                 as={CustomMenu}
                 style={{ boxShadow: 'rgba(0, 0, 0, 0.35) 0px 5px 15px' }}
@@ -107,15 +138,10 @@ const Timesheet = () => {
                 ))}
               </Dropdown.Menu>
             </Dropdown>
-            <Button variant='info' type='submit' className={styles['btn-time-save']}>
-              Save
-            </Button>
-          </div>
+            <Button variant='info' type='submit' text='Save' />
+          </GridContainer>
           <TimesheetWeek weekStart={weekStart} />
-
-          <Button variant='info' type='submit' className={styles['btn-btm-save']}>
-            Save
-          </Button>
+          <Button variant='info' type='submit' text='Save' />
         </Form>
       </PageState>
     </div>

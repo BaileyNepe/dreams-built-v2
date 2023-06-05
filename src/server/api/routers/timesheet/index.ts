@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-import { createTRPCRouter, publicProcedure } from '@/server/api/trpc';
+import { createTRPCRouter, protectedProcedure, publicProcedure } from '@/server/api/trpc';
 
 export const timesheetRouter = createTRPCRouter({
-  getWeek: publicProcedure
+  getWeek: protectedProcedure
     .input(
       z.object({
         weekStart: z.string(),
@@ -12,10 +12,9 @@ export const timesheetRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       // TODO: user RBAC to check if user can access this timesheet
-
       const user = await ctx.prisma.users.findUnique({
         where: {
-          id: input.userId,
+          userId: input.userId,
         },
       });
 

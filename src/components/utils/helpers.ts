@@ -2,12 +2,13 @@ import { type DateTime } from 'luxon';
 
 export const getOrdinal = (number: number) => {
   const superScript = ['th', 'st', 'nd', 'rd'];
-  return superScript[(number - 20) % 10] || superScript[number] || superScript[0];
+  return superScript[(number - 20) % 10] ?? superScript[number] ?? superScript[0] ?? '';
 };
 
 export const generateWeeks = (
   startWeekInit: DateTime,
   weekEndInit: DateTime,
+  // If the number is negative the weeks will be generated in the future
   numberOfPeriods = 4,
 ) =>
   Array.from({ length: numberOfPeriods }, (_, i) => ({

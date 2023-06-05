@@ -8,7 +8,7 @@ const PageState = ({
 }: {
   children: React.ReactNode;
   loading: boolean;
-  error: string | null;
+  error?: string;
 }) => <>{loading ? <Loader /> : error ? <Message variant='danger'>{error}</Message> : children}</>;
 
 export default PageState;

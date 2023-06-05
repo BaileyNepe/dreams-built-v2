@@ -18,8 +18,11 @@
 import { type CreateNextContextOptions } from '@trpc/server/adapters/next';
 
 import { prisma } from '@/server/db';
+import { getAccessToken, getSession, type Session } from '@auth0/nextjs-auth0';
 
-type CreateContextOptions = Record<string, never>;
+type CreateContextOptions = {
+  session?: Session | null;
+};
 
 /**
  * This helper generates the "internals" for a tRPC context. If you need to use it, you can export
@@ -31,7 +34,8 @@ type CreateContextOptions = Record<string, never>;
  *
  * @see https://create.t3.gg/en/usage/trpc#-serverapitrpcts
  */
-const createInnerTRPCContext = (_opts: CreateContextOptions) => ({
+const createInnerTRPCContext = (opts: CreateContextOptions) => ({
+  session: opts.session,
   prisma,
 });
 
@@ -41,7 +45,13 @@ const createInnerTRPCContext = (_opts: CreateContextOptions) => ({
  *
  * @see https://trpc.io/docs/context
  */
-export const createTRPCContext = (_opts: CreateNextContextOptions) => createInnerTRPCContext({});
+export const createTRPCContext = async (opts: CreateNextContextOptions) => {
+  const { req, res } = opts;
+
+  // Get the session
+  const session = await getSession(req, res);
+  return createInnerTRPCContext({ session });
+};
 
 /**
  * 2. INITIALIZATION
@@ -50,9 +60,11 @@ export const createTRPCContext = (_opts: CreateNextContextOptions) => createInne
  * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
  * errors on the backend.
  */
-import { initTRPC } from '@trpc/server';
+
+import { initTRPC, TRPCError } from '@trpc/server';
 import superjson from 'superjson';
 import { ZodError } from 'zod';
+import { getUserPermissions } from '../middleware/authz';
 
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
@@ -89,3 +101,30 @@ export const createTRPCRouter = t.router;
  * are logged in.
  */
 export const publicProcedure = t.procedure;
+
+const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
+  if (!ctx.session || !ctx.session.user || !ctx.session.accessToken) {
+    throw new TRPCError({ code: 'UNAUTHORIZED' });
+  }
+
+  // If token is verified successfully, call the next middleware
+  return next();
+});
+
+export const jwtAuthz = (expectedPermissions: string[], checkAllPermissions = false) => {
+  t.middleware(async ({ ctx, next }) => {
+    if (expectedPermissions.length === 0) {
+      return next();
+    }
+
+    const { session } = ctx;
+
+    if (!session || !session.user) {
+      throw new TRPCError({ code: 'UNAUTHORIZED', message: 'No permissions in session' });
+    }
+
+    return next();
+  });
+};
+
+export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);

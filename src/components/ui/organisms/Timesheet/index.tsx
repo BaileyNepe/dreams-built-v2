@@ -1,6 +1,6 @@
-import { useDispatch, useSelector } from '@/components/store';
-import { ordinal } from '@/components/utils/helpers';
+import { getOrdinal } from '@/components/utils/helpers';
 import { DateTime } from 'luxon';
+import TimesheetDay from './day';
 
 const generateWeekArray = (weekStart: string) =>
   Array.from({ length: 7 }, (_, i) => {
@@ -10,28 +10,18 @@ const generateWeekArray = (weekStart: string) =>
     return {
       day: dateFormat.toFormat('EEEE'),
       date: day,
-      // TODO fix this
-      ordinal: ordinal(day as unknown as number),
+      ordinal: getOrdinal(Number(day)),
       month: dateFormat.toFormat('MMMM'),
     };
   });
 
 const TimesheetWeek = ({ weekStart }: { weekStart: string }) => {
-  const dispatch = useDispatch();
-  const timesheetEntries = useSelector((state) => state.timesheet);
-  const { loading, error, dayEntries, comments } = timesheetEntries;
   const weekArray = generateWeekArray(weekStart);
 
   return (
     <>
-      {weekArray.map((day) => (
-        <TimesheetDay
-          key={day.date}
-          day={day.day}
-          date={day.date}
-          ordinal={day.ordinal}
-          month={day.month}
-        />
+      {weekArray.map(({ day, date, ordinal, month }) => (
+        <TimesheetDay key={date} day={day} date={date} ordinal={ordinal} month={month} />
       ))}
     </>
   );
