@@ -1,5 +1,5 @@
-import type React from 'react';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
+import { Form } from 'react-bootstrap';
 import CustomModal from '..';
 
 const TextInputModal = ({
@@ -7,28 +7,40 @@ const TextInputModal = ({
   onHide,
   title,
   size = 'lg',
-  children,
   characterLimit = 500,
+  input,
+  setInput,
 }: {
   show: boolean;
   onHide: () => void;
   title: string;
+  input: string;
+  setInput: (input: string) => void;
   size?: 'sm' | 'lg' | 'xl';
-  children: React.ReactNode;
   characterLimit?: number;
 }) => {
-  const [text, setText] = useState<string>('');
-
   const setFormattedComment = useCallback(
     (typedText: string) => {
-      setText(typedText.slice(0, characterLimit));
+      setInput(typedText.slice(0, characterLimit));
     },
-    [characterLimit, setText],
+    [characterLimit, setInput],
   );
 
   return (
     <CustomModal show={show} onHide={onHide} title={title} size={size} centered={true}>
-      {children}
+      <Form.Group controlId={title}>
+        <Form.Label>{title}:</Form.Label>
+        <Form.Control
+          style={{ width: '100%', padding: '0.5rem 0.7rem', minHeight: '10rem' }}
+          as='textarea'
+          placeholder='Begin message...'
+          value={input}
+          onChange={(e) => setFormattedComment(e.target.value)}
+        />
+      </Form.Group>
+      <p style={{ color: 'grey', fontStyle: 'italic' }}>
+        {input.length}/{characterLimit}
+      </p>
     </CustomModal>
   );
 };
