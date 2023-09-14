@@ -1,3 +1,4 @@
+/* eslint-disable quote-props */
 const greys = {
   100: '#f7fafc',
   200: '#edf2f7',
@@ -23,11 +24,11 @@ const colors = {
 };
 
 const fontSizes = {
-  xs: '0.75rem',
-  sm: '0.875rem',
-  base: '1rem',
-  lg: '1.125rem',
-  xl: '1.25rem',
+  'xs': '0.75rem',
+  'sm': '0.875rem',
+  'base': '1rem',
+  'lg': '1.125rem',
+  'xl': '1.25rem',
   '2xl': '1.5rem',
   '3xl': '1.875rem',
   '4xl': '2.25rem',

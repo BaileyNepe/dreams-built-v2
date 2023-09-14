@@ -8,11 +8,18 @@ import styles from './timesheetEntry.module.css';
 
 const TimesheetEntry = ({ entryId, day }: { entryId: string; day: string }) => {
   const customStyles = {
-    control: (base, state) => ({
+    control: (
+      base: unknown,
+      {
+        isFocused,
+      }: {
+        isFocused: boolean;
+      },
+    ) => ({
       ...base,
-      'borderColor': state.isFocused ? '#ddd' : !jobError ? '#ddd' : 'red',
+      'borderColor': isFocused ? '#ddd' : !jobError ? '#ddd' : 'red',
       '&:hover': {
-        borderColor: state.isFocused ? '#ddd' : !jobError ? '#ddd' : 'red',
+        borderColor: isFocused ? '#ddd' : !jobError ? '#ddd' : 'red',
       },
     }),
   };

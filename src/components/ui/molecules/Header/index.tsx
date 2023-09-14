@@ -62,42 +62,40 @@ const Brand = styled.div`
   }
 `;
 
-const Header = () => {
-  return (
-    <HeaderWrapper>
-      <Navbar bg="dark" variant="dark" expand="lg" collapseOnSelect>
-        <Container>
-          <TopNav>
-            <DisplayNoneMobile>
-              <Link href="/" passHref>
-                <Navbar.Brand>
-                  <Logo src="logo-min.png" />
-                </Navbar.Brand>
-              </Link>
-            </DisplayNoneMobile>
-            <Brand>
-              <Link href="/" passHref>
-                <Navbar.Brand>
-                  <Logo src="logo-min.png" />
-                </Navbar.Brand>
-              </Link>
-            </Brand>
-            <Toggle>
-              <Navbar.Toggle aria-controls="basic-navbar-nav" />
-            </Toggle>
-            <Collapse id="basic-navbar-nav">
-              <Nav>
-                <LoginButton />
-              </Nav>
-            </Collapse>
-            <DisplayNoneMobile>
+const Header = () => (
+  <HeaderWrapper>
+    <Navbar bg='dark' variant='dark' expand='lg' collapseOnSelect>
+      <Container>
+        <TopNav>
+          <DisplayNoneMobile>
+            <Link href='/' passHref>
+              <Navbar.Brand>
+                <Logo src='logo-min.png' />
+              </Navbar.Brand>
+            </Link>
+          </DisplayNoneMobile>
+          <Brand>
+            <Link href='/' passHref>
+              <Navbar.Brand>
+                <Logo src='logo-min.png' />
+              </Navbar.Brand>
+            </Link>
+          </Brand>
+          <Toggle>
+            <Navbar.Toggle aria-controls='basic-navbar-nav' />
+          </Toggle>
+          <Collapse id='basic-navbar-nav'>
+            <Nav>
               <LoginButton />
-            </DisplayNoneMobile>
-          </TopNav>
-        </Container>
-      </Navbar>
-    </HeaderWrapper>
-  );
-};
+            </Nav>
+          </Collapse>
+          <DisplayNoneMobile>
+            <LoginButton />
+          </DisplayNoneMobile>
+        </TopNav>
+      </Container>
+    </Navbar>
+  </HeaderWrapper>
+);
 
 export default Header;

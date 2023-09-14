@@ -29,7 +29,7 @@ const CardBody = styled(Card.Body)`
 
 const BodyTitle = styled.div`
   color: ${({ theme }) => theme.colors.white};
-  font-size: ${({ theme }) => theme.fontSizes['xl']};
+  font-size: ${({ theme }) => theme.fontSizes.xl};
   font-weight: bold;
   margin-bottom: 0.2rem;
 `;
@@ -111,7 +111,7 @@ const InfoBlock = ({
             <IFrameContainer>
               <iframe
                 src={link.link}
-                frameBorder="0"
+                frameBorder='0'
                 title={title}
                 allowFullScreen
                 style={{ position: 'absolute', top: '0', left: '0', width: '100%', height: '100%' }}
@@ -120,7 +120,7 @@ const InfoBlock = ({
           ) : (
             <>
               <p>Contact Email:</p>
-              <a href="email:bailey.nepe@gmail.com">bailey.nepe@gmail.com</a>
+              <a href='email:bailey.nepe@gmail.com'>bailey.nepe@gmail.com</a>
               <p>Contact Phone:</p>
               <p>021 931 845</p>
             </>
