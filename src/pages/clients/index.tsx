@@ -14,7 +14,7 @@ import { useDebounce } from 'use-debounce';
 
 const ClientListScreen = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [limit, setLimit] = useState(2);
+  const [limit, setLimit] = useState(25);
   const [search, setSearch] = useState('');
   const [query] = useDebounce(search, 500);
 

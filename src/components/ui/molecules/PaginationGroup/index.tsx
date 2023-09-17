@@ -22,7 +22,15 @@ const PaginationGroup = ({
     <div className={styles.controls}>
       <div>
         <Paginate setCurrentPage={setCurrentPage} currentPage={currentPage} totalPages={pages} />
+        <div
+          style={{
+            padding: '0.5rem 0 0',
+          }}
+        >
+          Page {currentPage} of {pages}
+        </div>
       </div>
+
       <div className={styles.limit}>
         <Limit setLimit={setLimit} limit={limit} />
       </div>
