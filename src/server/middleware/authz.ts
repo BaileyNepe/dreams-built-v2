@@ -1,9 +1,8 @@
-export const getUserPermissions = (userScopeKey: string | string[]) => {
-  if (typeof userScopeKey === 'string') {
-    return new Set(userScopeKey.split(' '));
-  }
+export const getUserPermissions = async (authId: string) => {
+  // TODO make DB call to get permissions
 
-  if (Array.isArray(userScopeKey)) {
-    return new Set(userScopeKey);
+  if (!authId) {
+    return [];
   }
+  return ['admin'];
 };

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * YOU PROBABLY DON'T NEED TO EDIT THIS FILE, UNLESS:
  * 1. You want to modify request context (see Part 1).
@@ -18,7 +17,7 @@
 import { type CreateNextContextOptions } from '@trpc/server/adapters/next';
 
 import { prisma } from '@/server/db';
-import { getAccessToken, getSession, type Session } from '@auth0/nextjs-auth0';
+import { getSession, type Session } from '@auth0/nextjs-auth0';
 
 type CreateContextOptions = {
   session?: Session | null;
@@ -102,29 +101,46 @@ export const createTRPCRouter = t.router;
  */
 export const publicProcedure = t.procedure;
 
-const enforceUserIsAuthed = t.middleware(async ({ ctx, next }) => {
-  if (!ctx.session || !ctx.session.user || !ctx.session.accessToken) {
-    throw new TRPCError({ code: 'UNAUTHORIZED' });
-  }
-
-  // If token is verified successfully, call the next middleware
-  return next();
-});
-
-export const jwtAuthz = (expectedPermissions: string[], checkAllPermissions = false) => {
+export const jwtAuthz = (expectedRole: string[]) => {
   t.middleware(async ({ ctx, next }) => {
-    if (expectedPermissions.length === 0) {
+    if (expectedRole.length === 0) {
       return next();
     }
 
-    const { session } = ctx;
+    const user = ctx.session?.user;
+    console.log(user);
 
-    if (!session || !session.user) {
-      throw new TRPCError({ code: 'UNAUTHORIZED', message: 'No permissions in session' });
+    if (!user) {
+      throw new TRPCError({ code: 'UNAUTHORIZED' });
     }
+
+    // const permissions = await getUserPermissions(user.sub);
+
+    // const hasPermission = permissions.some((permission) => expectedRole.includes(permission));
+
+    // if (!hasPermission) {
+    //   throw new TRPCError({ code: 'UNAUTHORIZED' });
+    // }
 
     return next();
   });
 };
 
-export const protectedProcedure = t.procedure.use(enforceUserIsAuthed);
+const enforceUserAuth = (roles: string[]) =>
+  t.middleware(async ({ ctx, next }) => {
+    if (!ctx.session || !ctx.session.user || !ctx.session.accessToken) {
+      throw new TRPCError({ code: 'UNAUTHORIZED' });
+    }
+    jwtAuthz(roles);
+
+    // If token is verified successfully, call the next middleware
+    return next({
+      ctx: {
+        ...ctx,
+        user: ctx.session.user,
+        accessToken: ctx.session.accessToken,
+      },
+    });
+  });
+
+export const protectedProcedure = (roles: string[] = []) => t.procedure.use(enforceUserAuth(roles));

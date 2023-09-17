@@ -4,7 +4,7 @@ import { Button } from 'react-bootstrap';
 const LoginButton = () => {
   const router = useRouter();
 
-  const handleLogin = async () => {
+  const handleLogin = async (): Promise<void> => {
     try {
       await router.push('/api/auth/login');
     } catch (err) {
@@ -12,7 +12,15 @@ const LoginButton = () => {
     }
   };
 
-  return <Button onClick={() => handleLogin}>Log In</Button>;
+  return (
+    <Button
+      onClick={() => {
+        void handleLogin();
+      }}
+    >
+      Log In
+    </Button>
+  );
 };
 
 export default LoginButton;

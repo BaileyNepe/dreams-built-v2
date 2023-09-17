@@ -1,6 +1,6 @@
 import Footer from '@/components/ui/atoms/Footer';
 import Header from '@/components/ui/molecules/Header';
-import React from 'react';
+import type React from 'react';
 import styled from 'styled-components';
 
 const Container = styled.div`
@@ -17,14 +17,12 @@ const Main = styled.main`
   max-width: 120rem;
 `;
 
-const StandardLayout = ({ children }: { children: React.ReactNode }) => {
-  return (
-    <Container>
-      <Header />
-      <Main>{children}</Main>
-      <Footer />
-    </Container>
-  );
-};
+const StandardLayout = ({ children }: { children: React.ReactNode }) => (
+  <Container>
+    <Header />
+    <Main>{children}</Main>
+    <Footer />
+  </Container>
+);
 
 export default StandardLayout;
