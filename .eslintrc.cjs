@@ -58,7 +58,7 @@ const config = {
         'curly': ['error', 'all'],
         'dot-notation': ['error'],
         'eqeqeq': ['error', 'always'],
-        'no-confusing-arrow': ['error'],
+        'no-confusing-arrow': ['off'],
         'no-else-return': ['error'],
         'no-extra-boolean-cast': ['error'],
         'no-extra-semi': ['error'],

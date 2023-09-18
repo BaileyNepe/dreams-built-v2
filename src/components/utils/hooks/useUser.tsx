@@ -6,9 +6,11 @@ export const useUser = (): {
   role: 'admin' | 'employee' | 'user';
   isAdmin: boolean;
   isEmployee: boolean;
+  isLoading: boolean;
+  error?: Error;
 } => {
   const domain = env.NEXT_PUBLIC_CUSTOM_DOMAIN;
-  const { user } = useAuth0();
+  const { user, isLoading, error } = useAuth0();
 
   const userRoles = user?.[`${domain}/roles`] as string[] | undefined;
 
@@ -17,5 +19,5 @@ export const useUser = (): {
 
   const role = isAdmin ? 'admin' : isEmployee ? 'employee' : 'user';
 
-  return { user, role, isAdmin, isEmployee };
+  return { user, role, isAdmin, isEmployee, isLoading, error };
 };

@@ -1,5 +1,5 @@
 /* eslint-disable quote-props */
-const greys = {
+export const greys = {
   100: '#f7fafc',
   200: '#edf2f7',
   300: '#e2e8f0',
@@ -12,7 +12,7 @@ const greys = {
   1000: '#111827',
 };
 
-const colors = {
+export const colors = {
   primary: '#0070f3',
   white: '#ffffff',
   greys,

@@ -1,3 +1,4 @@
+import { theme } from '@/components/theme';
 import { useState } from 'react';
 import { Button, Card } from 'react-bootstrap';
 import { FiArrowRight } from 'react-icons/fi';
@@ -5,17 +6,17 @@ import styled from 'styled-components';
 import CustomModal from '../Modal';
 
 const StyledCard = styled(Card)`
-  background: ${({ theme }) => theme.colors.greys[1000]};
+  background: ${theme.colors.greys[1000]};
 `;
 
 const CardTitle = styled(Card.Title)`
-  color: ${({ theme }) => theme.colors.accent.foreground};
+  color: ${theme.colors.accent.foreground};
   padding: 1rem;
-  font-size: ${({ theme }) => theme.fontSizes.base};
+  font-size: ${theme.fontSizes.base};
 `;
 
 const Icon = styled.span`
-  font-size: ${({ theme }) => theme.fontSizes['2xl']};
+  font-size: ${theme.fontSizes['2xl']};
 `;
 
 const IconText = styled.span`
@@ -23,13 +24,13 @@ const IconText = styled.span`
 `;
 
 const CardBody = styled(Card.Body)`
-  color: ${({ theme }) => theme.colors.greys[200]};
+  color: ${theme.colors.greys[200]};
   padding: 0 1rem 1rem;
 `;
 
 const BodyTitle = styled.div`
-  color: ${({ theme }) => theme.colors.white};
-  font-size: ${({ theme }) => theme.fontSizes.xl};
+  color: ${theme.colors.white};
+  font-size: ${theme.fontSizes.xl};
   font-weight: bold;
   margin-bottom: 0.2rem;
 `;
@@ -37,25 +38,25 @@ const BodyTitle = styled.div`
 const CardFooter = styled(Card.Footer)`
   display: flex;
   justify-content: right;
-  color: ${({ theme }) => theme.colors.white};
+  color: ${theme.colors.white};
   padding: 0rem 1rem 1rem;
 `;
 
 const StyledButton = styled(Button)`
   background-color: unset;
-  color: ${({ theme }) => theme.colors.accent.foreground};
-  border-color: ${({ theme }) => theme.colors.accent.background};
+  color: ${theme.colors.accent.foreground};
+  border-color: ${theme.colors.accent.background};
 
   &:hover {
     background-color: unset;
-    color: ${({ theme }) => theme.colors.accent.foreground};
-    border-color: ${({ theme }) => theme.colors.accent.foreground};
+    color: ${theme.colors.accent.foreground};
+    border-color: ${theme.colors.accent.foreground};
     transition: 250ms ease-in-out;
   }
 `;
 
 const HorizontalLine = styled.hr`
-  color: ${({ theme }) => theme.colors.greys[800]};
+  color: ${theme.colors.greys[800]};
   width: 100%;
 `;
 

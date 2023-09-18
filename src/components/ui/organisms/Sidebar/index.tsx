@@ -6,7 +6,7 @@ import styled from 'styled-components';
 import { menuItems } from './menuItems';
 import { NavIcon } from './styles';
 import SubMenu from './subMenu';
-import { MenuItem } from './types';
+import { type MenuItem } from './types';
 
 const Nav = styled.nav`
   grid-area: side-navbar;
@@ -25,14 +25,16 @@ const SidebarWrap = styled.div`
   width: 100%;
 `;
 
-const filterMenuItems = (menu: MenuItem[], role: string): MenuItem[] => {
-  return menu.reduce((acc: MenuItem[], item) => {
+const filterMenuItems = (menu: MenuItem[], role: string): MenuItem[] =>
+  menu.reduce((acc: MenuItem[], item) => {
     if (item.roles && !item.roles.includes(role)) {
       return acc;
     }
 
     if (item.subNav) {
-      const filteredSubNav = item.subNav.filter((subItem) => (subItem.roles ? subItem.roles.includes(role) : true));
+      const filteredSubNav = item.subNav.filter((subItem) =>
+        subItem.roles ? subItem.roles.includes(role) : true,
+      );
 
       if (filteredSubNav.length === 1) {
         acc.push({
@@ -50,7 +52,6 @@ const filterMenuItems = (menu: MenuItem[], role: string): MenuItem[] => {
 
     return acc;
   }, []);
-};
 
 const Sidebar = ({ setSidebar }: { setSidebar: (state: boolean) => void }) => {
   const { role } = useUser();

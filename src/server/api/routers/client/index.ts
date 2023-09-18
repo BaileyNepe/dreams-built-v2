@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { type Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
@@ -30,5 +31,57 @@ export const clientsRouter = createTRPCRouter({
       });
 
       return { clientList, pages: Math.ceil(count / limit) };
+    }),
+  create: protectedProcedure()
+    .input(
+      z.object({
+        clientName: z
+          .string({
+            invalid_type_error: 'Client name must be a string',
+            required_error: 'Client name is required',
+          })
+          .nonempty({ message: 'Client name cannot be empty' }),
+        color: z
+          .string({
+            invalid_type_error: 'Color must be a string',
+            required_error: 'Color is required',
+          })
+
+          .regex(/^#([0-9a-f]{3}){1,2}$/i, {
+            message: 'Color must be a valid hex color',
+          }),
+        contactEmail: z
+          .string({
+            invalid_type_error: 'Contact email must be a string',
+            required_error: 'Contact email is required',
+          })
+          .optional(),
+        contactName: z
+          .string({
+            invalid_type_error: 'Contact name must be a string',
+            required_error: 'Contact name is required',
+          })
+          .optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const client = await ctx.prisma.clients.findUnique({
+        where: { clientName: input.clientName },
+      });
+
+      if (client) {
+        throw new Error('Client already exists');
+      }
+
+      const newClient = await ctx.prisma.clients.create({
+        data: {
+          clientName: input.clientName,
+          color: input.color,
+          contact: { email: input.contactEmail, name: input.contactName },
+          v: 0,
+        },
+      });
+
+      return newClient;
     }),
 });
