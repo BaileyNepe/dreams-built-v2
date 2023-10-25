@@ -55,7 +55,7 @@ const config = {
         '@typescript-eslint/prefer-for-of': 'warn',
         'multiline-comment-style': 'off',
         'arrow-body-style': ['error', 'as-needed'],
-        'curly': ['error', 'all'],
+        'curly': ['error', 'multi-line'],
         'dot-notation': ['error'],
         'eqeqeq': ['error', 'always'],
         'no-confusing-arrow': ['off'],

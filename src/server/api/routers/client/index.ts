@@ -69,9 +69,7 @@ export const clientsRouter = createTRPCRouter({
         where: { clientName: input.clientName },
       });
 
-      if (client) {
-        throw new Error('Client already exists');
-      }
+      if (client) throw new Error('Client already exists');
 
       const newClient = await ctx.prisma.clients.create({
         data: {

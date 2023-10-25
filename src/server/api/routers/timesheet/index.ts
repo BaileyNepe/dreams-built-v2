@@ -18,11 +18,7 @@ export const timesheetRouter = createTRPCRouter({
         },
       });
 
-      if (!user) {
-        return {
-          errors: [{ message: 'User does not exist' }],
-        };
-      }
+      if (!user) return { errors: [{ message: 'User does not exist' }] };
 
       // find all timesheetEntries with userId and weekStart
       const timeSheetEntries = await ctx.prisma.timesheetentries.findMany({

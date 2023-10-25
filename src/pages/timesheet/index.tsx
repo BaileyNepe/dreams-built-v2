@@ -39,9 +39,7 @@ const Timesheet = () => {
   const { user, isAdmin } = useUser();
   const dispatch = useDispatch();
 
-  if (!user?.sub) {
-    throw new Error('User not found');
-  }
+  if (!user?.sub) throw new Error('User not found');
 
   // const employeeList = useSelector((state) => state.employees);
   const [selectedUser, setSelectedUser] = useState({
