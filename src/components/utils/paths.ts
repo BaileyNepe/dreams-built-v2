@@ -4,7 +4,7 @@ export const paths = {
   clients: {
     root: '/clients',
     create: '/clients/create',
-    edit: (id: string) => `/clients/edit/${id}`,
+    edit: (id: string) => `/clients/${id}/edit`,
   },
   contractors: {
     root: '/contractors',

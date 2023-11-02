@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import { type Prisma } from '@prisma/client';
+import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { createTRPCRouter, protectedProcedure } from '../../trpc';
 
@@ -81,5 +82,20 @@ export const clientsRouter = createTRPCRouter({
       });
 
       return newClient;
+    }),
+  getOne: protectedProcedure()
+    .input(
+      z.object({
+        clientId: z.string().nonempty(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const client = await ctx.prisma.clients.findUnique({
+        where: { id: input.clientId },
+      });
+
+      if (!client) throw new TRPCError({ code: 'NOT_FOUND' });
+
+      return client;
     }),
 });
