@@ -31,7 +31,7 @@ model Project {
     color      String      @default("")
     endClient  String      @map("end_client")
     isInvoiced Boolean     @default(false) @map("is_invoiced")
-    jobNumber  Int         @map("job_number")
+    jobNumber  Int         @unique @map("job_number")
     clientId   String      @map("client_id")
     client     Client      @relation(fields: [clientId], references: [id])
     DueDate    DueDate[]
