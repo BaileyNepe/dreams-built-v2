@@ -1,7 +1,12 @@
-import React from "react";
+'use client'
+import { useUser } from '@auth0/nextjs-auth0/client'
+import React from 'react'
 
 const Dashboard = () => {
-  return <div>Dashboard</div>;
-};
+  const { user } = useUser()
 
-export default Dashboard;
+  console.log(user)
+  return <div>Dashboard</div>
+}
+
+export default Dashboard
