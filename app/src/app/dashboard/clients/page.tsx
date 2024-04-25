@@ -1,7 +1,13 @@
-import React from "react";
+import PageLayout from '@/components/PageLayout'
+import { Table } from '@/components/Table'
+import React from 'react'
 
 const Clients = () => {
-  return <div>Clients</div>;
-};
+  return (
+    <PageLayout title="Clients">
+      <Table />
+    </PageLayout>
+  )
+}
 
-export default Clients;
+export default Clients
