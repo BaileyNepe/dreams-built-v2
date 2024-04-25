@@ -184,7 +184,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 }
 
 const RootLayout = withPageAuthRequired(Layout, {
-  onRedirecting: () => <Loader />,
+  onRedirecting: () => (
+    <div className="flex h-screen w-screen items-center justify-center bg-gray-900">
+      <Loader />
+    </div>
+  ),
 })
 
 export default RootLayout

@@ -1,5 +1,5 @@
 import { Icons } from '../Icons'
 
 export const Loader = () => {
-  return <Icons.spinner className="h-4 w-4 animate-spin" />
+  return <Icons.spinner className="h-16 w-16 animate-spin" />
 }
