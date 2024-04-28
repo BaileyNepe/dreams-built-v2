@@ -14,6 +14,7 @@ import {
   SignalIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
+import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { FC, Fragment, useState } from 'react'
 
@@ -41,7 +42,7 @@ const NavBar: FC = () => {
             <ul role="list" className="-mx-2 space-y-1">
               {navigation.map((item) => (
                 <li key={item.name}>
-                  <a
+                  <Link
                     href={item.href}
                     className={`${
                       path === item.href
@@ -54,7 +55,7 @@ const NavBar: FC = () => {
                       aria-hidden="true"
                     />
                     {item.name}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
