@@ -3,8 +3,8 @@ import '@/styles/globals.css'
 
 import { Inter, Lexend } from 'next/font/google'
 
-import AuthProvider from '@/components/AuthProvider'
 import { TRPCReactProvider } from '@/trpc/react'
+import AuthProvider from '@/utils/contexts/AuthProvider'
 import clsx from 'clsx'
 
 const inter = Inter({

@@ -1,7 +1,9 @@
 'use client'
 import { Loader } from '@/components/Loader'
 import { Logo } from '@/components/Logo'
+import { Profile } from '@/components/Profile'
 import { paths } from '@/utils/paths'
+import { getSession } from '@auth0/nextjs-auth0'
 import { useUser, withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { Dialog, Transition } from '@headlessui/react'
 import { Bars3Icon, UserCircleIcon } from '@heroicons/react/20/solid'
@@ -59,29 +61,6 @@ const NavBar: FC = () => {
           </li>
         </ul>
       </nav>
-    </div>
-  )
-}
-
-const Profile: FC = () => {
-  const { user } = useUser()
-
-  return (
-    <div className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-white">
-      <span className="sr-only">Your profile</span>
-      <span aria-hidden="true">{user?.name}</span>
-
-      {user?.picture ? (
-        <img
-          className="h-8 w-8 rounded-full bg-gray-800"
-          src={user.picture}
-          alt=""
-        />
-      ) : (
-        <div className="h-8 w-8 rounded-full bg-gray-800">
-          <UserCircleIcon className="h-8 w-8 text-white" aria-hidden="true" />
-        </div>
-      )}
     </div>
   )
 }
@@ -184,10 +163,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 }
 
 const RootLayout = withPageAuthRequired(Layout, {
+  returnTo: '/',
   onRedirecting: () => (
-    <div className="flex h-screen w-screen items-center justify-center bg-gray-900">
+    <Layout>
       <Loader />
-    </div>
+    </Layout>
   ),
 })
 

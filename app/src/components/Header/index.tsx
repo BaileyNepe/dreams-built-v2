@@ -126,8 +126,10 @@ export function Header() {
             <div className="hidden md:flex md:gap-x-6">
               {links
                 .filter((link) => !link.isMobile)
-                .map((link, index) => (
-                  <NavLink href={link.href}>{link.label}</NavLink>
+                .map((link) => (
+                  <NavLink key={link.href} href={link.href}>
+                    {link.label}
+                  </NavLink>
                 ))}
             </div>
           </div>

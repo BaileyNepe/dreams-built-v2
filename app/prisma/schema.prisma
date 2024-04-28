@@ -71,9 +71,10 @@ model User {
     lastName  String   @default("") @map("last_name")
     createdAt DateTime @default(now()) @map("created_at")
     updatedAt DateTime @updatedAt @map("updated_at")
+    deleted   Boolean  @default(false)
 
     hourlyRate Float       @default(0) @map("hourly_rate")
-    authId     String      @map("auth_id")
+    authId     String      @unique @map("auth_id")
     role       Role        @default(USER)
     TimeEntry  TimeEntry[]
     Note       Note[]

@@ -8,4 +8,6 @@ export const paths = {
   jobs: '/dashboard/jobs',
   schedule: '/dashboard/schedule',
   timesheet: '/dashboard/timesheet',
+
+  clientCreate: '/dashboard/clients/create',
 } as const

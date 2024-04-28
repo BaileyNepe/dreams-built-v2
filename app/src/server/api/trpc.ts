@@ -6,11 +6,14 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { initTRPC } from "@trpc/server";
-import superjson from "superjson";
-import { ZodError } from "zod";
+import { getSession } from '@auth0/nextjs-auth0'
+import { initTRPC, TRPCError } from '@trpc/server'
+import superjson from 'superjson'
+import { ZodError } from 'zod'
 
-import { db } from "@/server/db";
+import { db } from '@/server/db'
+import { Authz } from '@/utils/auth/types'
+import { NextRequest, NextResponse } from 'next/server'
 
 /**
  * 1. CONTEXT
@@ -24,12 +27,23 @@ import { db } from "@/server/db";
  *
  * @see https://trpc.io/docs/server/context
  */
-export const createTRPCContext = async (opts: { headers: Headers }) => {
+export const createTRPCContext = async (
+  opts: { headers: Headers },
+  req?: NextRequest,
+) => {
+  const res = new NextResponse()
+
+  let session = null
+  if (req) {
+    session = await getSession(req, res)
+  }
+
   return {
     db,
+    session,
     ...opts,
-  };
-};
+  }
+}
 
 /**
  * 2. INITIALIZATION
@@ -48,9 +62,9 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
         zodError:
           error.cause instanceof ZodError ? error.cause.flatten() : null,
       },
-    };
+    }
   },
-});
+})
 
 /**
  * 3. ROUTER & PROCEDURE (THE IMPORTANT BIT)
@@ -64,7 +78,7 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
  *
  * @see https://trpc.io/docs/router
  */
-export const createTRPCRouter = t.router;
+export const createTRPCRouter = t.router
 
 /**
  * Public (unauthenticated) procedure
@@ -73,4 +87,72 @@ export const createTRPCRouter = t.router;
  * guarantee that a user querying is authorized, but you can still access user session data if they
  * are logged in.
  */
-export const publicProcedure = t.procedure;
+export const publicProcedure = t.procedure
+
+type AuthorizeMiddlewareOptions = {
+  requireAllPermissions?: boolean
+}
+
+const getAuthzStatus = ({
+  permissions,
+  requiredPermissions,
+  options,
+}: {
+  permissions: string[]
+  requiredPermissions: Authz[]
+  options: AuthorizeMiddlewareOptions
+}) => {
+  if (requiredPermissions.length === 0) return true
+  if (permissions.length === 0) return false
+
+  const hasPermission = (permission: Authz) => permissions.includes(permission)
+
+  if (options.requireAllPermissions)
+    return requiredPermissions.every(hasPermission)
+  return requiredPermissions.some(hasPermission)
+}
+
+const createAuthorizeMiddleware = ({
+  requiredPermissions = [],
+  options = {
+    requireAllPermissions: true,
+  },
+}: {
+  requiredPermissions?: Authz[]
+  options?: AuthorizeMiddlewareOptions
+}) =>
+  t.middleware(async ({ ctx, next }) => {
+    // const session = getSession(ctx.);
+
+    // // 1. validate user is authenticated with auth0
+
+    // // 2. use the auth0 id to get the user from the database with their permissions
+
+    // // 3. check if the user has the required permissions
+
+    // const userHasRequiredPermissions = getAuthzStatus({
+    //   permissions: user.permissions,
+    //   requiredPermissions,
+    //   options,
+    // })
+
+    // if (!userHasRequiredPermissions) {
+    //   throw new TRPCError({
+    //     code: 'FORBIDDEN',
+    //     message: 'User does not have the required permissions',
+    //   })
+    // }
+
+    return next({
+      ctx: {
+        ...ctx,
+        user: {},
+      },
+    })
+  })
+
+export const protectedProcedure = (
+  requiredPermissions?: Authz[],
+  options?: AuthorizeMiddlewareOptions,
+) =>
+  t.procedure.use(createAuthorizeMiddleware({ requiredPermissions, options }))
