@@ -1,17 +1,13 @@
 'use client'
-import PageLayout from '@/components/PageLayout'
-import { Table } from '@/components/Table'
-import { api } from '@/trpc/react'
-import { paths } from '@/utils/paths'
+
+import PageLayout from 'components/PageLayout'
+import { Table } from 'components/Table'
 import { useParams, useRouter } from 'next/navigation'
-import React from 'react'
+import { paths } from 'utils/paths'
 
 const Clients = () => {
   const navigate = useRouter()
 
-  const users = api.client.list.useQuery()
-
-  console.log({ users: users.data })
   return (
     <PageLayout
       title="Clients"

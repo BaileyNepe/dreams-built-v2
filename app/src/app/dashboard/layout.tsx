@@ -1,12 +1,8 @@
 'use client'
-import { Loader } from '@/components/Loader'
-import { Logo } from '@/components/Logo'
-import { Profile } from '@/components/Profile'
-import { paths } from '@/utils/paths'
-import { getSession } from '@auth0/nextjs-auth0'
-import { useUser, withPageAuthRequired } from '@auth0/nextjs-auth0/client'
+
+import { withPageAuthRequired } from '@auth0/nextjs-auth0/client'
 import { Dialog, Transition } from '@headlessui/react'
-import { Bars3Icon, UserCircleIcon } from '@heroicons/react/20/solid'
+import { Bars3Icon } from '@heroicons/react/20/solid'
 import {
   FolderIcon,
   GlobeAltIcon,
@@ -14,9 +10,14 @@ import {
   SignalIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
+import { Loader } from 'components/Loader'
+import { Logo } from 'components/Logo'
+import { Profile } from 'components/Profile'
+
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { FC, Fragment, useState } from 'react'
+import { type FC, Fragment, useState } from 'react'
+import { type paths } from 'utils/paths'
 
 const navigation: {
   name: string
@@ -31,15 +32,16 @@ const navigation: {
 
 const NavBar: FC = () => {
   const path = usePathname()
+
   return (
     <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 ring-white/5">
       <div className="flex h-16 shrink-0 items-center">
         <Logo />
       </div>
       <nav className="flex flex-1 flex-col">
-        <ul role="list" className="flex flex-1 flex-col gap-y-7">
+        <ul className="flex flex-1 flex-col gap-y-7">
           <li>
-            <ul role="list" className="-mx-2 space-y-1">
+            <ul className="-mx-2 space-y-1">
               {navigation.map((item) => (
                 <li key={item.name}>
                   <Link
@@ -47,8 +49,9 @@ const NavBar: FC = () => {
                     className={`${
                       path === item.href
                         ? 'bg-gray-800 text-white'
-                        : 'text-gray-400 hover:bg-gray-800 hover:text-white'
-                    } group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6`}
+                        : 'text-gray-400 hover:text-white'
+                    }
+                    group flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 hover:bg-gray-800`}
                   >
                     <item.icon
                       className="h-6 w-6 shrink-0"
@@ -66,24 +69,22 @@ const NavBar: FC = () => {
   )
 }
 
-const Header: FC<{ openSidebar: () => void }> = ({ openSidebar }) => {
-  return (
-    <div className="sticky flex h-16 w-full items-center gap-x-6 border-b border-white/5 bg-gray-900 px-4 shadow-sm sm:px-6 lg:px-8">
-      <button
-        type="button"
-        className="-m-2.5 p-2.5 text-white xl:hidden"
-        onClick={openSidebar}
-      >
-        <span className="sr-only">Open sidebar</span>
-        <Bars3Icon className="h-5 w-5" aria-hidden="true" />
-      </button>
+const Header: FC<{ openSidebar: () => void }> = ({ openSidebar }) => (
+  <div className="sticky flex h-16 w-full items-center gap-x-6 border-b border-white/5 bg-gray-900 px-4 shadow-sm sm:px-6 lg:px-8">
+    <button
+      type="button"
+      className="-m-2.5 p-2.5 text-white xl:hidden"
+      onClick={openSidebar}
+    >
+      <span className="sr-only">Open sidebar</span>
+      <Bars3Icon className="h-5 w-5" aria-hidden="true" />
+    </button>
 
-      <div className="flex w-full flex-1 justify-end gap-x-4 self-stretch lg:gap-x-6 ">
-        <Profile />
-      </div>
+    <div className="flex w-full flex-1 justify-end gap-x-4 self-stretch lg:gap-x-6 ">
+      <Profile />
     </div>
-  )
-}
+  </div>
+)
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
