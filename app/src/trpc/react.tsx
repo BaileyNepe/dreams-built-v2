@@ -5,12 +5,12 @@ import { loggerLink, unstable_httpBatchStreamLink } from '@trpc/client'
 import { createTRPCReact } from '@trpc/react-query'
 import { useState } from 'react'
 
-import { type AppRouter } from '@/server/api/root'
+import { type AppRouter } from 'server/api/root'
 import { getUrl, transformer } from './shared'
 
 const createQueryClient = () => new QueryClient()
 
-let clientQueryClientSingleton: QueryClient | undefined = undefined
+let clientQueryClientSingleton: QueryClient | undefined
 const getQueryClient = () => {
   if (typeof window === 'undefined') {
     // Server: always make a new query client

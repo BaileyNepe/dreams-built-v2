@@ -1,13 +1,10 @@
-import { FC, isValidElement } from 'react'
-import { Row } from './Body'
+import { type FC, isValidElement } from 'react'
+import { type Row } from './Body'
 import { Boolean } from './components/Boolean'
 
 const isDate = (value: unknown): value is Date => value instanceof Date
 
-export const Cell: FC<{ data: Row; rowKey: string }> = ({
-  rowKey,
-  data: data,
-}) => {
+export const Cell: FC<{ data: Row; rowKey: string }> = ({ rowKey, data }) => {
   const value = data[rowKey]
 
   if (isValidElement(value)) {

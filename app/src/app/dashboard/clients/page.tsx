@@ -2,11 +2,16 @@
 
 import PageLayout from 'components/PageLayout'
 import { Table } from 'components/Table'
-import { useParams, useRouter } from 'next/navigation'
+import { useRouter } from 'next/navigation'
+import { api } from 'trpc/react'
 import { paths } from 'utils/paths'
 
 const Clients = () => {
   const navigate = useRouter()
+  const [clients] = api.client.list.useSuspenseQuery({
+    page: 1,
+    perPage: 10,
+  })
 
   return (
     <PageLayout
@@ -25,25 +30,17 @@ const Clients = () => {
             console.log(page)
           },
         }}
-        headers={[
-          { key: 'name', label: 'Name' },
-          { key: 'title', label: 'Title' },
-          { key: 'email', label: 'Email' },
-        ]}
-        rows={[
-          {
-            id: '1',
-            name: 'Lindsay Walton',
-            title: 'Front-end Developer',
-            email: 'abe@gmail.com',
-          },
-          {
-            id: '2',
-            name: 'Lindsay Walton',
-            title: 'Front-end Developer',
-            email: 'test@gmail.com',
-          },
-        ]}
+        headers={[{ key: 'color' }, { key: 'name' }]}
+        rows={clients.map((client) => ({
+          id: client.id,
+          name: client.name,
+          color: (
+            <div
+              className="h-4 w-4 rounded-full"
+              style={{ backgroundColor: client.color }}
+            />
+          ),
+        }))}
       />
     </PageLayout>
   )

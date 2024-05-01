@@ -1,4 +1,4 @@
-import LogoImage from '@/images/logos/primary.png'
+import LogoImage from 'images/logos/primary.png'
 import Image from 'next/image'
 
 export function Logo() {

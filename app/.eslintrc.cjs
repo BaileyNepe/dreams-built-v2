@@ -97,6 +97,7 @@ const config = {
         'no-template-curly-in-string': 'error',
         'no-multi-str': 'error',
         'react/self-closing-comp': 'error',
+        '@typescript-eslint/no-misused-promises': 'off',
       },
     },
   ],

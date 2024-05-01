@@ -5,10 +5,10 @@ import clsx from 'clsx'
 import Image, { type ImageProps } from 'next/image'
 import { useId } from 'react'
 
-import { Container } from '@/components/Container'
-import screenshotContacts from '@/images/screenshots/contacts.png'
-import screenshotInventory from '@/images/screenshots/inventory.png'
-import screenshotProfitLoss from '@/images/screenshots/profit-loss.png'
+import { Container } from 'components/Container'
+import screenshotContacts from 'images/screenshots/contacts.png'
+import screenshotInventory from 'images/screenshots/inventory.png'
+import screenshotProfitLoss from 'images/screenshots/profit-loss.png'
 
 interface Feature {
   name: React.ReactNode
@@ -26,7 +26,7 @@ const features: Array<Feature> = [
       'We talked about reporting in the section above but we needed three items here, so mentioning it one more time for posterity.',
     image: screenshotProfitLoss,
     icon: function ReportingIcon() {
-      let id = useId()
+      const id = useId()
       return (
         <>
           <defs>

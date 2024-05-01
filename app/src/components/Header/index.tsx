@@ -4,11 +4,11 @@ import clsx from 'clsx'
 import Link from 'next/link'
 import { Fragment } from 'react'
 
-import { Button } from '@/components/Button'
-import { Container } from '@/components/Container'
-import { Logo } from '@/components/Logo'
-import { NavLink } from '@/components/NavLink'
 import { useUser } from '@auth0/nextjs-auth0/client'
+import { Button } from 'components/Button'
+import { Container } from 'components/Container'
+import { Logo } from 'components/Logo'
+import { NavLink } from 'components/NavLink'
 import { AuthButton } from '../AuthButton'
 
 const links = [

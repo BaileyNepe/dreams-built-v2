@@ -7,13 +7,13 @@
  * need to use are documented accordingly near the end.
  */
 import { getSession } from '@auth0/nextjs-auth0'
-import { initTRPC, TRPCError } from '@trpc/server'
+import { initTRPC } from '@trpc/server'
 import superjson from 'superjson'
 import { ZodError } from 'zod'
 
-import { db } from '@/server/db'
-import { Authz } from '@/utils/auth/types'
-import { NextRequest, NextResponse } from 'next/server'
+import { type NextRequest, NextResponse } from 'next/server'
+import { db } from 'server/db'
+import { type Authz } from 'utils/auth/types'
 
 /**
  * 1. CONTEXT
@@ -107,8 +107,9 @@ const getAuthzStatus = ({
 
   const hasPermission = (permission: Authz) => permissions.includes(permission)
 
-  if (options.requireAllPermissions)
+  if (options.requireAllPermissions) {
     return requiredPermissions.every(hasPermission)
+  }
   return requiredPermissions.some(hasPermission)
 }
 
@@ -121,7 +122,7 @@ const createAuthorizeMiddleware = ({
   requiredPermissions?: Authz[]
   options?: AuthorizeMiddlewareOptions
 }) =>
-  t.middleware(async ({ ctx, next }) => {
+  t.middleware(async ({ ctx, next }) =>
     // const session = getSession(ctx.);
 
     // // 1. validate user is authenticated with auth0
@@ -143,13 +144,13 @@ const createAuthorizeMiddleware = ({
     //   })
     // }
 
-    return next({
+    next({
       ctx: {
         ...ctx,
         user: {},
       },
-    })
-  })
+    }),
+  )
 
 export const protectedProcedure = (
   requiredPermissions?: Authz[],

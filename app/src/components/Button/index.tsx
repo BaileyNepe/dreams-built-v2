@@ -65,15 +65,17 @@ export function Button({ className, ...props }: ButtonProps) {
   props.variant ??= 'solid'
   props.color ??= 'slate'
 
-  className = clsx(
+  let importedClass = className
+
+  importedClass = clsx(
     baseStyles[props.variant],
     variantStyles[props.variant][props.color],
     className,
   )
 
   return typeof props.href === 'undefined' ? (
-    <button className={className} {...props} />
+    <button className={importedClass} {...props} />
   ) : (
-    <Link className={className} {...props} />
+    <Link className={importedClass} {...props} />
   )
 }
