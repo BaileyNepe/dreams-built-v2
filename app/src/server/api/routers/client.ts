@@ -31,7 +31,39 @@ const createClient = protectedProcedure()
     }),
   )
 
+const getClient = protectedProcedure()
+  .input(z.string().cuid())
+  .query(async ({ ctx, input }) =>
+    ctx.db.client.findUniqueOrThrow({
+      where: {
+        id: input,
+      },
+    }),
+  )
+
+const editClient = protectedProcedure()
+  .input(
+    z.object({
+      id: z.string().cuid(),
+      name: z.string(),
+      color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/),
+    }),
+  )
+  .mutation(({ ctx, input }) =>
+    ctx.db.client.update({
+      where: {
+        id: input.id,
+      },
+      data: {
+        name: input.name,
+        color: input.color,
+      },
+    }),
+  )
+
 export const clientRouter = createTRPCRouter({
   list,
   create: createClient,
+  get: getClient,
+  update: editClient,
 })

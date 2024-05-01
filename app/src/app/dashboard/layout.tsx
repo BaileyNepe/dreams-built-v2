@@ -10,13 +10,16 @@ import {
   SignalIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
+import { QueryErrorResetBoundary } from '@tanstack/react-query'
+import ErrorBoundary from 'components/ErrorBoundary'
+import { ErrorScreen } from 'components/ErrorScreen'
 import { Loader } from 'components/Loader'
 import { Logo } from 'components/Logo'
 import { Profile } from 'components/Profile'
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { type FC, Fragment, useState } from 'react'
+import { type FC, Fragment, Suspense, useState } from 'react'
 import { type paths } from 'utils/paths'
 
 const navigation: {
@@ -45,7 +48,7 @@ const NavBar: FC = () => {
               {navigation.map((item) => (
                 <li key={item.name}>
                   <Link
-                    href={item.href}
+                    href={item.href as string}
                     className={`${
                       path === item.href
                         ? 'bg-gray-800 text-white'
@@ -158,7 +161,17 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 
       <div className="xl:pl-72">
         <Header openSidebar={() => setSidebarOpen(true)} />
-        <main className="p-8">{children}</main>
+        <main className="p-8">
+          <QueryErrorResetBoundary>
+            <ErrorBoundary
+              fallback={(error, handleResetError) => (
+                <ErrorScreen onResetError={handleResetError} error={error} />
+              )}
+            >
+              <Suspense fallback={<Loader />}>{children}</Suspense>
+            </ErrorBoundary>
+          </QueryErrorResetBoundary>
+        </main>
       </div>
     </div>
   )

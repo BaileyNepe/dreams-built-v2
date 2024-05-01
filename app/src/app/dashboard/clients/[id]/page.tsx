@@ -1,34 +1,42 @@
 'use client'
+
+import { useClient, useEditClient } from 'api/clients'
 import { Button } from 'components/Button'
 import { Input } from 'components/Input'
 import { useRouter } from 'next/navigation'
-import { type FC } from 'react'
 import { useForm } from 'react-hook-form'
-import { api } from 'trpc/react'
 import { paths } from 'utils/paths'
 
-const CreateClient: FC = () => {
-  const create = api.client.create.useMutation()
+const ClientEdit = () => {
+  const client = useClient()
+  const edit = useEditClient()
   const router = useRouter()
+
   const {
-    register,
-    handleSubmit,
     formState: { errors },
+    handleSubmit,
+    register,
   } = useForm({
     defaultValues: {
-      name: '',
-      color: '',
+      name: client.name,
+      color: client.color,
     },
   })
 
   return (
     <form
       onSubmit={handleSubmit((data) => {
-        create.mutate(data, {
-          onSuccess: () => {
-            router.push(paths.clients)
+        edit.mutate(
+          {
+            id: client.id,
+            ...data,
           },
-        })
+          {
+            onSuccess: () => {
+              router.push(paths.clients)
+            },
+          },
+        )
       })}
     >
       <Input
@@ -44,10 +52,9 @@ const CreateClient: FC = () => {
       />
 
       <Button type="submit" variant="block" color="indigo">
-        Create
+        Edit
       </Button>
     </form>
   )
 }
-
-export default CreateClient
+export default ClientEdit

@@ -10,5 +10,5 @@ export const paths = {
   timesheet: '/dashboard/timesheet',
 
   clientCreate: '/dashboard/clients/create',
-  clientEdit: (id: string) => `/dashboard/clients/${id}/edit`,
+  clientEdit: (id: string) => `/dashboard/clients/${id}`,
 } as const
