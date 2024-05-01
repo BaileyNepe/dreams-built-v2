@@ -2,6 +2,7 @@
 
 import PageLayout from 'components/PageLayout'
 import { Table } from 'components/Table'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { api } from 'trpc/react'
 import { paths } from 'utils/paths'
@@ -30,7 +31,7 @@ const Clients = () => {
             console.log(page)
           },
         }}
-        headers={[{ key: 'color' }, { key: 'name' }]}
+        headers={[{ key: 'color' }, { key: 'name' }, { key: 'edit' }]}
         rows={clients.map((client) => ({
           id: client.id,
           name: client.name,
@@ -39,6 +40,11 @@ const Clients = () => {
               className="h-4 w-4 rounded-full"
               style={{ backgroundColor: client.color }}
             />
+          ),
+          edit: (
+            <Link className="text-blue-600" href={paths.clientEdit(client.id)}>
+              Edit
+            </Link>
           ),
         }))}
       />
