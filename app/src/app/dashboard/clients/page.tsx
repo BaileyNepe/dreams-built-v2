@@ -1,18 +1,15 @@
 'use client'
 
+import { useClientList } from 'api/clients'
 import PageLayout from 'components/PageLayout'
 import { Table } from 'components/Table'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { api } from 'trpc/react'
 import { paths } from 'utils/paths'
 
 const Clients = () => {
   const navigate = useRouter()
-  const [clients] = api.client.list.useSuspenseQuery({
-    page: 1,
-    perPage: 10,
-  })
+  const clients = useClientList({ page: 1, perPage: 10 })
 
   return (
     <PageLayout

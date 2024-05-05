@@ -4,6 +4,7 @@ import 'styles/globals.css'
 import { Inter, Lexend } from 'next/font/google'
 
 import clsx from 'clsx'
+import { ToastProvider } from 'libs/toast'
 import { TRPCReactProvider } from 'trpc/react'
 import AuthProvider from 'utils/contexts/AuthProvider'
 
@@ -40,6 +41,7 @@ export default function RootLayout({
       )}
     >
       <body className="flex h-full flex-col">
+        <ToastProvider />
         <AuthProvider>
           <TRPCReactProvider>{children}</TRPCReactProvider>
         </AuthProvider>

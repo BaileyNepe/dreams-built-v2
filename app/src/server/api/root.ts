@@ -1,5 +1,6 @@
 import { createTRPCRouter } from 'server/api/trpc'
 import { clientRouter } from './routers/client'
+import { jobsRouter } from './routers/jobs'
 
 /**
  * This is the primary router for your server.
@@ -8,6 +9,7 @@ import { clientRouter } from './routers/client'
  */
 export const appRouter = createTRPCRouter({
   client: clientRouter,
+  jobs: jobsRouter,
 })
 
 // export type definition of API

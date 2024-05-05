@@ -25,6 +25,7 @@ model Project {
     id         String      @id @default(cuid())
     updatedAt  DateTime    @updatedAt @map("updated_at")
     createdAt  DateTime    @default(now()) @map("created_at")
+    deleted    Boolean     @default(false)
     address    String      @default("")
     area       Float       @default(0)
     city       String      @default("")

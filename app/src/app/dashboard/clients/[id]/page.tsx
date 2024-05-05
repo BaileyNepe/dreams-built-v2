@@ -2,7 +2,7 @@
 
 import { useClient, useEditClient } from 'api/clients'
 import { Button } from 'components/Button'
-import { Input } from 'components/Input'
+import { Input } from 'components/Form/Input'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { paths } from 'utils/paths'

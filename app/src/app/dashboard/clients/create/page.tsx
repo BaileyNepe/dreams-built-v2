@@ -1,6 +1,6 @@
 'use client'
 import { Button } from 'components/Button'
-import { Input } from 'components/Input'
+import { Input } from 'components/Form/Input'
 import { useRouter } from 'next/navigation'
 import { type FC } from 'react'
 import { useForm } from 'react-hook-form'

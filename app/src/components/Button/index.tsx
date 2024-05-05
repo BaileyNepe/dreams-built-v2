@@ -62,8 +62,8 @@ type ButtonProps = (
   )
 
 export function Button({ className, ...props }: ButtonProps) {
-  props.variant ??= 'solid'
-  props.color ??= 'slate'
+  props.variant ??= 'block'
+  props.color ??= 'indigo'
 
   let importedClass = className
 
