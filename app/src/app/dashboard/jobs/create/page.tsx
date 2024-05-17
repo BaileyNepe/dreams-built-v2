@@ -16,6 +16,7 @@ const JobCreate = () => {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -76,7 +77,12 @@ const JobCreate = () => {
         placeholder="Color"
       />
 
-      <Select />
+      <Select
+        name="clientId"
+        label="Client"
+        options={options}
+        control={control}
+      />
 
       <Input
         {...register('area')}
