@@ -2,9 +2,12 @@
 import { useClientList } from 'api/clients'
 import { useCreateJob, useGetNextJobNumber } from 'api/jobs'
 import { Button } from 'components/Button'
+import { ColorInput } from 'components/Form/ColorInput'
 import { Input } from 'components/Form/Input'
 import { Select } from 'components/Form/Select'
+import { notify } from 'libs/toast'
 import { useForm } from 'react-hook-form'
+import { generateRandomColor } from 'utils/color'
 
 const JobCreate = () => {
   const { mutate } = useCreateJob()
@@ -16,6 +19,7 @@ const JobCreate = () => {
   const {
     register,
     handleSubmit,
+    reset,
     control,
     formState: { errors },
   } = useForm({
@@ -24,8 +28,8 @@ const JobCreate = () => {
       city: '',
       area: 0,
       endClient: '',
-      clientId: '',
-      color: '',
+      clientId: { value: '', label: '' },
+      color: generateRandomColor(),
       jobNumber: latestJob,
     },
   })
@@ -38,18 +42,41 @@ const JobCreate = () => {
   return (
     <form
       onSubmit={handleSubmit((data) => {
-        mutate(data)
+        if (!data.clientId.value) {
+          return notify('Client is required', { type: 'error' })
+        }
+
+        mutate(
+          {
+            ...data,
+            clientId: data.clientId.value,
+          },
+          {
+            onSuccess: (job) => {
+              reset({
+                address: '',
+                city: '',
+                area: 0,
+                endClient: '',
+                clientId: { value: '', label: '' },
+                color: generateRandomColor(),
+                jobNumber: job.nextJobNumber,
+              })
+            },
+          },
+        )
       })}
     >
-      <Input {...register('jobNumber')} label="Job Number" type="number" />
       <Input
-        {...register('clientId', {
-          required: 'Client is required',
+        {...register('jobNumber', {
+          valueAsNumber: true,
+          validate: (value) =>
+            value >= 0 || 'Job Number must be greater than 0',
         })}
-        error={errors.clientId?.message}
-        label="Client"
-        placeholder="Client"
+        label="Job Number"
+        type="number"
       />
+
       <Input
         {...register('endClient')}
         label="End Client"
@@ -59,13 +86,14 @@ const JobCreate = () => {
       <Input
         {...register('address', {
           required: 'Address is required',
+          min: 3,
         })}
         error={errors.address?.message}
         label="Address"
         placeholder="Address"
       />
       <Input {...register('city')} label="City" placeholder="City" />
-      <Input
+      <ColorInput
         error={errors.color?.message}
         {...register('color', {
           required: 'Color is required',
@@ -78,15 +106,22 @@ const JobCreate = () => {
       />
 
       <Select
-        name="clientId"
         label="Client"
+        {...register('clientId', {
+          required: 'Client is required',
+        })}
         options={options}
         control={control}
       />
 
       <Input
-        {...register('area')}
+        {...register('area', {
+          valueAsNumber: true,
+          validate: (value) => value >= 0 || 'Area must be greater than 0',
+        })}
         label="Area m"
+        error={errors.area?.message}
+        type="number"
         superscript="2"
         placeholder="Area"
       />

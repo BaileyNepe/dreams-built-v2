@@ -28,4 +28,7 @@ export const useCreateJob = () =>
     onError: (error) => {
       notify(error.message, { type: 'error' })
     },
+    onSuccess: () => {
+      notify('Job created successfully')
+    },
   })

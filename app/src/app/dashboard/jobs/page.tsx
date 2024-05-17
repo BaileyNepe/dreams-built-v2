@@ -1,5 +1,6 @@
 'use client'
 import { useJobsList } from 'api/jobs'
+import { Button } from 'components/Button'
 import PageLayout from 'components/PageLayout'
 import { Table } from 'components/Table'
 import { useRouter } from 'next/navigation'
@@ -26,7 +27,7 @@ const JobsList = () => {
           },
         }}
         headers={[
-          { key: 'jobNumber', label: 'Job Number' },
+          { key: 'jobNumber' },
           { key: 'client' },
           { key: 'endClient' },
           { key: 'address' },
@@ -34,7 +35,24 @@ const JobsList = () => {
           { key: 'area' },
           { key: 'edit' },
         ]}
-        rows={jobsList.jobs}
+        rows={jobsList.jobs.map((job) => ({
+          id: job.id,
+          jobNumber: job.jobNumber,
+          client: job.client,
+          endClient: job.endClient,
+          address: job.address,
+          city: job.city,
+          area: job.area,
+          edit: (
+            <Button
+              onClick={() => {
+                navigate.push(paths.jobsEdit(job.id))
+              }}
+            >
+              Edit
+            </Button>
+          ),
+        }))}
       />
     </PageLayout>
   )
