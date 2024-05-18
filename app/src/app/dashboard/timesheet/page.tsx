@@ -1,7 +1,10 @@
-import React from 'react'
+import TimesheetForm from 'features/Timesheet'
+import { TimesheetProvider } from 'features/Timesheet/hooks/useTimesheet'
 
-const Timesheet = () => {
-  return <div>Timesheet</div>
-}
+const Timesheet = () => (
+  <TimesheetProvider>
+    <TimesheetForm />
+  </TimesheetProvider>
+)
 
 export default Timesheet

@@ -45,6 +45,22 @@ const getJobsList = protectedProcedure()
     }
   })
 
+const getJobsSimpleList = protectedProcedure().query(async ({ ctx }) => {
+  const jobs = await ctx.db.project.findMany({
+    select: {
+      id: true,
+      jobNumber: true,
+      address: true,
+      endClient: true,
+    },
+    where: {
+      deleted: false,
+    },
+  })
+
+  return jobs
+})
+
 const getJob = protectedProcedure()
   .input(z.string().cuid())
   .query(async ({ ctx, input }) =>
@@ -186,4 +202,5 @@ export const jobsRouter = createTRPCRouter({
   update: updateJob,
   delete: deleteJob,
   getNextJobNumber,
+  simpleList: getJobsSimpleList,
 })

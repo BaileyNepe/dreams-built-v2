@@ -4,7 +4,7 @@ import { useCreateJob, useGetNextJobNumber } from 'api/jobs'
 import { Button } from 'components/Button'
 import { ColorInput } from 'components/Form/ColorInput'
 import { Input } from 'components/Form/Input'
-import { Select } from 'components/Form/Select'
+import { SelectForm } from 'components/Form/Select'
 import { notify } from 'libs/toast'
 import { useForm } from 'react-hook-form'
 import { generateRandomColor } from 'utils/color'
@@ -105,7 +105,7 @@ const JobCreate = () => {
         placeholder="Color"
       />
 
-      <Select
+      <SelectForm
         label="Client"
         {...register('clientId', {
           required: 'Client is required',

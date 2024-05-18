@@ -4,6 +4,8 @@ const AuthzSchema = z.enum([
   'clients:read',
   'users:view:all',
   'users:view:employee',
+  'timesheet:view:self',
+  'timesheet:view:all',
 ])
 
 const RoleSchema = z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE', 'USER'])

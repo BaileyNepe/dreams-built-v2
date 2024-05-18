@@ -1,5 +1,5 @@
 import { authz, permissions } from './permissions'
-import { Authz, Role, Roles } from './types'
+import { type Authz, type Role, type Roles } from './types'
 
 const rolesRaw: Roles = [
   {
@@ -37,6 +37,14 @@ export const roles = rolesRaw.map((role) => {
   }
 })
 
+export const getRolePermissions = (role: Role) => {
+  const roleData = roles.find(({ id }) => id === role)
+
+  if (!roleData) throw new Error(`Role ${role} not found`)
+
+  return roleData.permissions
+}
+
 export const getViewableRoles = (userPermissions?: Set<Authz>) =>
   roles.filter((role) =>
     role.requiredPermissions.every((permission) =>
@@ -44,14 +52,14 @@ export const getViewableRoles = (userPermissions?: Set<Authz>) =>
     ),
   )
 
-export const getViewableUsers = <T extends { roles: Set<Role> }>(
+export const getViewableUsers = <T extends { role: Role }>(
   userPermissions: Set<Authz>,
   users: T[],
 ) => {
   const viewableRoles = getViewableRoles(userPermissions)
 
   return users.filter((user) => {
-    const userRoles = Array.from(user.roles)
+    const userRoles = Array.from(user.role)
 
     return userRoles.every((role) =>
       viewableRoles.some((viewableRole) => viewableRole.id === role),

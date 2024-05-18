@@ -1,3 +1,13 @@
+import { getSession } from '@auth0/nextjs-auth0'
+import { initTRPC, TRPCError } from '@trpc/server'
+import superjson from 'superjson'
+import { ZodError } from 'zod'
+
+import { type NextRequest, NextResponse } from 'next/server'
+import { db } from 'server/db'
+import { getRolePermissions } from 'utils/auth/roles'
+import { type Authz } from 'utils/auth/types'
+
 /**
  * YOU PROBABLY DON'T NEED TO EDIT THIS FILE, UNLESS:
  * 1. You want to modify request context (see Part 1).
@@ -6,14 +16,6 @@
  * TL;DR - This is where all the tRPC server stuff is created and plugged in. The pieces you will
  * need to use are documented accordingly near the end.
  */
-import { getSession } from '@auth0/nextjs-auth0'
-import { initTRPC } from '@trpc/server'
-import superjson from 'superjson'
-import { ZodError } from 'zod'
-
-import { type NextRequest, NextResponse } from 'next/server'
-import { db } from 'server/db'
-import { type Authz } from 'utils/auth/types'
 
 /**
  * 1. CONTEXT
@@ -122,35 +124,57 @@ const createAuthorizeMiddleware = ({
   requiredPermissions?: Authz[]
   options?: AuthorizeMiddlewareOptions
 }) =>
-  t.middleware(async ({ ctx, next }) =>
-    // const session = getSession(ctx.);
+  t.middleware(async ({ ctx, next }) => {
+    const { session } = ctx
 
-    // // 1. validate user is authenticated with auth0
+    if (!session) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: 'User is not authenticated',
+      })
+    }
 
-    // // 2. use the auth0 id to get the user from the database with their permissions
+    // upsert user
+    const user = await ctx.db.user.upsert({
+      where: {
+        authId: session.user.sub as string,
+      },
+      create: {
+        authId: session.user.sub as string,
+        email: (session.user.email as string) ?? '',
+        firstName: (session.user.given_name as string) ?? '',
+        lastName: (session.user.family_name as string) ?? '',
+        image: (session.user.picture as string) ?? '',
+      },
+      update: {
+        image: (session.user.picture as string) ?? '',
+      },
+    })
 
-    // // 3. check if the user has the required permissions
+    const userPermissions = getRolePermissions(user.role)
 
-    // const userHasRequiredPermissions = getAuthzStatus({
-    //   permissions: user.permissions,
-    //   requiredPermissions,
-    //   options,
-    // })
+    const userHasRequiredPermissions = getAuthzStatus({
+      permissions: userPermissions,
+      requiredPermissions,
+      options,
+    })
 
-    // if (!userHasRequiredPermissions) {
-    //   throw new TRPCError({
-    //     code: 'FORBIDDEN',
-    //     message: 'User does not have the required permissions',
-    //   })
-    // }
+    if (!userHasRequiredPermissions) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'User does not have the required permissions',
+      })
+    }
 
-    next({
+    return next({
       ctx: {
         ...ctx,
-        user: {},
+        session,
+        user,
+        userPermissions,
       },
-    }),
-  )
+    })
+  })
 
 export const protectedProcedure = (
   requiredPermissions?: Authz[],

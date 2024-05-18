@@ -5,6 +5,11 @@ import { type Pagination } from 'utils/types'
 export const useJobsList = (p: Pagination) =>
   api.jobs.list.useSuspenseQuery(p)[0]
 
+export const useSimpleJobsList = () =>
+  api.jobs.simpleList.useSuspenseQuery(undefined, {
+    staleTime: 1000 * 60 * 5,
+  })[0]
+
 export const useJob = (id: string) => api.jobs.get.useSuspenseQuery(id)[0]
 
 export const useEditJob = () =>
