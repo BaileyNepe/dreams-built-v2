@@ -8,7 +8,15 @@ import { useState } from 'react'
 import { type AppRouter } from 'server/api/root'
 import { getUrl, transformer } from './shared'
 
-const createQueryClient = () => new QueryClient()
+const createQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 1000 * 60 * 5,
+        cacheTime: 1000 * 60 * 60,
+      },
+    },
+  })
 
 let clientQueryClientSingleton: QueryClient | undefined
 const getQueryClient = () => {

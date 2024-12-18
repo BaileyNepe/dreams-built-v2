@@ -1,0 +1,15 @@
+node_modules/*
+dist/*
+.prettierrc.js
+.eslintrc.js
+env.d.ts
+node_modules/**
+client/node_modules/**
+server/node_modules/**
+client/dist/**
+server/dist/**
+shared/dist/**
+server/dist/
+client/dist/
+shared/node_modules/**
+apps/client/src/features/Directives/directivesRegistry.ts

@@ -1,0 +1,82 @@
+{
+  "name": "@dreams-built/server",
+  "version": "0.1.5",
+  "description": "",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "bun src/server.ts",
+    "dev": "bun run --watch src/server.ts",
+    "build": "bunx esbuild server.ts --bundle --platform=node --outfile=dist/server.js --minify",
+    "start:prod": "bun dist/server.js",
+    "test:unit": "TEST_TYPE=unit bun run vitest",
+    "test:unit:watch": "TEST_TYPE=unit bun run vitest --watch --coverage",
+    "test:integration": "TEST_TYPE=integration bun run vitest --run",
+    "test:integration:watch": "TEST_TYPE=integration bun run vitest --watch",
+    "seed": "bun src/seedar.ts",
+    "db-generate": "bunx prisma generate",
+    "postinstall": "bunx prisma generate",
+    "migrate:dev": "bunx prisma migrate dev",
+    "migrate:deploy": "bunx prisma migrate deploy",
+    "mux:webhook": "bun src/mux-webhook.ts",
+    "check-updates": "npm-check-updates --interactive --format group"
+  },
+  "config": {
+    "prisma": {
+      "schema": "prisma/schema"
+    }
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+   
+    "@prisma/client": "^5.19.1",
+    "@dreams-built/shared": "workspace:shared",
+    "@trpc/server": "^11.0.0-rc.645",
+    "axios": "^1.7.2",
+    "chalk": "^4.1.2",
+    "cookie": "^0.6.0",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "esbuild": "^0.20.2",
+    "express": "^4.19.2",
+    "helmet": "^8.0.0",
+
+    "lru-cache": "^11.0.1",
+    "nodemailer": "^6.9.14",
+
+
+    "prisma": "^5.19.1",
+    
+    "socket.io": "^4.8.1",
+    
+    "superjson": "^1.13.1",
+    "tsconfig-paths": "^4.2.0",
+    "ua-parser-js": "^1.0.39",
+    "winston": "^3.13.0",
+    
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@trpc/client": "^11.0.0-rc.645",
+    "@types/cookie": "^0.6.0",
+    "@types/cookie-parser": "^1.4.7",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    
+    
+    "@types/nodemailer": "^6.4.15",
+    
+    
+    "@types/supertest": "^6.0.2",
+    "@types/ua-parser-js": "^0.7.39",
+    "@vitest/coverage-v8": "^2.0.3",
+    "esbuild-plugin-d.ts": "^1.2.3",
+    "prettier": "^3.3.2",
+    "supertest": "^7.0.0",
+    "typescript": "^5.7.2",
+    "vite-tsconfig-paths": "^4.3.2",
+    "vitest": "^2.0.3"
+  }
+}

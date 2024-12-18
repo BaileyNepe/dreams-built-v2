@@ -1,0 +1,78 @@
+{
+  "name": "dreams-built",
+  "module": "index.ts",
+  "type": "module",
+  "config": {
+    "prisma": {
+      "schema": "apps/server/prisma/schema"
+    }
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.7.2",
+    "@typescript-eslint/parser": "^6.7.2",
+    "concurrently": "^9.1.0",
+    "eslint": "^8.52.0",
+    "eslint-config-airbnb-typescript": "^17.1.0",
+    "eslint-config-esnext": "^4.1.0",
+    "eslint-config-node": "^4.1.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-config-standard-with-typescript": "^38.0.0",
+    "eslint-import-resolver-typescript": "^3.6.0",
+    "eslint-plugin-better-styled-components": "^1.1.2",
+    "eslint-plugin-import": "^2.28.1",
+    "eslint-plugin-jsx-a11y": "^6.7.1",
+    "eslint-plugin-n": "^16.0.2",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-testing-library": "^6.0.1"
+  },
+  "scripts": {
+    "test": "",
+    "client": "cd apps/client && bun run dev",
+    "client:test": "cd apps/client && bun run test:coverage",
+    "client:build": "cd apps/client && bun run build",
+    "client:run": "cd apps/client && bun run start",
+    "server": "cd apps/server && bun run dev",
+    "server:unit-ci": "cd apps/server && bun run test:unit",
+    "server:unit": "cd apps/server && bun run test:unit:watch",
+    "server:docker-down": "docker compose -f docker-compose.test.yml down -v",
+    "server:integration-ci": "docker compose -f docker-compose.test.yml up --build --exit-code-from supertest",
+    "server:integration": "docker compose -f docker-compose.test.yml -f docker-compose.override.yml up --build",
+    "server:integration:local": "docker compose -f docker-compose.test.yml -f docker-compose.local.yml up --build",
+    "server:test:ci": "cd apps/server && bun run test:integration",
+    "server:test:integration:script:watch": "cd apps/server && bun run test:integration:watch",
+    "server:docker:start-tests-watch": "bun run db-migrate && bun run server:test:integration:script:watch",
+    "server:docker:start-tests-ci": "bun run db-migrate && bun run server:test:ci",
+    "server:build": "cd apps/server && bun run build",
+    "server:db-generate": "cd apps/server && bun run db-generate",
+    "server:seed": "cd apps/server && bun run seed",
+    "server:run": "cd apps/server && bun run start",
+    "db-migrate": "cd apps/server && bun run migrate:dev",
+    "server:db-migrate-deploy": "cd apps/server && bun run migrate:deploy",
+    "shared:test": "cd apps/shared && bun run test",
+    "shared:test-watch": "cd apps/shared && bun run test:watch",
+    "media": "cd apps/media && bun run dev",
+    "media:build": "cd apps/media && bun run build",
+    "dev": "concurrently \"redis-server\" \"bun run server\" \"bun run client\" \"bun run media\"",
+    "infra:deploy": "cd devops/infrastructure && AWS_PROFILE=dreams-built terraform apply -var-file '.tfvars'",
+    "infra:plan": "cd devops/infrastructure && AWS_PROFILE=dreams-built terraform plan -var-file '.tfvars'",
+    "lint": "eslint . --fix --ext .ts,.tsx --ignore-path .eslintignore",
+    "lint:ci": "eslint . --ext .ts,.tsx --ignore-path .eslintignore",
+    "check-updates": "npm-check-updates --interactive --format group",
+    "e2e": "cd apps/e2e && bun run test",
+    "e2e:debug": "cd apps/e2e && bun run debug",
+    "e2e:dev": "cd apps/e2e && bun run dev",
+    "e2e:install-browser": "cd apps/e2e && bun run install-browser"
+  },
+  "workspaces": [
+    "apps/*"
+  ],
+  "trustredDependencies": [
+    "sharp"
+  ],
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

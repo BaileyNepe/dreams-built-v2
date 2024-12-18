@@ -10,13 +10,11 @@ import AuthProvider from 'utils/contexts/AuthProvider'
 
 const inter = Inter({
   subsets: ['latin'],
-  display: 'swap',
   variable: '--font-inter',
 })
 
 const lexend = Lexend({
   subsets: ['latin'],
-  display: 'swap',
   variable: '--font-lexend',
 })
 
