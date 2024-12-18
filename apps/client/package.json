@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@auth0/auth0-react": "^2.2.4",
+    "@dreams-built/server": "workspace:server",
+    "@dreams-built/shared": "workspace:shared",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@hookform/resolvers": "^3.9.1",
@@ -15,8 +18,6 @@
     "@mui/utils": "^6.1.10",
     "@mui/x-date-pickers": "^7.23.1",
     "@paralleldrive/cuid2": "^2.2.2",
-    "@dreams-built/server": "workspace:server",
-    "@dreams-built/shared": "workspace:shared",
     "@tanstack/react-query": "^5.62.3",
     "@tanstack/react-router": "^1.91.2",
     "@tanstack/router-devtools": "^1.91.2",

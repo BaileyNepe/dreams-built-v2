@@ -14,15 +14,15 @@ export default defineConfig({
   server: {
     host: true,
     port: 3333,
-    open: true,
+    open: true
   },
   build: {
     sourcemap: true,
     rollupOptions: {
       treeshake: {
-        moduleSideEffects: (id) => !id.includes('.spec.') && !id.includes('.test.'),
-      },
-    },
+        moduleSideEffects: (id) => !id.includes('.spec.') && !id.includes('.test.')
+      }
+    }
   },
   test: {
     globals: true,
@@ -30,9 +30,16 @@ export default defineConfig({
     setupFiles: './src/__tests__/setup.tsx',
     coverage: {
       reporter: ['text', 'html'],
-      exclude: ['node_modules/', 'src/setupTests.ts'],
-    },
+      exclude: ['node_modules/', 'src/setupTests.ts']
+    }
   },
 
-  plugins: [million.vite({ auto: true }), react(), viteTsconfigPaths(), svgrPlugin(), TanStackRouterVite(), visualizer() as PluginOption],
+  plugins: [
+    million.vite({ auto: true }),
+    react(),
+    viteTsconfigPaths(),
+    svgrPlugin(),
+    TanStackRouterVite(),
+    visualizer() as PluginOption
+  ]
 });

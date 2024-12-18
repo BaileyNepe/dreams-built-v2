@@ -1,9 +1,9 @@
-import { getAllowedDomains } from 'api/organisation/service';
 import { type CorsOptions } from 'cors';
 
 export const corsConfig: CorsOptions = {
   origin: async (origin, callback) => {
-    const allowedDomains = await getAllowedDomains();
+    // TODO: replace with actual allowed domains
+    const allowedDomains = ['http://localhost:3000', 'https://example.com'];
     if (!origin || allowedDomains.includes(origin)) {
       callback(null, true);
     } else {

@@ -55,7 +55,7 @@
     "shared:test-watch": "cd apps/shared && bun run test:watch",
     "media": "cd apps/media && bun run dev",
     "media:build": "cd apps/media && bun run build",
-    "dev": "concurrently \"redis-server\" \"bun run server\" \"bun run client\" \"bun run media\"",
+    "dev": "concurrently \"bun run server\" \"bun run client\"",
     "infra:deploy": "cd devops/infrastructure && AWS_PROFILE=dreams-built terraform apply -var-file '.tfvars'",
     "infra:plan": "cd devops/infrastructure && AWS_PROFILE=dreams-built terraform plan -var-file '.tfvars'",
     "lint": "eslint . --fix --ext .ts,.tsx --ignore-path .eslintignore",

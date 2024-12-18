@@ -8,82 +8,398 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createFileRoute } from '@tanstack/react-router'
+
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as AboutImport } from './routes/about'
-import { Route as IndexImport } from './routes/index'
+
+// Create Virtual Routes
+
+const LandingLazyImport = createFileRoute('/_landing')()
+const DashboardLazyImport = createFileRoute('/_dashboard')()
+const LandingIndexLazyImport = createFileRoute('/_landing/')()
+const LandingServicesLazyImport = createFileRoute('/_landing/services')()
+const LandingContactLazyImport = createFileRoute('/_landing/contact')()
+const LandingAboutLazyImport = createFileRoute('/_landing/about')()
+const DashboardTimesheetLazyImport = createFileRoute('/_dashboard/timesheet')()
+const DashboardScheduleLazyImport = createFileRoute('/_dashboard/schedule')()
+const DashboardReportsLazyImport = createFileRoute('/_dashboard/reports')()
+const DashboardProjectsLazyImport = createFileRoute('/_dashboard/projects')()
+const DashboardProjectPartsLazyImport = createFileRoute(
+  '/_dashboard/project-parts',
+)()
+const DashboardEmployeesLazyImport = createFileRoute('/_dashboard/employees')()
+const DashboardDashboardLazyImport = createFileRoute('/_dashboard/dashboard')()
+const DashboardClientsLazyImport = createFileRoute('/_dashboard/clients')()
 
 // Create/Update Routes
 
-const AboutRoute = AboutImport.update({
-  id: '/about',
-  path: '/about',
+const LandingLazyRoute = LandingLazyImport.update({
+  id: '/_landing',
   getParentRoute: () => rootRoute,
-} as any)
+} as any).lazy(() => import('./routes/_landing.lazy').then((d) => d.Route))
 
-const IndexRoute = IndexImport.update({
+const DashboardLazyRoute = DashboardLazyImport.update({
+  id: '/_dashboard',
+  getParentRoute: () => rootRoute,
+} as any).lazy(() => import('./routes/_dashboard.lazy').then((d) => d.Route))
+
+const LandingIndexLazyRoute = LandingIndexLazyImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
-} as any)
+  getParentRoute: () => LandingLazyRoute,
+} as any).lazy(() =>
+  import('./routes/_landing/index.lazy').then((d) => d.Route),
+)
+
+const LandingServicesLazyRoute = LandingServicesLazyImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => LandingLazyRoute,
+} as any).lazy(() =>
+  import('./routes/_landing/services.lazy').then((d) => d.Route),
+)
+
+const LandingContactLazyRoute = LandingContactLazyImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => LandingLazyRoute,
+} as any).lazy(() =>
+  import('./routes/_landing/contact.lazy').then((d) => d.Route),
+)
+
+const LandingAboutLazyRoute = LandingAboutLazyImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => LandingLazyRoute,
+} as any).lazy(() =>
+  import('./routes/_landing/about.lazy').then((d) => d.Route),
+)
+
+const DashboardTimesheetLazyRoute = DashboardTimesheetLazyImport.update({
+  id: '/timesheet',
+  path: '/timesheet',
+  getParentRoute: () => DashboardLazyRoute,
+} as any).lazy(() =>
+  import('./routes/_dashboard/timesheet.lazy').then((d) => d.Route),
+)
+
+const DashboardScheduleLazyRoute = DashboardScheduleLazyImport.update({
+  id: '/schedule',
+  path: '/schedule',
+  getParentRoute: () => DashboardLazyRoute,
+} as any).lazy(() =>
+  import('./routes/_dashboard/schedule.lazy').then((d) => d.Route),
+)
+
+const DashboardReportsLazyRoute = DashboardReportsLazyImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => DashboardLazyRoute,
+} as any).lazy(() =>
+  import('./routes/_dashboard/reports.lazy').then((d) => d.Route),
+)
+
+const DashboardProjectsLazyRoute = DashboardProjectsLazyImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => DashboardLazyRoute,
+} as any).lazy(() =>
+  import('./routes/_dashboard/projects.lazy').then((d) => d.Route),
+)
+
+const DashboardProjectPartsLazyRoute = DashboardProjectPartsLazyImport.update({
+  id: '/project-parts',
+  path: '/project-parts',
+  getParentRoute: () => DashboardLazyRoute,
+} as any).lazy(() =>
+  import('./routes/_dashboard/project-parts.lazy').then((d) => d.Route),
+)
+
+const DashboardEmployeesLazyRoute = DashboardEmployeesLazyImport.update({
+  id: '/employees',
+  path: '/employees',
+  getParentRoute: () => DashboardLazyRoute,
+} as any).lazy(() =>
+  import('./routes/_dashboard/employees.lazy').then((d) => d.Route),
+)
+
+const DashboardDashboardLazyRoute = DashboardDashboardLazyImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => DashboardLazyRoute,
+} as any).lazy(() =>
+  import('./routes/_dashboard/dashboard.lazy').then((d) => d.Route),
+)
+
+const DashboardClientsLazyRoute = DashboardClientsLazyImport.update({
+  id: '/clients',
+  path: '/clients',
+  getParentRoute: () => DashboardLazyRoute,
+} as any).lazy(() =>
+  import('./routes/_dashboard/clients.lazy').then((d) => d.Route),
+)
 
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexImport
+    '/_dashboard': {
+      id: '/_dashboard'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof DashboardLazyImport
       parentRoute: typeof rootRoute
     }
-    '/about': {
-      id: '/about'
+    '/_landing': {
+      id: '/_landing'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof LandingLazyImport
+      parentRoute: typeof rootRoute
+    }
+    '/_dashboard/clients': {
+      id: '/_dashboard/clients'
+      path: '/clients'
+      fullPath: '/clients'
+      preLoaderRoute: typeof DashboardClientsLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/dashboard': {
+      id: '/_dashboard/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardDashboardLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/employees': {
+      id: '/_dashboard/employees'
+      path: '/employees'
+      fullPath: '/employees'
+      preLoaderRoute: typeof DashboardEmployeesLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/project-parts': {
+      id: '/_dashboard/project-parts'
+      path: '/project-parts'
+      fullPath: '/project-parts'
+      preLoaderRoute: typeof DashboardProjectPartsLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/projects': {
+      id: '/_dashboard/projects'
+      path: '/projects'
+      fullPath: '/projects'
+      preLoaderRoute: typeof DashboardProjectsLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/reports': {
+      id: '/_dashboard/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof DashboardReportsLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/schedule': {
+      id: '/_dashboard/schedule'
+      path: '/schedule'
+      fullPath: '/schedule'
+      preLoaderRoute: typeof DashboardScheduleLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/timesheet': {
+      id: '/_dashboard/timesheet'
+      path: '/timesheet'
+      fullPath: '/timesheet'
+      preLoaderRoute: typeof DashboardTimesheetLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_landing/about': {
+      id: '/_landing/about'
       path: '/about'
       fullPath: '/about'
-      preLoaderRoute: typeof AboutImport
-      parentRoute: typeof rootRoute
+      preLoaderRoute: typeof LandingAboutLazyImport
+      parentRoute: typeof LandingLazyImport
+    }
+    '/_landing/contact': {
+      id: '/_landing/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof LandingContactLazyImport
+      parentRoute: typeof LandingLazyImport
+    }
+    '/_landing/services': {
+      id: '/_landing/services'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof LandingServicesLazyImport
+      parentRoute: typeof LandingLazyImport
+    }
+    '/_landing/': {
+      id: '/_landing/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof LandingIndexLazyImport
+      parentRoute: typeof LandingLazyImport
     }
   }
 }
 
 // Create and export the route tree
 
+interface DashboardLazyRouteChildren {
+  DashboardClientsLazyRoute: typeof DashboardClientsLazyRoute
+  DashboardDashboardLazyRoute: typeof DashboardDashboardLazyRoute
+  DashboardEmployeesLazyRoute: typeof DashboardEmployeesLazyRoute
+  DashboardProjectPartsLazyRoute: typeof DashboardProjectPartsLazyRoute
+  DashboardProjectsLazyRoute: typeof DashboardProjectsLazyRoute
+  DashboardReportsLazyRoute: typeof DashboardReportsLazyRoute
+  DashboardScheduleLazyRoute: typeof DashboardScheduleLazyRoute
+  DashboardTimesheetLazyRoute: typeof DashboardTimesheetLazyRoute
+}
+
+const DashboardLazyRouteChildren: DashboardLazyRouteChildren = {
+  DashboardClientsLazyRoute: DashboardClientsLazyRoute,
+  DashboardDashboardLazyRoute: DashboardDashboardLazyRoute,
+  DashboardEmployeesLazyRoute: DashboardEmployeesLazyRoute,
+  DashboardProjectPartsLazyRoute: DashboardProjectPartsLazyRoute,
+  DashboardProjectsLazyRoute: DashboardProjectsLazyRoute,
+  DashboardReportsLazyRoute: DashboardReportsLazyRoute,
+  DashboardScheduleLazyRoute: DashboardScheduleLazyRoute,
+  DashboardTimesheetLazyRoute: DashboardTimesheetLazyRoute,
+}
+
+const DashboardLazyRouteWithChildren = DashboardLazyRoute._addFileChildren(
+  DashboardLazyRouteChildren,
+)
+
+interface LandingLazyRouteChildren {
+  LandingAboutLazyRoute: typeof LandingAboutLazyRoute
+  LandingContactLazyRoute: typeof LandingContactLazyRoute
+  LandingServicesLazyRoute: typeof LandingServicesLazyRoute
+  LandingIndexLazyRoute: typeof LandingIndexLazyRoute
+}
+
+const LandingLazyRouteChildren: LandingLazyRouteChildren = {
+  LandingAboutLazyRoute: LandingAboutLazyRoute,
+  LandingContactLazyRoute: LandingContactLazyRoute,
+  LandingServicesLazyRoute: LandingServicesLazyRoute,
+  LandingIndexLazyRoute: LandingIndexLazyRoute,
+}
+
+const LandingLazyRouteWithChildren = LandingLazyRoute._addFileChildren(
+  LandingLazyRouteChildren,
+)
+
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '': typeof LandingLazyRouteWithChildren
+  '/clients': typeof DashboardClientsLazyRoute
+  '/dashboard': typeof DashboardDashboardLazyRoute
+  '/employees': typeof DashboardEmployeesLazyRoute
+  '/project-parts': typeof DashboardProjectPartsLazyRoute
+  '/projects': typeof DashboardProjectsLazyRoute
+  '/reports': typeof DashboardReportsLazyRoute
+  '/schedule': typeof DashboardScheduleLazyRoute
+  '/timesheet': typeof DashboardTimesheetLazyRoute
+  '/about': typeof LandingAboutLazyRoute
+  '/contact': typeof LandingContactLazyRoute
+  '/services': typeof LandingServicesLazyRoute
+  '/': typeof LandingIndexLazyRoute
 }
 
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '': typeof DashboardLazyRouteWithChildren
+  '/clients': typeof DashboardClientsLazyRoute
+  '/dashboard': typeof DashboardDashboardLazyRoute
+  '/employees': typeof DashboardEmployeesLazyRoute
+  '/project-parts': typeof DashboardProjectPartsLazyRoute
+  '/projects': typeof DashboardProjectsLazyRoute
+  '/reports': typeof DashboardReportsLazyRoute
+  '/schedule': typeof DashboardScheduleLazyRoute
+  '/timesheet': typeof DashboardTimesheetLazyRoute
+  '/about': typeof LandingAboutLazyRoute
+  '/contact': typeof LandingContactLazyRoute
+  '/services': typeof LandingServicesLazyRoute
+  '/': typeof LandingIndexLazyRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
-  '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/_dashboard': typeof DashboardLazyRouteWithChildren
+  '/_landing': typeof LandingLazyRouteWithChildren
+  '/_dashboard/clients': typeof DashboardClientsLazyRoute
+  '/_dashboard/dashboard': typeof DashboardDashboardLazyRoute
+  '/_dashboard/employees': typeof DashboardEmployeesLazyRoute
+  '/_dashboard/project-parts': typeof DashboardProjectPartsLazyRoute
+  '/_dashboard/projects': typeof DashboardProjectsLazyRoute
+  '/_dashboard/reports': typeof DashboardReportsLazyRoute
+  '/_dashboard/schedule': typeof DashboardScheduleLazyRoute
+  '/_dashboard/timesheet': typeof DashboardTimesheetLazyRoute
+  '/_landing/about': typeof LandingAboutLazyRoute
+  '/_landing/contact': typeof LandingContactLazyRoute
+  '/_landing/services': typeof LandingServicesLazyRoute
+  '/_landing/': typeof LandingIndexLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about'
+  fullPaths:
+    | ''
+    | '/clients'
+    | '/dashboard'
+    | '/employees'
+    | '/project-parts'
+    | '/projects'
+    | '/reports'
+    | '/schedule'
+    | '/timesheet'
+    | '/about'
+    | '/contact'
+    | '/services'
+    | '/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about'
-  id: '__root__' | '/' | '/about'
+  to:
+    | ''
+    | '/clients'
+    | '/dashboard'
+    | '/employees'
+    | '/project-parts'
+    | '/projects'
+    | '/reports'
+    | '/schedule'
+    | '/timesheet'
+    | '/about'
+    | '/contact'
+    | '/services'
+    | '/'
+  id:
+    | '__root__'
+    | '/_dashboard'
+    | '/_landing'
+    | '/_dashboard/clients'
+    | '/_dashboard/dashboard'
+    | '/_dashboard/employees'
+    | '/_dashboard/project-parts'
+    | '/_dashboard/projects'
+    | '/_dashboard/reports'
+    | '/_dashboard/schedule'
+    | '/_dashboard/timesheet'
+    | '/_landing/about'
+    | '/_landing/contact'
+    | '/_landing/services'
+    | '/_landing/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
+  DashboardLazyRoute: typeof DashboardLazyRouteWithChildren
+  LandingLazyRoute: typeof LandingLazyRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
+  DashboardLazyRoute: DashboardLazyRouteWithChildren,
+  LandingLazyRoute: LandingLazyRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -96,15 +412,79 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
-        "/",
-        "/about"
+        "/_dashboard",
+        "/_landing"
       ]
     },
-    "/": {
-      "filePath": "index.tsx"
+    "/_dashboard": {
+      "filePath": "_dashboard.lazy.tsx",
+      "children": [
+        "/_dashboard/clients",
+        "/_dashboard/dashboard",
+        "/_dashboard/employees",
+        "/_dashboard/project-parts",
+        "/_dashboard/projects",
+        "/_dashboard/reports",
+        "/_dashboard/schedule",
+        "/_dashboard/timesheet"
+      ]
     },
-    "/about": {
-      "filePath": "about.tsx"
+    "/_landing": {
+      "filePath": "_landing.lazy.tsx",
+      "children": [
+        "/_landing/about",
+        "/_landing/contact",
+        "/_landing/services",
+        "/_landing/"
+      ]
+    },
+    "/_dashboard/clients": {
+      "filePath": "_dashboard/clients.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/dashboard": {
+      "filePath": "_dashboard/dashboard.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/employees": {
+      "filePath": "_dashboard/employees.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/project-parts": {
+      "filePath": "_dashboard/project-parts.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/projects": {
+      "filePath": "_dashboard/projects.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/reports": {
+      "filePath": "_dashboard/reports.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/schedule": {
+      "filePath": "_dashboard/schedule.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/timesheet": {
+      "filePath": "_dashboard/timesheet.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_landing/about": {
+      "filePath": "_landing/about.lazy.tsx",
+      "parent": "/_landing"
+    },
+    "/_landing/contact": {
+      "filePath": "_landing/contact.lazy.tsx",
+      "parent": "/_landing"
+    },
+    "/_landing/services": {
+      "filePath": "_landing/services.lazy.tsx",
+      "parent": "/_landing"
+    },
+    "/_landing/": {
+      "filePath": "_landing/index.lazy.tsx",
+      "parent": "/_landing"
     }
   }
 }
