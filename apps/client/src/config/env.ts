@@ -1,19 +1,19 @@
+import { z } from 'zod';
+
 export const rawConfig = {
-  serverUrl: import.meta.env.VITE_SERVER_URL as string,
+  serverUrl: import.meta.env.VITE_SERVER_URL,
+  environment: import.meta.env.VITE_ENVIRONMENT,
 
-  resourcesDomain: import.meta.env.VITE_RESOURCES_DOMAIN as string,
-  environment: import.meta.env.VITE_ENVIRONMENT as string,
-  stripePK: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY as string,
-
-  reCaptchaSiteKey: import.meta.env.VITE_RECAPTCHA_SITE_KEY as string
+  auth0Domain: import.meta.env.VITE_AUTH0_DOMAIN,
+  auth0ClientId: import.meta.env.VITE_AUTH0_CLIENT_ID
 };
 
-if (!rawConfig.serverUrl) {
-  throw new Error('VITE_SERVER_URL is required');
-}
+const parser = z.object({
+  serverUrl: z.string(),
+  environment: z.string(),
 
-if (!rawConfig.environment) {
-  throw new Error('VITE_ENVIRONMENT is required');
-}
+  auth0Domain: z.string(),
+  auth0ClientId: z.string()
+});
 
-export const env = rawConfig;
+export const env = parser.parse(rawConfig);
