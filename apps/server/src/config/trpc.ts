@@ -1,14 +1,11 @@
-import {
-  getAuthzStatus,
-  verifyToken,
-  type AuthorizeMiddlewareOptions
-} from '@middleware/auth';
-import { getUserDetails, type RateLimiter } from '@middleware/rateLimiter';
-import { type Authz } from '@simplify-aviation/shared/auth';
+import { type Authz } from '@dreams-built/shared/src/auth/types';
+import { checkJwt } from '@middleware/auth';
 import { initTRPC, TRPCError } from '@trpc/server';
 import { type CreateExpressContextOptions } from '@trpc/server/adapters/express';
-import { getUser } from 'api/user/service';
-import { type Request } from 'express';
+import { logWarning } from '@utils/logger';
+import { getOptionalUser, getUser } from 'api/user/service';
+
+import { upsertUser } from 'api/user/model';
 import superjson from 'superjson';
 import { ZodError } from 'zod';
 import { prisma } from './db';
@@ -61,6 +58,53 @@ export const trpc = initTRPC.context<TRPCContext>().create({
 
 export const publicProcedure = trpc.procedure;
 
+const authenticateUser = trpc.middleware(async ({ ctx, next }) => {
+  const { req, res } = ctx;
+
+  const checkJwtAsync = new Promise<void>((resolve, reject) => {
+    checkJwt(req, res, (err) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve();
+      }
+    });
+  });
+
+  try {
+    await checkJwtAsync; // Waiting for the JWT check to complete
+    return await next(); // Continue to the next middleware if the JWT check is successful
+  } catch (error) {
+    logWarning({ message: 'JWT check failed', error });
+    throw new TRPCError({
+      code: 'UNAUTHORIZED',
+      message: 'User is not authenticated'
+    });
+  }
+});
+
+type AuthorizeMiddlewareOptions = {
+  requireAllPermissions: boolean;
+};
+
+const getAuthzStatus = ({
+  permissions,
+  requiredPermissions,
+  options
+}: {
+  permissions: string[];
+  requiredPermissions: Authz[];
+  options: AuthorizeMiddlewareOptions;
+}) => {
+  if (requiredPermissions.length === 0) return true;
+  if (permissions.length === 0) return false;
+
+  const hasPermission = (permission: Authz) => permissions.includes(permission);
+
+  if (options.requireAllPermissions) return requiredPermissions.every(hasPermission);
+  return requiredPermissions.some(hasPermission);
+};
+
 const createAuthorizeMiddleware = ({
   requiredPermissions = [],
   options = {
@@ -71,21 +115,31 @@ const createAuthorizeMiddleware = ({
   options?: AuthorizeMiddlewareOptions;
 }) =>
   trpc.middleware(async ({ ctx, next }) => {
-    const token = ctx.req.headers.authorization?.split('Bearer ')[1];
+    const authId = ctx.req.auth?.payload.sub;
 
-    if (!token) {
+    if (!authId) {
       throw new TRPCError({
         code: 'UNAUTHORIZED',
         message: 'User is not authenticated'
       });
     }
 
+    const optionalUser = getOptionalUser(authId);
+
+    if (!optionalUser) {
+      await upsertUser({
+        authId,
+        email: ctx.req.auth?.payload.email as string,
+        firstName: ctx.req.auth?.payload.given_name as string,
+        lastName: ctx.req.auth?.payload.family_name as string,
+        image: ctx.req.auth?.payload.picture as string
+      });
+    }
+
     try {
-      const payload = verifyToken(token, 'access');
+      const user = await getUser(authId);
 
-      const user = await getUser(payload.sub);
-
-      if (!user || !user.active || user.deleted) {
+      if (!user || user.deleted) {
         throw new TRPCError({
           code: 'UNAUTHORIZED',
           message: 'User is not authenticated'
@@ -123,26 +177,10 @@ const createAuthorizeMiddleware = ({
     }
   });
 
-export const rateLimitedMiddleware = (
-  rateLimiter: RateLimiter,
-  getKey?: (req: Request) => string
-) =>
-  trpc.middleware(async ({ ctx, next }) => {
-    try {
-      const ip = getKey ? getKey(ctx.req) : getUserDetails(ctx.req).ipAddress;
-
-      await rateLimiter(ip);
-    } catch (error) {
-      throw new TRPCError({
-        code: 'TOO_MANY_REQUESTS',
-        message: 'Too many requests'
-      });
-    }
-
-    return next();
-  });
-
 export const protectedProcedure = (
   requiredPermissions?: Authz[],
   options?: AuthorizeMiddlewareOptions
-) => trpc.procedure.use(createAuthorizeMiddleware({ requiredPermissions, options }));
+) =>
+  trpc.procedure
+    .use(authenticateUser)
+    .use(createAuthorizeMiddleware({ requiredPermissions, options }));

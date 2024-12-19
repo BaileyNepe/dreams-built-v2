@@ -9,7 +9,8 @@ const rawEnv = {
   expressPort: process.env.EXPRESS_PORT,
   environment: process.env.NODE_ENV,
 
-  backendServerUrl: process.env.BACKEND_SERVER_URL
+  auth0IssuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
+  auth0Audience: process.env.AUTH0_AUDIENCE
 };
 
 const configValidation = z.object({
@@ -18,10 +19,9 @@ const configValidation = z.object({
     (a) => parseInt(z.string().parse(a), 10),
     z.number().positive()
   ),
+  auth0IssuerBaseURL: z.string(),
+  auth0Audience: z.string(),
   environment: z.enum(['development', 'production', 'test', 'staging']),
-
-  backendServerUrl: z.string(),
-
   cache: z.object({
     type: z.enum(['local', 'redis']).default('local'),
     url: z.string().default('')
