@@ -8,8 +8,8 @@ import {
   Button as MUIButton,
   Toolbar
 } from '@mui/material';
-import { styled } from '@mui/system';
 import { type FC, useState } from 'react';
+import styled from 'styled-components';
 import { AuthButton } from './AuthButton';
 import { RouterLink } from './Link';
 import { Logo } from './Logo';
@@ -21,15 +21,18 @@ const links = [
 ];
 
 // Styled NavLink using MUI Link
-const NavLink = styled(RouterLink)(({ theme }) => ({
-  margin: theme.spacing(0, 1.5),
-  textDecoration: 'none',
-  color: theme.palette.text.primary,
-  fontWeight: 500,
-  '&:hover': {
-    textDecoration: 'underline'
+const NavLink = styled((props: React.ComponentProps<typeof RouterLink>) => (
+  <RouterLink {...props} />
+))`
+  color: ${({ theme }) => theme.palette.text.primary};
+  font-weight: 500;
+  margin: ${({ theme }) => theme.spacing(0, 1)};
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: none;
   }
-}));
+`;
 
 // Navigation on mobile (Drawer content)
 const MobileNavigation: FC<{ onClose: () => void; open: boolean }> = ({
@@ -69,12 +72,12 @@ export const Header: FC = () => {
         <Toolbar disableGutters sx={{ py: 2, justifyContent: 'space-between' }}>
           {/* Left Section: Logo + Desktop Nav */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <RouterLink href="#" underline="none" color="inherit" aria-label="Home">
+            <RouterLink to="/" aria-label="Home">
               <Logo />
             </RouterLink>
             <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2 }}>
               {links.map((link) => (
-                <NavLink key={link.href} href={link.href}>
+                <NavLink key={link.href} to={link.href}>
                   {link.label}
                 </NavLink>
               ))}
