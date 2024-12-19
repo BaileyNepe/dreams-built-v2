@@ -5,12 +5,15 @@ export const rawConfig = {
   environment: import.meta.env.VITE_ENVIRONMENT,
 
   auth0Domain: import.meta.env.VITE_AUTH0_DOMAIN,
-  auth0ClientId: import.meta.env.VITE_AUTH0_CLIENT_ID
+  auth0ClientId: import.meta.env.VITE_AUTH0_CLIENT_ID,
+
+  company: import.meta.env.VITE_COMPANY
 };
 
 const parser = z.object({
   serverUrl: z.string(),
   environment: z.string(),
+  company: z.string(),
 
   auth0Domain: z.string(),
   auth0ClientId: z.string()

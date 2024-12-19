@@ -10,7 +10,9 @@ const rawEnv = {
   environment: process.env.NODE_ENV,
 
   auth0IssuerBaseURL: process.env.AUTH0_ISSUER_BASE_URL,
-  auth0Audience: process.env.AUTH0_AUDIENCE
+  auth0Audience: process.env.AUTH0_AUDIENCE,
+  frontendDomain: process.env.FRONTEND_DOMAIN,
+  cache: {}
 };
 
 const configValidation = z.object({
@@ -19,6 +21,7 @@ const configValidation = z.object({
     (a) => parseInt(z.string().parse(a), 10),
     z.number().positive()
   ),
+  frontendDomain: z.string(),
   auth0IssuerBaseURL: z.string(),
   auth0Audience: z.string(),
   environment: z.enum(['development', 'production', 'test', 'staging']),

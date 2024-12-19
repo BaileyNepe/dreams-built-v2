@@ -1,9 +1,10 @@
-import { Typography } from '@mui/material';
-import { Container } from 'components/Container';
-import { Logo } from 'components/Logo';
+import { Container, Typography } from '@mui/material';
+
+import { env } from 'config/env';
 import { type FC } from 'react';
 import styled from 'styled-components';
 import { RouterLink } from './Link';
+import { Logo } from './Logo';
 
 const FooterRoot = styled.footer`
   background-color: #f8fafc; /* slate-50 background */
@@ -46,10 +47,12 @@ const BottomSection = styled.div`
 
 const IconLinkContainer = styled.div`
   display: flex;
-  gap: 1.5rem; /* gap-x-6 */
+  gap: 1.5rem;
 `;
 
-const IconStyledLink = styled(RouterLink)`
+const IconStyledLink = styled((props: React.ComponentProps<typeof RouterLink>) => (
+  <RouterLink {...props} />
+))`
   display: inline-flex;
 
   svg {
@@ -94,7 +97,7 @@ export const Footer: FC = () => (
           variant="body2"
           sx={{ color: 'text.secondary', mt: { xs: 2, sm: 0 } }}
         >
-          &copy; {new Date().getFullYear()} Dreams Built Ltd. All rights reserved.
+          &copy; {new Date().getFullYear()} {env.company} Ltd. All rights reserved.
         </Typography>
       </BottomSection>
     </Container>

@@ -1,5 +1,6 @@
 import { Auth0Provider, useAuth0 } from '@auth0/auth0-react';
-import { useLoginQuery } from 'api/queries/user';
+import { useProfileQuery } from 'api/user';
+
 import { env } from 'config/env';
 
 import { useCallback, type FC, type PropsWithChildren } from 'react';
@@ -27,21 +28,20 @@ export const useAuthInit = () => {
 export const useAuth = () => {
   const auth = useAuthInit();
 
-  const login = useLoginQuery({
-    authKey: auth.authSub,
-    enabled: auth.isAuthenticated,
+  const login = useProfileQuery({
+    enabled: auth.isAuthenticated && !auth.isLoading,
     firstName: auth.user?.given_name ?? '',
     lastName: auth.user?.family_name ?? '',
     email: auth.user?.email ?? '',
     image: auth.user?.picture ?? ''
   });
 
-  const user = { ...auth.user, ...login.data?.user };
+  const user = { ...auth.user, ...login.data };
 
   return {
     ...auth,
     user,
-    isAuthenticated: auth.isAuthenticated && login.data?.user.id,
+    isAuthenticated: auth.isAuthenticated && login.data?.id,
     isLoading: (login.isLoading && auth.isAuthenticated) || auth.isLoading,
     isError: auth.error || login.isError,
     errorMessage: auth.error?.message ?? login.error?.message ?? ''

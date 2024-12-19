@@ -1,6 +1,7 @@
-import { alpha, Box, Typography } from '@mui/material';
-import errorImage from 'assets/images/errors/error-404.png';
-import Button from 'components/atoms/Button';
+import { Box, Typography } from '@mui/material';
+// import errorImage from 'assets/images/errors/error-404.png';
+
+import { Button } from 'components/Button';
 import {
   useCallback,
   useEffect,
@@ -10,7 +11,6 @@ import {
   type PropsWithChildren
 } from 'react';
 import styled, { useTheme } from 'styled-components';
-import { bgGradient } from 'themes/css';
 import { useAuthInit } from 'utils/contexts/AuthProvider';
 import ErrorBoundary from '.';
 
@@ -106,10 +106,10 @@ export const DefaultErrorScreen: FC<{
   return (
     <Box
       sx={{
-        ...bgGradient({
-          color: alpha(theme.palette.background.default, 0.5),
-          imgUrl: '/assets/background/overlay_1.webp'
-        }),
+        // ...bgGradient({
+        //   color: alpha(theme.palette.background.default, 0.5),
+        //   imgUrl: '/assets/background/overlay_1.webp'
+        // }),
         overflow: 'hidden'
       }}
     >
@@ -119,7 +119,7 @@ export const DefaultErrorScreen: FC<{
         $isMultiline={(error?.message?.length || 0) > 50}
       >
         <ErrorScreenContent>
-          <img src={errorImage} alt="Error" />
+          {/* <img src={errorImage} alt="Error" /> */}
           <Typography variant="h1">Oops!</Typography>
           <p data-testid="error-message">{error?.message}</p>
 

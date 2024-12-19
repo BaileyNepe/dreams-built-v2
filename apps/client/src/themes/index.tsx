@@ -25,7 +25,7 @@ export default function ThemeCustomization({ children }: { children: ReactNode }
   const { borderRadius, fontFamily, navType, outlinedFilled, presetColor, buttonRadius } =
     {
       borderRadius: 8,
-      fontFamily: 'Roboto',
+      fontFamily: 'Inter, sans-serif',
       outlinedFilled: false,
       presetColor: 'theme1',
       navType: 'light' as const,

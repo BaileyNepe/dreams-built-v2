@@ -1,9 +1,6 @@
-import { createLazyFileRoute } from '@tanstack/react-router'
+import { createLazyFileRoute } from '@tanstack/react-router';
+import { LandingLayout } from 'layouts/LandingLayout';
 
 export const Route = createLazyFileRoute('/_landing')({
-  component: RouteComponent,
-})
-
-function RouteComponent() {
-  return <div>Hello "/_landing"!</div>
-}
+  component: LandingLayout
+});
