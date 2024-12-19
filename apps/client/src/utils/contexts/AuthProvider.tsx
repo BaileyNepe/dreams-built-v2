@@ -55,7 +55,8 @@ export const AuthContext: FC<PropsWithChildren> = ({ children }) => (
     domain={env.auth0Domain}
     clientId={env.auth0ClientId}
     authorizationParams={{
-      redirect_uri: window.location.origin
+      redirect_uri: window.location.origin,
+      audience: env.auth0Audience
     }}
   >
     <>{children}</>

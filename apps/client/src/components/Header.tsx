@@ -6,28 +6,14 @@ import {
   Drawer,
   IconButton,
   Button as MUIButton,
-  Toolbar,
-  Typography
+  Toolbar
 } from '@mui/material';
 import { styled } from '@mui/system';
-import { type FC, Fragment, useState } from 'react';
+import { type FC, useState } from 'react';
+import { AuthButton } from './AuthButton';
 import { RouterLink } from './Link';
+import { Logo } from './Logo';
 
-// Placeholder Logo component
-const Logo: FC = () => (
-  <Typography variant="h6" component="span" sx={{ fontWeight: 'bold' }}>
-    MyLogo
-  </Typography>
-);
-
-// Placeholder AuthButton component
-const AuthButton: FC = () => (
-  <MUIButton variant="text" color="inherit">
-    Sign In
-  </MUIButton>
-);
-
-// Array of links for navigation
 const links = [
   { href: '#features', label: 'Features' },
   { href: '#testimonials', label: 'Testimonials' },
