@@ -36,7 +36,8 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.js",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "../apps/client/src/utils/paths.ts"
   ],
   "exclude": ["node_modules"]
 }

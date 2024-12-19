@@ -105,6 +105,14 @@ export const error = {
   darkest: '#7A271A',
   contrastText: '#FFFFFF'
 };
+export const slate = {
+  lightest: '#F4F5F7',
+  light: '#E5E7EB',
+  main: '#1f2937',
+  dark: '#4B5563',
+  darkest: '#1A202C',
+  contrastText: '#FFFFFF'
+};
 
 export const dark = {
   lightest: '#F9FAFB',

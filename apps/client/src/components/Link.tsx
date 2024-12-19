@@ -16,10 +16,21 @@ const StyledRouterLink = styled((props: React.ComponentProps<typeof Link>) => (
   }
 `;
 
-type RouterLinkProps = {
-  children: React.ReactNode;
-} & React.ComponentProps<typeof Link>;
+export const RouterLink: React.FC<
+  {
+    children: React.ReactNode;
+  } & React.ComponentProps<typeof Link>
+> = ({ children, ...rest }) => <StyledRouterLink {...rest}>{children}</StyledRouterLink>;
 
-export const RouterLink: React.FC<RouterLinkProps> = ({ children, ...rest }) => (
-  <StyledRouterLink {...rest}>{children}</StyledRouterLink>
-);
+export const LinkButton = styled(StyledRouterLink)`
+  background-color: ${({ theme }) => theme.palette.primary.main};
+  border-radius: 16px;
+  color: ${({ theme }) => theme.palette.primary.contrastText};
+  padding: 8px 16px;
+  text-align: center;
+  transition: all 0.1s ease-in-out;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.palette.primary.dark};
+  }
+`;

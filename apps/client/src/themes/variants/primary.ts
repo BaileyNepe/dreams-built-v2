@@ -8,6 +8,7 @@ import {
   indigo,
   orange,
   purple,
+  slate,
   success,
   warning
 } from 'themes/colors';
@@ -18,7 +19,7 @@ export const primary = {
   common,
 
   // primary
-  primary: blue,
+  primary: dark,
 
   // secondary
   secondary: indigo,

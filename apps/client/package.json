@@ -9,6 +9,7 @@
     "@dreams-built/shared": "workspace:shared",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@heroicons/react": "^2.2.0",
     "@hookform/resolvers": "^3.9.1",
     "@iconify/react": "^5.1.0",
     "@mui/base": "^5.0.0-beta.64",

@@ -22,16 +22,45 @@ const LandingIndexLazyImport = createFileRoute('/_landing/')()
 const LandingServicesLazyImport = createFileRoute('/_landing/services')()
 const LandingContactLazyImport = createFileRoute('/_landing/contact')()
 const LandingAboutLazyImport = createFileRoute('/_landing/about')()
-const DashboardTimesheetLazyImport = createFileRoute('/_dashboard/timesheet')()
-const DashboardScheduleLazyImport = createFileRoute('/_dashboard/schedule')()
-const DashboardReportsLazyImport = createFileRoute('/_dashboard/reports')()
-const DashboardProjectsLazyImport = createFileRoute('/_dashboard/projects')()
-const DashboardProjectPartsLazyImport = createFileRoute(
-  '/_dashboard/project-parts',
+const DashboardDashboardIndexLazyImport = createFileRoute(
+  '/_dashboard/dashboard/',
 )()
-const DashboardEmployeesLazyImport = createFileRoute('/_dashboard/employees')()
-const DashboardDashboardLazyImport = createFileRoute('/_dashboard/dashboard')()
-const DashboardClientsLazyImport = createFileRoute('/_dashboard/clients')()
+const DashboardDashboardTimesheetLazyImport = createFileRoute(
+  '/_dashboard/dashboard/timesheet',
+)()
+const DashboardDashboardScheduleLazyImport = createFileRoute(
+  '/_dashboard/dashboard/schedule',
+)()
+const DashboardDashboardReportsLazyImport = createFileRoute(
+  '/_dashboard/dashboard/reports',
+)()
+const DashboardDashboardProjectPartsLazyImport = createFileRoute(
+  '/_dashboard/dashboard/project-parts',
+)()
+const DashboardDashboardProjectsIndexLazyImport = createFileRoute(
+  '/_dashboard/dashboard/projects/',
+)()
+const DashboardDashboardEmployeesIndexLazyImport = createFileRoute(
+  '/_dashboard/dashboard/employees/',
+)()
+const DashboardDashboardClientsIndexLazyImport = createFileRoute(
+  '/_dashboard/dashboard/clients/',
+)()
+const DashboardDashboardProjectsCreateLazyImport = createFileRoute(
+  '/_dashboard/dashboard/projects/create',
+)()
+const DashboardDashboardProjectsProjectIdLazyImport = createFileRoute(
+  '/_dashboard/dashboard/projects/$projectId',
+)()
+const DashboardDashboardEmployeesEmployeeIdLazyImport = createFileRoute(
+  '/_dashboard/dashboard/employees/$employeeId',
+)()
+const DashboardDashboardClientsCreateLazyImport = createFileRoute(
+  '/_dashboard/dashboard/clients/create',
+)()
+const DashboardDashboardClientsClientIdLazyImport = createFileRoute(
+  '/_dashboard/dashboard/clients/$clientId',
+)()
 
 // Create/Update Routes
 
@@ -77,69 +106,140 @@ const LandingAboutLazyRoute = LandingAboutLazyImport.update({
   import('./routes/_landing/about.lazy').then((d) => d.Route),
 )
 
-const DashboardTimesheetLazyRoute = DashboardTimesheetLazyImport.update({
-  id: '/timesheet',
-  path: '/timesheet',
-  getParentRoute: () => DashboardLazyRoute,
-} as any).lazy(() =>
-  import('./routes/_dashboard/timesheet.lazy').then((d) => d.Route),
-)
+const DashboardDashboardIndexLazyRoute =
+  DashboardDashboardIndexLazyImport.update({
+    id: '/dashboard/',
+    path: '/dashboard/',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/_dashboard/dashboard/index.lazy').then((d) => d.Route),
+  )
 
-const DashboardScheduleLazyRoute = DashboardScheduleLazyImport.update({
-  id: '/schedule',
-  path: '/schedule',
-  getParentRoute: () => DashboardLazyRoute,
-} as any).lazy(() =>
-  import('./routes/_dashboard/schedule.lazy').then((d) => d.Route),
-)
+const DashboardDashboardTimesheetLazyRoute =
+  DashboardDashboardTimesheetLazyImport.update({
+    id: '/dashboard/timesheet',
+    path: '/dashboard/timesheet',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/_dashboard/dashboard/timesheet.lazy').then((d) => d.Route),
+  )
 
-const DashboardReportsLazyRoute = DashboardReportsLazyImport.update({
-  id: '/reports',
-  path: '/reports',
-  getParentRoute: () => DashboardLazyRoute,
-} as any).lazy(() =>
-  import('./routes/_dashboard/reports.lazy').then((d) => d.Route),
-)
+const DashboardDashboardScheduleLazyRoute =
+  DashboardDashboardScheduleLazyImport.update({
+    id: '/dashboard/schedule',
+    path: '/dashboard/schedule',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/_dashboard/dashboard/schedule.lazy').then((d) => d.Route),
+  )
 
-const DashboardProjectsLazyRoute = DashboardProjectsLazyImport.update({
-  id: '/projects',
-  path: '/projects',
-  getParentRoute: () => DashboardLazyRoute,
-} as any).lazy(() =>
-  import('./routes/_dashboard/projects.lazy').then((d) => d.Route),
-)
+const DashboardDashboardReportsLazyRoute =
+  DashboardDashboardReportsLazyImport.update({
+    id: '/dashboard/reports',
+    path: '/dashboard/reports',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/_dashboard/dashboard/reports.lazy').then((d) => d.Route),
+  )
 
-const DashboardProjectPartsLazyRoute = DashboardProjectPartsLazyImport.update({
-  id: '/project-parts',
-  path: '/project-parts',
-  getParentRoute: () => DashboardLazyRoute,
-} as any).lazy(() =>
-  import('./routes/_dashboard/project-parts.lazy').then((d) => d.Route),
-)
+const DashboardDashboardProjectPartsLazyRoute =
+  DashboardDashboardProjectPartsLazyImport.update({
+    id: '/dashboard/project-parts',
+    path: '/dashboard/project-parts',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/_dashboard/dashboard/project-parts.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 
-const DashboardEmployeesLazyRoute = DashboardEmployeesLazyImport.update({
-  id: '/employees',
-  path: '/employees',
-  getParentRoute: () => DashboardLazyRoute,
-} as any).lazy(() =>
-  import('./routes/_dashboard/employees.lazy').then((d) => d.Route),
-)
+const DashboardDashboardProjectsIndexLazyRoute =
+  DashboardDashboardProjectsIndexLazyImport.update({
+    id: '/dashboard/projects/',
+    path: '/dashboard/projects/',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/_dashboard/dashboard/projects/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 
-const DashboardDashboardLazyRoute = DashboardDashboardLazyImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => DashboardLazyRoute,
-} as any).lazy(() =>
-  import('./routes/_dashboard/dashboard.lazy').then((d) => d.Route),
-)
+const DashboardDashboardEmployeesIndexLazyRoute =
+  DashboardDashboardEmployeesIndexLazyImport.update({
+    id: '/dashboard/employees/',
+    path: '/dashboard/employees/',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/_dashboard/dashboard/employees/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 
-const DashboardClientsLazyRoute = DashboardClientsLazyImport.update({
-  id: '/clients',
-  path: '/clients',
-  getParentRoute: () => DashboardLazyRoute,
-} as any).lazy(() =>
-  import('./routes/_dashboard/clients.lazy').then((d) => d.Route),
-)
+const DashboardDashboardClientsIndexLazyRoute =
+  DashboardDashboardClientsIndexLazyImport.update({
+    id: '/dashboard/clients/',
+    path: '/dashboard/clients/',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/_dashboard/dashboard/clients/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const DashboardDashboardProjectsCreateLazyRoute =
+  DashboardDashboardProjectsCreateLazyImport.update({
+    id: '/dashboard/projects/create',
+    path: '/dashboard/projects/create',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/_dashboard/dashboard/projects/create.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const DashboardDashboardProjectsProjectIdLazyRoute =
+  DashboardDashboardProjectsProjectIdLazyImport.update({
+    id: '/dashboard/projects/$projectId',
+    path: '/dashboard/projects/$projectId',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/_dashboard/dashboard/projects/$projectId.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const DashboardDashboardEmployeesEmployeeIdLazyRoute =
+  DashboardDashboardEmployeesEmployeeIdLazyImport.update({
+    id: '/dashboard/employees/$employeeId',
+    path: '/dashboard/employees/$employeeId',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/_dashboard/dashboard/employees/$employeeId.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const DashboardDashboardClientsCreateLazyRoute =
+  DashboardDashboardClientsCreateLazyImport.update({
+    id: '/dashboard/clients/create',
+    path: '/dashboard/clients/create',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/_dashboard/dashboard/clients/create.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const DashboardDashboardClientsClientIdLazyRoute =
+  DashboardDashboardClientsClientIdLazyImport.update({
+    id: '/dashboard/clients/$clientId',
+    path: '/dashboard/clients/$clientId',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/_dashboard/dashboard/clients/$clientId.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 
 // Populate the FileRoutesByPath interface
 
@@ -158,62 +258,6 @@ declare module '@tanstack/react-router' {
       fullPath: ''
       preLoaderRoute: typeof LandingLazyImport
       parentRoute: typeof rootRoute
-    }
-    '/_dashboard/clients': {
-      id: '/_dashboard/clients'
-      path: '/clients'
-      fullPath: '/clients'
-      preLoaderRoute: typeof DashboardClientsLazyImport
-      parentRoute: typeof DashboardLazyImport
-    }
-    '/_dashboard/dashboard': {
-      id: '/_dashboard/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardDashboardLazyImport
-      parentRoute: typeof DashboardLazyImport
-    }
-    '/_dashboard/employees': {
-      id: '/_dashboard/employees'
-      path: '/employees'
-      fullPath: '/employees'
-      preLoaderRoute: typeof DashboardEmployeesLazyImport
-      parentRoute: typeof DashboardLazyImport
-    }
-    '/_dashboard/project-parts': {
-      id: '/_dashboard/project-parts'
-      path: '/project-parts'
-      fullPath: '/project-parts'
-      preLoaderRoute: typeof DashboardProjectPartsLazyImport
-      parentRoute: typeof DashboardLazyImport
-    }
-    '/_dashboard/projects': {
-      id: '/_dashboard/projects'
-      path: '/projects'
-      fullPath: '/projects'
-      preLoaderRoute: typeof DashboardProjectsLazyImport
-      parentRoute: typeof DashboardLazyImport
-    }
-    '/_dashboard/reports': {
-      id: '/_dashboard/reports'
-      path: '/reports'
-      fullPath: '/reports'
-      preLoaderRoute: typeof DashboardReportsLazyImport
-      parentRoute: typeof DashboardLazyImport
-    }
-    '/_dashboard/schedule': {
-      id: '/_dashboard/schedule'
-      path: '/schedule'
-      fullPath: '/schedule'
-      preLoaderRoute: typeof DashboardScheduleLazyImport
-      parentRoute: typeof DashboardLazyImport
-    }
-    '/_dashboard/timesheet': {
-      id: '/_dashboard/timesheet'
-      path: '/timesheet'
-      fullPath: '/timesheet'
-      preLoaderRoute: typeof DashboardTimesheetLazyImport
-      parentRoute: typeof DashboardLazyImport
     }
     '/_landing/about': {
       id: '/_landing/about'
@@ -243,31 +287,141 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LandingIndexLazyImport
       parentRoute: typeof LandingLazyImport
     }
+    '/_dashboard/dashboard/project-parts': {
+      id: '/_dashboard/dashboard/project-parts'
+      path: '/dashboard/project-parts'
+      fullPath: '/dashboard/project-parts'
+      preLoaderRoute: typeof DashboardDashboardProjectPartsLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/dashboard/reports': {
+      id: '/_dashboard/dashboard/reports'
+      path: '/dashboard/reports'
+      fullPath: '/dashboard/reports'
+      preLoaderRoute: typeof DashboardDashboardReportsLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/dashboard/schedule': {
+      id: '/_dashboard/dashboard/schedule'
+      path: '/dashboard/schedule'
+      fullPath: '/dashboard/schedule'
+      preLoaderRoute: typeof DashboardDashboardScheduleLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/dashboard/timesheet': {
+      id: '/_dashboard/dashboard/timesheet'
+      path: '/dashboard/timesheet'
+      fullPath: '/dashboard/timesheet'
+      preLoaderRoute: typeof DashboardDashboardTimesheetLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/dashboard/': {
+      id: '/_dashboard/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardDashboardIndexLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/dashboard/clients/$clientId': {
+      id: '/_dashboard/dashboard/clients/$clientId'
+      path: '/dashboard/clients/$clientId'
+      fullPath: '/dashboard/clients/$clientId'
+      preLoaderRoute: typeof DashboardDashboardClientsClientIdLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/dashboard/clients/create': {
+      id: '/_dashboard/dashboard/clients/create'
+      path: '/dashboard/clients/create'
+      fullPath: '/dashboard/clients/create'
+      preLoaderRoute: typeof DashboardDashboardClientsCreateLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/dashboard/employees/$employeeId': {
+      id: '/_dashboard/dashboard/employees/$employeeId'
+      path: '/dashboard/employees/$employeeId'
+      fullPath: '/dashboard/employees/$employeeId'
+      preLoaderRoute: typeof DashboardDashboardEmployeesEmployeeIdLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/dashboard/projects/$projectId': {
+      id: '/_dashboard/dashboard/projects/$projectId'
+      path: '/dashboard/projects/$projectId'
+      fullPath: '/dashboard/projects/$projectId'
+      preLoaderRoute: typeof DashboardDashboardProjectsProjectIdLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/dashboard/projects/create': {
+      id: '/_dashboard/dashboard/projects/create'
+      path: '/dashboard/projects/create'
+      fullPath: '/dashboard/projects/create'
+      preLoaderRoute: typeof DashboardDashboardProjectsCreateLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/dashboard/clients/': {
+      id: '/_dashboard/dashboard/clients/'
+      path: '/dashboard/clients'
+      fullPath: '/dashboard/clients'
+      preLoaderRoute: typeof DashboardDashboardClientsIndexLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/dashboard/employees/': {
+      id: '/_dashboard/dashboard/employees/'
+      path: '/dashboard/employees'
+      fullPath: '/dashboard/employees'
+      preLoaderRoute: typeof DashboardDashboardEmployeesIndexLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/dashboard/projects/': {
+      id: '/_dashboard/dashboard/projects/'
+      path: '/dashboard/projects'
+      fullPath: '/dashboard/projects'
+      preLoaderRoute: typeof DashboardDashboardProjectsIndexLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
   }
 }
 
 // Create and export the route tree
 
 interface DashboardLazyRouteChildren {
-  DashboardClientsLazyRoute: typeof DashboardClientsLazyRoute
-  DashboardDashboardLazyRoute: typeof DashboardDashboardLazyRoute
-  DashboardEmployeesLazyRoute: typeof DashboardEmployeesLazyRoute
-  DashboardProjectPartsLazyRoute: typeof DashboardProjectPartsLazyRoute
-  DashboardProjectsLazyRoute: typeof DashboardProjectsLazyRoute
-  DashboardReportsLazyRoute: typeof DashboardReportsLazyRoute
-  DashboardScheduleLazyRoute: typeof DashboardScheduleLazyRoute
-  DashboardTimesheetLazyRoute: typeof DashboardTimesheetLazyRoute
+  DashboardDashboardProjectPartsLazyRoute: typeof DashboardDashboardProjectPartsLazyRoute
+  DashboardDashboardReportsLazyRoute: typeof DashboardDashboardReportsLazyRoute
+  DashboardDashboardScheduleLazyRoute: typeof DashboardDashboardScheduleLazyRoute
+  DashboardDashboardTimesheetLazyRoute: typeof DashboardDashboardTimesheetLazyRoute
+  DashboardDashboardIndexLazyRoute: typeof DashboardDashboardIndexLazyRoute
+  DashboardDashboardClientsClientIdLazyRoute: typeof DashboardDashboardClientsClientIdLazyRoute
+  DashboardDashboardClientsCreateLazyRoute: typeof DashboardDashboardClientsCreateLazyRoute
+  DashboardDashboardEmployeesEmployeeIdLazyRoute: typeof DashboardDashboardEmployeesEmployeeIdLazyRoute
+  DashboardDashboardProjectsProjectIdLazyRoute: typeof DashboardDashboardProjectsProjectIdLazyRoute
+  DashboardDashboardProjectsCreateLazyRoute: typeof DashboardDashboardProjectsCreateLazyRoute
+  DashboardDashboardClientsIndexLazyRoute: typeof DashboardDashboardClientsIndexLazyRoute
+  DashboardDashboardEmployeesIndexLazyRoute: typeof DashboardDashboardEmployeesIndexLazyRoute
+  DashboardDashboardProjectsIndexLazyRoute: typeof DashboardDashboardProjectsIndexLazyRoute
 }
 
 const DashboardLazyRouteChildren: DashboardLazyRouteChildren = {
-  DashboardClientsLazyRoute: DashboardClientsLazyRoute,
-  DashboardDashboardLazyRoute: DashboardDashboardLazyRoute,
-  DashboardEmployeesLazyRoute: DashboardEmployeesLazyRoute,
-  DashboardProjectPartsLazyRoute: DashboardProjectPartsLazyRoute,
-  DashboardProjectsLazyRoute: DashboardProjectsLazyRoute,
-  DashboardReportsLazyRoute: DashboardReportsLazyRoute,
-  DashboardScheduleLazyRoute: DashboardScheduleLazyRoute,
-  DashboardTimesheetLazyRoute: DashboardTimesheetLazyRoute,
+  DashboardDashboardProjectPartsLazyRoute:
+    DashboardDashboardProjectPartsLazyRoute,
+  DashboardDashboardReportsLazyRoute: DashboardDashboardReportsLazyRoute,
+  DashboardDashboardScheduleLazyRoute: DashboardDashboardScheduleLazyRoute,
+  DashboardDashboardTimesheetLazyRoute: DashboardDashboardTimesheetLazyRoute,
+  DashboardDashboardIndexLazyRoute: DashboardDashboardIndexLazyRoute,
+  DashboardDashboardClientsClientIdLazyRoute:
+    DashboardDashboardClientsClientIdLazyRoute,
+  DashboardDashboardClientsCreateLazyRoute:
+    DashboardDashboardClientsCreateLazyRoute,
+  DashboardDashboardEmployeesEmployeeIdLazyRoute:
+    DashboardDashboardEmployeesEmployeeIdLazyRoute,
+  DashboardDashboardProjectsProjectIdLazyRoute:
+    DashboardDashboardProjectsProjectIdLazyRoute,
+  DashboardDashboardProjectsCreateLazyRoute:
+    DashboardDashboardProjectsCreateLazyRoute,
+  DashboardDashboardClientsIndexLazyRoute:
+    DashboardDashboardClientsIndexLazyRoute,
+  DashboardDashboardEmployeesIndexLazyRoute:
+    DashboardDashboardEmployeesIndexLazyRoute,
+  DashboardDashboardProjectsIndexLazyRoute:
+    DashboardDashboardProjectsIndexLazyRoute,
 }
 
 const DashboardLazyRouteWithChildren = DashboardLazyRoute._addFileChildren(
@@ -294,101 +448,131 @@ const LandingLazyRouteWithChildren = LandingLazyRoute._addFileChildren(
 
 export interface FileRoutesByFullPath {
   '': typeof LandingLazyRouteWithChildren
-  '/clients': typeof DashboardClientsLazyRoute
-  '/dashboard': typeof DashboardDashboardLazyRoute
-  '/employees': typeof DashboardEmployeesLazyRoute
-  '/project-parts': typeof DashboardProjectPartsLazyRoute
-  '/projects': typeof DashboardProjectsLazyRoute
-  '/reports': typeof DashboardReportsLazyRoute
-  '/schedule': typeof DashboardScheduleLazyRoute
-  '/timesheet': typeof DashboardTimesheetLazyRoute
   '/about': typeof LandingAboutLazyRoute
   '/contact': typeof LandingContactLazyRoute
   '/services': typeof LandingServicesLazyRoute
   '/': typeof LandingIndexLazyRoute
+  '/dashboard/project-parts': typeof DashboardDashboardProjectPartsLazyRoute
+  '/dashboard/reports': typeof DashboardDashboardReportsLazyRoute
+  '/dashboard/schedule': typeof DashboardDashboardScheduleLazyRoute
+  '/dashboard/timesheet': typeof DashboardDashboardTimesheetLazyRoute
+  '/dashboard': typeof DashboardDashboardIndexLazyRoute
+  '/dashboard/clients/$clientId': typeof DashboardDashboardClientsClientIdLazyRoute
+  '/dashboard/clients/create': typeof DashboardDashboardClientsCreateLazyRoute
+  '/dashboard/employees/$employeeId': typeof DashboardDashboardEmployeesEmployeeIdLazyRoute
+  '/dashboard/projects/$projectId': typeof DashboardDashboardProjectsProjectIdLazyRoute
+  '/dashboard/projects/create': typeof DashboardDashboardProjectsCreateLazyRoute
+  '/dashboard/clients': typeof DashboardDashboardClientsIndexLazyRoute
+  '/dashboard/employees': typeof DashboardDashboardEmployeesIndexLazyRoute
+  '/dashboard/projects': typeof DashboardDashboardProjectsIndexLazyRoute
 }
 
 export interface FileRoutesByTo {
   '': typeof DashboardLazyRouteWithChildren
-  '/clients': typeof DashboardClientsLazyRoute
-  '/dashboard': typeof DashboardDashboardLazyRoute
-  '/employees': typeof DashboardEmployeesLazyRoute
-  '/project-parts': typeof DashboardProjectPartsLazyRoute
-  '/projects': typeof DashboardProjectsLazyRoute
-  '/reports': typeof DashboardReportsLazyRoute
-  '/schedule': typeof DashboardScheduleLazyRoute
-  '/timesheet': typeof DashboardTimesheetLazyRoute
   '/about': typeof LandingAboutLazyRoute
   '/contact': typeof LandingContactLazyRoute
   '/services': typeof LandingServicesLazyRoute
   '/': typeof LandingIndexLazyRoute
+  '/dashboard/project-parts': typeof DashboardDashboardProjectPartsLazyRoute
+  '/dashboard/reports': typeof DashboardDashboardReportsLazyRoute
+  '/dashboard/schedule': typeof DashboardDashboardScheduleLazyRoute
+  '/dashboard/timesheet': typeof DashboardDashboardTimesheetLazyRoute
+  '/dashboard': typeof DashboardDashboardIndexLazyRoute
+  '/dashboard/clients/$clientId': typeof DashboardDashboardClientsClientIdLazyRoute
+  '/dashboard/clients/create': typeof DashboardDashboardClientsCreateLazyRoute
+  '/dashboard/employees/$employeeId': typeof DashboardDashboardEmployeesEmployeeIdLazyRoute
+  '/dashboard/projects/$projectId': typeof DashboardDashboardProjectsProjectIdLazyRoute
+  '/dashboard/projects/create': typeof DashboardDashboardProjectsCreateLazyRoute
+  '/dashboard/clients': typeof DashboardDashboardClientsIndexLazyRoute
+  '/dashboard/employees': typeof DashboardDashboardEmployeesIndexLazyRoute
+  '/dashboard/projects': typeof DashboardDashboardProjectsIndexLazyRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/_dashboard': typeof DashboardLazyRouteWithChildren
   '/_landing': typeof LandingLazyRouteWithChildren
-  '/_dashboard/clients': typeof DashboardClientsLazyRoute
-  '/_dashboard/dashboard': typeof DashboardDashboardLazyRoute
-  '/_dashboard/employees': typeof DashboardEmployeesLazyRoute
-  '/_dashboard/project-parts': typeof DashboardProjectPartsLazyRoute
-  '/_dashboard/projects': typeof DashboardProjectsLazyRoute
-  '/_dashboard/reports': typeof DashboardReportsLazyRoute
-  '/_dashboard/schedule': typeof DashboardScheduleLazyRoute
-  '/_dashboard/timesheet': typeof DashboardTimesheetLazyRoute
   '/_landing/about': typeof LandingAboutLazyRoute
   '/_landing/contact': typeof LandingContactLazyRoute
   '/_landing/services': typeof LandingServicesLazyRoute
   '/_landing/': typeof LandingIndexLazyRoute
+  '/_dashboard/dashboard/project-parts': typeof DashboardDashboardProjectPartsLazyRoute
+  '/_dashboard/dashboard/reports': typeof DashboardDashboardReportsLazyRoute
+  '/_dashboard/dashboard/schedule': typeof DashboardDashboardScheduleLazyRoute
+  '/_dashboard/dashboard/timesheet': typeof DashboardDashboardTimesheetLazyRoute
+  '/_dashboard/dashboard/': typeof DashboardDashboardIndexLazyRoute
+  '/_dashboard/dashboard/clients/$clientId': typeof DashboardDashboardClientsClientIdLazyRoute
+  '/_dashboard/dashboard/clients/create': typeof DashboardDashboardClientsCreateLazyRoute
+  '/_dashboard/dashboard/employees/$employeeId': typeof DashboardDashboardEmployeesEmployeeIdLazyRoute
+  '/_dashboard/dashboard/projects/$projectId': typeof DashboardDashboardProjectsProjectIdLazyRoute
+  '/_dashboard/dashboard/projects/create': typeof DashboardDashboardProjectsCreateLazyRoute
+  '/_dashboard/dashboard/clients/': typeof DashboardDashboardClientsIndexLazyRoute
+  '/_dashboard/dashboard/employees/': typeof DashboardDashboardEmployeesIndexLazyRoute
+  '/_dashboard/dashboard/projects/': typeof DashboardDashboardProjectsIndexLazyRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | ''
-    | '/clients'
-    | '/dashboard'
-    | '/employees'
-    | '/project-parts'
-    | '/projects'
-    | '/reports'
-    | '/schedule'
-    | '/timesheet'
     | '/about'
     | '/contact'
     | '/services'
     | '/'
+    | '/dashboard/project-parts'
+    | '/dashboard/reports'
+    | '/dashboard/schedule'
+    | '/dashboard/timesheet'
+    | '/dashboard'
+    | '/dashboard/clients/$clientId'
+    | '/dashboard/clients/create'
+    | '/dashboard/employees/$employeeId'
+    | '/dashboard/projects/$projectId'
+    | '/dashboard/projects/create'
+    | '/dashboard/clients'
+    | '/dashboard/employees'
+    | '/dashboard/projects'
   fileRoutesByTo: FileRoutesByTo
   to:
     | ''
-    | '/clients'
-    | '/dashboard'
-    | '/employees'
-    | '/project-parts'
-    | '/projects'
-    | '/reports'
-    | '/schedule'
-    | '/timesheet'
     | '/about'
     | '/contact'
     | '/services'
     | '/'
+    | '/dashboard/project-parts'
+    | '/dashboard/reports'
+    | '/dashboard/schedule'
+    | '/dashboard/timesheet'
+    | '/dashboard'
+    | '/dashboard/clients/$clientId'
+    | '/dashboard/clients/create'
+    | '/dashboard/employees/$employeeId'
+    | '/dashboard/projects/$projectId'
+    | '/dashboard/projects/create'
+    | '/dashboard/clients'
+    | '/dashboard/employees'
+    | '/dashboard/projects'
   id:
     | '__root__'
     | '/_dashboard'
     | '/_landing'
-    | '/_dashboard/clients'
-    | '/_dashboard/dashboard'
-    | '/_dashboard/employees'
-    | '/_dashboard/project-parts'
-    | '/_dashboard/projects'
-    | '/_dashboard/reports'
-    | '/_dashboard/schedule'
-    | '/_dashboard/timesheet'
     | '/_landing/about'
     | '/_landing/contact'
     | '/_landing/services'
     | '/_landing/'
+    | '/_dashboard/dashboard/project-parts'
+    | '/_dashboard/dashboard/reports'
+    | '/_dashboard/dashboard/schedule'
+    | '/_dashboard/dashboard/timesheet'
+    | '/_dashboard/dashboard/'
+    | '/_dashboard/dashboard/clients/$clientId'
+    | '/_dashboard/dashboard/clients/create'
+    | '/_dashboard/dashboard/employees/$employeeId'
+    | '/_dashboard/dashboard/projects/$projectId'
+    | '/_dashboard/dashboard/projects/create'
+    | '/_dashboard/dashboard/clients/'
+    | '/_dashboard/dashboard/employees/'
+    | '/_dashboard/dashboard/projects/'
   fileRoutesById: FileRoutesById
 }
 
@@ -419,14 +603,19 @@ export const routeTree = rootRoute
     "/_dashboard": {
       "filePath": "_dashboard.lazy.tsx",
       "children": [
-        "/_dashboard/clients",
-        "/_dashboard/dashboard",
-        "/_dashboard/employees",
-        "/_dashboard/project-parts",
-        "/_dashboard/projects",
-        "/_dashboard/reports",
-        "/_dashboard/schedule",
-        "/_dashboard/timesheet"
+        "/_dashboard/dashboard/project-parts",
+        "/_dashboard/dashboard/reports",
+        "/_dashboard/dashboard/schedule",
+        "/_dashboard/dashboard/timesheet",
+        "/_dashboard/dashboard/",
+        "/_dashboard/dashboard/clients/$clientId",
+        "/_dashboard/dashboard/clients/create",
+        "/_dashboard/dashboard/employees/$employeeId",
+        "/_dashboard/dashboard/projects/$projectId",
+        "/_dashboard/dashboard/projects/create",
+        "/_dashboard/dashboard/clients/",
+        "/_dashboard/dashboard/employees/",
+        "/_dashboard/dashboard/projects/"
       ]
     },
     "/_landing": {
@@ -437,38 +626,6 @@ export const routeTree = rootRoute
         "/_landing/services",
         "/_landing/"
       ]
-    },
-    "/_dashboard/clients": {
-      "filePath": "_dashboard/clients.lazy.tsx",
-      "parent": "/_dashboard"
-    },
-    "/_dashboard/dashboard": {
-      "filePath": "_dashboard/dashboard.lazy.tsx",
-      "parent": "/_dashboard"
-    },
-    "/_dashboard/employees": {
-      "filePath": "_dashboard/employees.lazy.tsx",
-      "parent": "/_dashboard"
-    },
-    "/_dashboard/project-parts": {
-      "filePath": "_dashboard/project-parts.lazy.tsx",
-      "parent": "/_dashboard"
-    },
-    "/_dashboard/projects": {
-      "filePath": "_dashboard/projects.lazy.tsx",
-      "parent": "/_dashboard"
-    },
-    "/_dashboard/reports": {
-      "filePath": "_dashboard/reports.lazy.tsx",
-      "parent": "/_dashboard"
-    },
-    "/_dashboard/schedule": {
-      "filePath": "_dashboard/schedule.lazy.tsx",
-      "parent": "/_dashboard"
-    },
-    "/_dashboard/timesheet": {
-      "filePath": "_dashboard/timesheet.lazy.tsx",
-      "parent": "/_dashboard"
     },
     "/_landing/about": {
       "filePath": "_landing/about.lazy.tsx",
@@ -485,6 +642,58 @@ export const routeTree = rootRoute
     "/_landing/": {
       "filePath": "_landing/index.lazy.tsx",
       "parent": "/_landing"
+    },
+    "/_dashboard/dashboard/project-parts": {
+      "filePath": "_dashboard/dashboard/project-parts.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/dashboard/reports": {
+      "filePath": "_dashboard/dashboard/reports.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/dashboard/schedule": {
+      "filePath": "_dashboard/dashboard/schedule.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/dashboard/timesheet": {
+      "filePath": "_dashboard/dashboard/timesheet.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/dashboard/": {
+      "filePath": "_dashboard/dashboard/index.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/dashboard/clients/$clientId": {
+      "filePath": "_dashboard/dashboard/clients/$clientId.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/dashboard/clients/create": {
+      "filePath": "_dashboard/dashboard/clients/create.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/dashboard/employees/$employeeId": {
+      "filePath": "_dashboard/dashboard/employees/$employeeId.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/dashboard/projects/$projectId": {
+      "filePath": "_dashboard/dashboard/projects/$projectId.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/dashboard/projects/create": {
+      "filePath": "_dashboard/dashboard/projects/create.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/dashboard/clients/": {
+      "filePath": "_dashboard/dashboard/clients/index.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/dashboard/employees/": {
+      "filePath": "_dashboard/dashboard/employees/index.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/dashboard/projects/": {
+      "filePath": "_dashboard/dashboard/projects/index.lazy.tsx",
+      "parent": "/_dashboard"
     }
   }
 }
