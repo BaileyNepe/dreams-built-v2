@@ -6,6 +6,8 @@ import { type FC, Suspense, useState } from 'react';
 import { styled } from 'styled-components';
 
 import { Outlet } from '@tanstack/react-router';
+import Loader from 'components/Loader';
+import { useAuth } from 'utils/contexts/AuthProvider';
 import { Header } from './Header';
 import { NavBar } from './Navbar';
 import { DRAWER_WIDTH, HEADER_HEIGHT } from './constants';
@@ -26,6 +28,7 @@ const Container = styled.div`
 `;
 
 export const Dashboard: FC = () => {
+  const { isAuthenticated, isLoading, loginWithRedirect } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('xl'));
@@ -33,6 +36,14 @@ export const Dashboard: FC = () => {
   const handleDrawerToggle = () => {
     setSidebarOpen(!sidebarOpen);
   };
+
+  if (!isLoading && !isAuthenticated) {
+    loginWithRedirect({
+      appState: { returnTo: window.location.pathname }
+    });
+
+    return <Loader />;
+  }
 
   return (
     <Container>
@@ -63,9 +74,7 @@ export const Dashboard: FC = () => {
 
       {/* Main Content */}
       <Main>
-        <Suspense>
-          <Outlet />
-        </Suspense>
+        <Suspense>{isAuthenticated ? <Outlet /> : <Loader />}</Suspense>
       </Main>
     </Container>
   );

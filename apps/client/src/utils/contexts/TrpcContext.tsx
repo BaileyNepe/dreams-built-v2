@@ -1,5 +1,9 @@
 /* eslint-disable no-console */
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  QueryClient,
+  QueryClientProvider
+} from '@tanstack/react-query';
 import { httpBatchLink } from '@trpc/client';
 import { api } from 'api/trpc';
 import { env } from 'config/env';
@@ -19,6 +23,7 @@ const queryClient = new QueryClient({
       refetchOnMount: true,
       refetchOnReconnect: true,
       gcTime: cacheTime,
+      placeholderData: keepPreviousData,
       staleTime
     },
     mutations: {

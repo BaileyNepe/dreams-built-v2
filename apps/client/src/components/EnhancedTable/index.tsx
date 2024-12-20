@@ -13,8 +13,8 @@ import { type EnhancedData, type HeadCell, type Order } from './types';
 const Layout = styled.div<{ $hasShadow: boolean }>`
   background-color: ${({ theme }) => theme.palette.background.paper};
   border-radius: ${({ theme }) => theme.shape.borderRadius * 2}px;
-  /* box-shadow: ${({ theme, $hasShadow }) =>
-    $hasShadow ? theme.customShadows.insetStart : 'none'}; */
+  box-shadow: ${({ $hasShadow, theme }) =>
+    $hasShadow ? theme.customShadows.outline : 'none'};
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -93,7 +93,7 @@ export const EnhancedTable: FC<{
         component="div"
         count={total}
         rowsPerPage={perPage}
-        page={page}
+        page={page - 1}
         onPageChange={(_, pageNumber) => handlePageChange(pageNumber)}
         onRowsPerPageChange={(event) =>
           handlePerPageChange(parseInt(event.target.value, 10))

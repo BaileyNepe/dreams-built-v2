@@ -5,11 +5,21 @@ import { Color } from 'components/EnhancedTable/components/Color';
 import PageLayout from 'layouts/PageLayout';
 import { type FC } from 'react';
 import { useNavigate } from 'utils/hooks/useNavigate';
+import { usePagination } from 'utils/hooks/usePagination';
 import { paths } from 'utils/paths';
 
 export const ClientsPage: FC = () => {
   const navigate = useNavigate();
-  const clients = useClientList({ page: 1, perPage: 25 });
+  const {
+    page,
+    perPage,
+    handlePageChange,
+    handlePerPageChange,
+    query,
+    debouncedQuery,
+    handleSearchChange
+  } = usePagination();
+  const clients = useClientList({ page, perPage, query: debouncedQuery });
 
   return (
     <PageLayout
@@ -20,12 +30,19 @@ export const ClientsPage: FC = () => {
       }}
     >
       <EnhancedTable
+        toolbar={{
+          search: {
+            placeholder: 'Search clients...',
+            onChange: handleSearchChange,
+            value: query
+          }
+        }}
         pagination={{
-          page: 0,
-          perPage: 25,
+          page,
+          perPage,
           total: clients.data?.total,
-          handlePageChange: () => {},
-          handlePerPageChange: () => {}
+          handlePageChange,
+          handlePerPageChange
         }}
         isLoading={clients.isLoading}
         order={{

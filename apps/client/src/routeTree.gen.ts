@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as DashboardDashboardClientsIndexImport } from './routes/_dashboard/dashboard/clients/index'
 
 // Create Virtual Routes
 
@@ -42,9 +43,6 @@ const DashboardDashboardProjectsIndexLazyImport = createFileRoute(
 )()
 const DashboardDashboardEmployeesIndexLazyImport = createFileRoute(
   '/_dashboard/dashboard/employees/',
-)()
-const DashboardDashboardClientsIndexLazyImport = createFileRoute(
-  '/_dashboard/dashboard/clients/',
 )()
 const DashboardDashboardProjectsCreateLazyImport = createFileRoute(
   '/_dashboard/dashboard/projects/create',
@@ -175,8 +173,8 @@ const DashboardDashboardEmployeesIndexLazyRoute =
     ),
   )
 
-const DashboardDashboardClientsIndexLazyRoute =
-  DashboardDashboardClientsIndexLazyImport.update({
+const DashboardDashboardClientsIndexRoute =
+  DashboardDashboardClientsIndexImport.update({
     id: '/dashboard/clients/',
     path: '/dashboard/clients/',
     getParentRoute: () => DashboardLazyRoute,
@@ -354,7 +352,7 @@ declare module '@tanstack/react-router' {
       id: '/_dashboard/dashboard/clients/'
       path: '/dashboard/clients'
       fullPath: '/dashboard/clients'
-      preLoaderRoute: typeof DashboardDashboardClientsIndexLazyImport
+      preLoaderRoute: typeof DashboardDashboardClientsIndexImport
       parentRoute: typeof DashboardLazyImport
     }
     '/_dashboard/dashboard/employees/': {
@@ -393,7 +391,7 @@ interface DashboardLazyRouteChildren {
   DashboardDashboardEmployeesEmployeeIdLazyRoute: typeof DashboardDashboardEmployeesEmployeeIdLazyRoute
   DashboardDashboardProjectsProjectIdLazyRoute: typeof DashboardDashboardProjectsProjectIdLazyRoute
   DashboardDashboardProjectsCreateLazyRoute: typeof DashboardDashboardProjectsCreateLazyRoute
-  DashboardDashboardClientsIndexLazyRoute: typeof DashboardDashboardClientsIndexLazyRoute
+  DashboardDashboardClientsIndexRoute: typeof DashboardDashboardClientsIndexRoute
   DashboardDashboardEmployeesIndexLazyRoute: typeof DashboardDashboardEmployeesIndexLazyRoute
   DashboardDashboardProjectsIndexLazyRoute: typeof DashboardDashboardProjectsIndexLazyRoute
   DashboardDashboardClientsEditClientIdLazyRoute: typeof DashboardDashboardClientsEditClientIdLazyRoute
@@ -414,8 +412,7 @@ const DashboardLazyRouteChildren: DashboardLazyRouteChildren = {
     DashboardDashboardProjectsProjectIdLazyRoute,
   DashboardDashboardProjectsCreateLazyRoute:
     DashboardDashboardProjectsCreateLazyRoute,
-  DashboardDashboardClientsIndexLazyRoute:
-    DashboardDashboardClientsIndexLazyRoute,
+  DashboardDashboardClientsIndexRoute: DashboardDashboardClientsIndexRoute,
   DashboardDashboardEmployeesIndexLazyRoute:
     DashboardDashboardEmployeesIndexLazyRoute,
   DashboardDashboardProjectsIndexLazyRoute:
@@ -461,7 +458,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/employees/$employeeId': typeof DashboardDashboardEmployeesEmployeeIdLazyRoute
   '/dashboard/projects/$projectId': typeof DashboardDashboardProjectsProjectIdLazyRoute
   '/dashboard/projects/create': typeof DashboardDashboardProjectsCreateLazyRoute
-  '/dashboard/clients': typeof DashboardDashboardClientsIndexLazyRoute
+  '/dashboard/clients': typeof DashboardDashboardClientsIndexRoute
   '/dashboard/employees': typeof DashboardDashboardEmployeesIndexLazyRoute
   '/dashboard/projects': typeof DashboardDashboardProjectsIndexLazyRoute
   '/dashboard/clients/edit/$clientId': typeof DashboardDashboardClientsEditClientIdLazyRoute
@@ -482,7 +479,7 @@ export interface FileRoutesByTo {
   '/dashboard/employees/$employeeId': typeof DashboardDashboardEmployeesEmployeeIdLazyRoute
   '/dashboard/projects/$projectId': typeof DashboardDashboardProjectsProjectIdLazyRoute
   '/dashboard/projects/create': typeof DashboardDashboardProjectsCreateLazyRoute
-  '/dashboard/clients': typeof DashboardDashboardClientsIndexLazyRoute
+  '/dashboard/clients': typeof DashboardDashboardClientsIndexRoute
   '/dashboard/employees': typeof DashboardDashboardEmployeesIndexLazyRoute
   '/dashboard/projects': typeof DashboardDashboardProjectsIndexLazyRoute
   '/dashboard/clients/edit/$clientId': typeof DashboardDashboardClientsEditClientIdLazyRoute
@@ -505,7 +502,7 @@ export interface FileRoutesById {
   '/_dashboard/dashboard/employees/$employeeId': typeof DashboardDashboardEmployeesEmployeeIdLazyRoute
   '/_dashboard/dashboard/projects/$projectId': typeof DashboardDashboardProjectsProjectIdLazyRoute
   '/_dashboard/dashboard/projects/create': typeof DashboardDashboardProjectsCreateLazyRoute
-  '/_dashboard/dashboard/clients/': typeof DashboardDashboardClientsIndexLazyRoute
+  '/_dashboard/dashboard/clients/': typeof DashboardDashboardClientsIndexRoute
   '/_dashboard/dashboard/employees/': typeof DashboardDashboardEmployeesIndexLazyRoute
   '/_dashboard/dashboard/projects/': typeof DashboardDashboardProjectsIndexLazyRoute
   '/_dashboard/dashboard/clients/edit/$clientId': typeof DashboardDashboardClientsEditClientIdLazyRoute
@@ -680,7 +677,7 @@ export const routeTree = rootRoute
       "parent": "/_dashboard"
     },
     "/_dashboard/dashboard/clients/": {
-      "filePath": "_dashboard/dashboard/clients/index.lazy.tsx",
+      "filePath": "_dashboard/dashboard/clients/index.tsx",
       "parent": "/_dashboard"
     },
     "/_dashboard/dashboard/employees/": {
