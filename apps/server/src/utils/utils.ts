@@ -15,3 +15,5 @@ export const getHost = (req: Request): string => {
 
   return host;
 };
+
+export const colorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;

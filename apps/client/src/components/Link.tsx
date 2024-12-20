@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router';
+import { Link, type LinkProps } from '@tanstack/react-router';
 import styled from 'styled-components';
 
 import type React from 'react';
@@ -16,11 +16,10 @@ const StyledRouterLink = styled((props: React.ComponentProps<typeof Link>) => (
   }
 `;
 
-export const RouterLink: React.FC<
-  {
-    children: React.ReactNode;
-  } & React.ComponentProps<typeof Link>
-> = ({ children, ...rest }) => <StyledRouterLink {...rest}>{children}</StyledRouterLink>;
+export const RouterLink: React.FC<LinkProps & { children: React.ReactNode }> = ({
+  children,
+  ...rest
+}) => <StyledRouterLink {...rest}>{children}</StyledRouterLink>;
 
 export const LinkButton = styled(StyledRouterLink)`
   background-color: ${({ theme }) => theme.palette.primary.main};

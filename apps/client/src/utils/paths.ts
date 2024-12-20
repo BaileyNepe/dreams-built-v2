@@ -9,7 +9,7 @@ export const paths: Record<string, Routes> = {
 
   clients: '/dashboard/clients',
   clientCreate: '/dashboard/clients/create',
-  clientEdit: '/dashboard/clients/$clientId',
+  clientEdit: '/dashboard/clients/edit/$clientId',
 
   projects: '/dashboard/projects',
   projectsCreate: '/dashboard/projects/create',
