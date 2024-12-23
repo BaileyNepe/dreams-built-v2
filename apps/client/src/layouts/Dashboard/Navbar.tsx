@@ -50,7 +50,10 @@ const Button = styled.div<{ isActive: boolean }>`
 `;
 
 const ListItemIcon = styled.span`
+  align-items: center;
   color: ${({ theme }) => theme.palette.grey[500]};
+  display: flex;
+  justify-content: center;
 
   svg {
     height: 1.5rem;

@@ -51,7 +51,7 @@ export const ClientsPage: FC = () => {
           setOrder: () => {}
         }}
         headers={[
-          { id: 'color', width: '1rem' },
+          { id: 'color', width: '1rem', align: 'center' },
           { id: 'name', width: '100%' },
           { id: 'actions' }
         ]}

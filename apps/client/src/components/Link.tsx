@@ -13,6 +13,7 @@ const StyledRouterLink = styled((props: React.ComponentProps<typeof Link>) => (
 
   &:hover {
     color: ${({ theme }) => theme.palette.primary.dark};
+    text-decoration: 'none';
   }
 `;
 
@@ -23,13 +24,15 @@ export const RouterLink: React.FC<LinkProps & { children: React.ReactNode }> = (
 
 export const LinkButton = styled(StyledRouterLink)`
   background-color: ${({ theme }) => theme.palette.primary.main};
-  border-radius: 16px;
+  border-radius: ${({ theme }) => theme.shape.borderRadius}px;
   color: ${({ theme }) => theme.palette.primary.contrastText};
   padding: 8px 16px;
   text-align: center;
+  text-decoration: 'none';
   transition: all 0.1s ease-in-out;
 
   &:hover {
     background-color: ${({ theme }) => theme.palette.primary.dark};
+    text-decoration: 'none';
   }
 `;

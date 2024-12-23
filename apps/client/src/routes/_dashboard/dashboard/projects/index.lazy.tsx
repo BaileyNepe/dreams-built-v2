@@ -1,9 +1,6 @@
-import { createLazyFileRoute } from '@tanstack/react-router'
+import { createLazyFileRoute } from '@tanstack/react-router';
+import { ProjectsPage } from 'pages/ProjectsPage';
 
 export const Route = createLazyFileRoute('/_dashboard/dashboard/projects/')({
-  component: RouteComponent,
-})
-
-function RouteComponent() {
-  return <div>Hello "/_dashboard/projects"!</div>
-}
+  component: ProjectsPage
+});

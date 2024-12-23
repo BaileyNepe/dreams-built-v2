@@ -6,7 +6,9 @@ const AuthzSchema = z.enum([
   'users:view:all',
   'users:view:employee',
   'timesheet:view:self',
-  'timesheet:view:all'
+  'timesheet:view:all',
+  'jobs:read',
+  'jobs:edit'
 ]);
 
 const RoleSchema = z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE', 'USER']);

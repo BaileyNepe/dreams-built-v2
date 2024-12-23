@@ -9,7 +9,10 @@ export const authz = {
   clients_edit: 'clients:edit',
 
   timesheet: 'timesheet:view:self',
-  timesheet_view_all: 'timesheet:view:all'
+  timesheet_view_all: 'timesheet:view:all',
+
+  jobs_read: 'jobs:read',
+  jobs_edit: 'jobs:edit'
 } as const;
 
 const rolesPermissions: Permission = [
@@ -46,10 +49,24 @@ const timesheetPermissions: Permission = [
   }
 ];
 
+const jobsPermissions: Permission = [
+  {
+    id: authz.jobs_read,
+    name: 'Jobs Read',
+    roles: ['EMPLOYEE', 'MANAGER']
+  },
+  {
+    id: authz.jobs_edit,
+    name: 'Jobs Edit',
+    roles: ['MANAGER']
+  }
+];
+
 export const permissions: Permission = [
   ...rolesPermissions,
   ...clientPermissions,
-  ...timesheetPermissions
+  ...timesheetPermissions,
+  ...jobsPermissions
 ];
 
 export const getViewablePermissions = (role?: Set<Role>) =>
