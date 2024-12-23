@@ -5,7 +5,7 @@ import { userRouter } from './user/routes';
 
 export const apiRouter = trpc.router({
   user: userRouter,
-  client: clientRouter,
+  clients: clientRouter,
   project: projectsRouter
 });
 

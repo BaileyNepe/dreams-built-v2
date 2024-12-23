@@ -2,6 +2,7 @@ import { protectedProcedure, trpc } from '@config/trpc';
 import { authz } from '@dreams-built/shared/src/auth/permissions';
 import { PaginationSchema } from '@dreams-built/shared/src/pagination/types';
 import { type Prisma } from '@prisma/client';
+import { z } from 'zod';
 
 export const projectsRouter = trpc.router({
   list: protectedProcedure([authz.jobs_read])
@@ -78,5 +79,24 @@ export const projectsRouter = trpc.router({
         })),
         total
       };
-    })
+    }),
+
+  toggleInvoiced: protectedProcedure([authz.jobs_edit])
+    .input(
+      z.object({
+        projectId: z.string(),
+        isInvoiced: z.boolean()
+      })
+    )
+    .mutation(
+      async ({ ctx, input }) =>
+        await ctx.db.project.update({
+          where: {
+            id: input.projectId
+          },
+          data: {
+            isInvoiced: input.isInvoiced
+          }
+        })
+    )
 });

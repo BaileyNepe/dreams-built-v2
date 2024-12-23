@@ -4,4 +4,4 @@ export const useClientList = (params: {
   page: number;
   perPage: number;
   query?: string;
-}) => api.client.list.useQuery(params);
+}) => api.clients.list.useQuery(params);

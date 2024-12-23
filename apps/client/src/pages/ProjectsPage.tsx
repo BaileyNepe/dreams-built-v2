@@ -1,14 +1,18 @@
+import { authz } from '@dreams-built/shared/src/auth/permissions';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { Checkbox } from '@mui/material';
-import { useProjectList } from 'api/projects';
+import { useProjectList, useToggleInvoiceProject } from 'api/projects';
 import { EnhancedTable } from 'components/EnhancedTable';
 import { Color } from 'components/EnhancedTable/components/Color';
 import PageLayout from 'layouts/PageLayout';
+import { useAuth } from 'utils/contexts/AuthProvider';
 import { useNavigate } from 'utils/hooks/useNavigate';
 import { paths } from 'utils/paths';
 
 export const ProjectsPage = () => {
   const navigate = useNavigate();
+  const toggleInvoiceProject = useToggleInvoiceProject();
+  const { user } = useAuth();
   const {
     data,
     isLoading,
@@ -69,7 +73,19 @@ export const ProjectsPage = () => {
           address: job.address,
           city: job.city,
           area: job.area,
-          isInvoiced: <Checkbox checked={job.isInvoiced} />,
+          isInvoiced: (
+            <Checkbox
+              checked={job.isInvoiced}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleInvoiceProject.mutate({
+                  projectId: job.id,
+                  isInvoiced: !job.isInvoiced
+                });
+              }}
+              disabled={!user.permissions?.includes(authz.jobs_edit)}
+            />
+          ),
           actions: [
             {
               icon: <EditRoundedIcon />,
