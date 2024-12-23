@@ -58,16 +58,20 @@ export const ProjectsPage = () => {
         headers={[
           { id: 'jobNumber', width: '10%' },
           { id: 'client', width: '10%', align: 'center' },
-          { id: 'endClient', width: '10%' },
           { id: 'address', width: '25%' },
           { id: 'city' },
+          { id: 'endClient', width: '10%' },
           { id: 'area', width: '1rem' },
           { id: 'isInvoiced', label: 'Invoiced', width: '1rem' },
           { id: 'actions', width: '1rem' }
         ]}
         rows={data?.projects.map((job) => ({
           id: job.id,
-          jobNumber: job.jobNumber,
+          jobNumber: (
+            <span>
+              <strong>{job.jobNumber.toString().padStart(5, '0')}</strong>
+            </span>
+          ),
           client: <Color color={job.clientColor} text={job.client} type="background" />,
           endClient: job.endClient,
           address: job.address,
