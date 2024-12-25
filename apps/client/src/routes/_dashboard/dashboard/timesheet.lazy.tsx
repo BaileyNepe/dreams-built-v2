@@ -1,9 +1,6 @@
-import { createLazyFileRoute } from '@tanstack/react-router'
+import { createLazyFileRoute } from '@tanstack/react-router';
+import { TimesheetPage } from 'pages/TimesheetPage';
 
 export const Route = createLazyFileRoute('/_dashboard/dashboard/timesheet')({
-  component: RouteComponent,
-})
-
-function RouteComponent() {
-  return <div>Hello "/_dashboard/timesheet"!</div>
-}
+  component: TimesheetPage
+});

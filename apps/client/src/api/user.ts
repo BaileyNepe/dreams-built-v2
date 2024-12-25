@@ -1,3 +1,5 @@
+import { authz } from '@dreams-built/shared/src/auth/permissions';
+import { useAuth } from 'utils/contexts/AuthProvider';
 import { api } from './trpc';
 
 export const useProfileQuery = ({
@@ -13,7 +15,7 @@ export const useProfileQuery = ({
   email?: string;
   image?: string;
 }) =>
-  api.user.profile.useQuery(
+  api.users.profile.useQuery(
     {
       firstName,
       lastName,
@@ -24,3 +26,10 @@ export const useProfileQuery = ({
       enabled
     }
   );
+
+export const useUsers = () => {
+  const { user } = useAuth();
+  return api.users.list.useQuery(undefined, {
+    enabled: user.permissions?.includes(authz.timesheet_view_all)
+  });
+};

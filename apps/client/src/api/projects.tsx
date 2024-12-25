@@ -4,7 +4,7 @@ import { api } from './trpc';
 
 export const useProjectList = () => {
   const pagination = usePagination();
-  const apiRequest = api.project.list.useQuery({
+  const apiRequest = api.projects.list.useQuery({
     page: pagination.page,
     perPage: pagination.perPage,
     query: pagination.debouncedQuery
@@ -20,13 +20,13 @@ export const useToggleInvoiceProject = () => {
   const utils = api.useUtils();
   const pagination = usePagination();
 
-  return api.project.toggleInvoiced.useMutation({
+  return api.projects.toggleInvoiced.useMutation({
     onMutate: async ({ projectId, isInvoiced }) => {
       // 1) Cancel any outgoing fetches so they don't overwrite our optimistic update
-      await utils.project.list.cancel();
+      await utils.projects.list.cancel();
 
       // 2) Snapshot the previous cache value
-      const prevData = utils.project.list.getData({
+      const prevData = utils.projects.list.getData({
         page: pagination.page,
         perPage: pagination.perPage,
         query: pagination.debouncedQuery
@@ -34,7 +34,7 @@ export const useToggleInvoiceProject = () => {
 
       // 3) Optimistically update the cache
       if (prevData) {
-        utils.project.list.setData(
+        utils.projects.list.setData(
           {
             page: pagination.page,
             perPage: pagination.perPage,
@@ -56,7 +56,7 @@ export const useToggleInvoiceProject = () => {
     // 4) Roll back on error
     onError: (_error, _variables, context) => {
       if (context?.prevData) {
-        utils.project.list.setData(
+        utils.projects.list.setData(
           {
             page: pagination.page,
             perPage: pagination.perPage,
@@ -68,7 +68,25 @@ export const useToggleInvoiceProject = () => {
     },
 
     onSuccess: () => {
-      utils.project.list.invalidate();
+      utils.projects.list.invalidate();
     }
   });
 };
+
+export const useInfiniteProjects = ({
+  query,
+  enabled = true
+}: {
+  query?: string;
+  enabled?: boolean;
+}) =>
+  api.projects.infiniteList.useInfiniteQuery(
+    {
+      query,
+      limit: 1
+    },
+    {
+      enabled,
+      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined
+    }
+  );

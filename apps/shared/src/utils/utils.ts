@@ -1,3 +1,5 @@
+import { createId } from '@paralleldrive/cuid2';
+
 export const camelCase = (str: string) => {
   const result = str
     .replace(/([A-Z])/g, ' $1') // insert a space before all caps
@@ -45,3 +47,5 @@ export const filterAndJoin = (
   parts
     .filter((part) => part !== undefined && part !== null && part !== '') // Filter out undefined, null, or empty strings
     .join(separator); // Join with the provided separator, default is a space
+
+export const generateCuid = () => createId();

@@ -1,10 +1,27 @@
 import { cache } from '@config/cache';
 import { protectedProcedure, trpc } from '@config/trpc';
+import { getViewableUsers } from '@dreams-built/shared/src/auth/roles';
 import { z } from 'zod';
 import { upsertUser } from './model';
 import { getUser } from './service';
 
 export const userRouter = trpc.router({
+  list: protectedProcedure().query(async ({ ctx }) => {
+    const users = await ctx.db.user.findMany({
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        image: true,
+        lastName: true,
+        role: true
+      }
+    });
+
+    const filteredUsers = getViewableUsers(new Set(ctx.user.permissions), users);
+
+    return filteredUsers;
+  }),
   profile: protectedProcedure()
     .input(
       z.object({

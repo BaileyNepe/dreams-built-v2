@@ -17,15 +17,27 @@ export const routes: {
   requiredPermission?: Authz;
 }[] = [
   { name: 'Dashboard', to: paths.dashboard, icon: FolderIcon },
-  { name: 'Timesheet', to: paths.timesheet, icon: SignalIcon },
-  { name: 'projects', to: paths.projects, icon: GlobeAltIcon },
+  {
+    name: 'Timesheet',
+    to: paths.timesheet,
+    icon: SignalIcon,
+    requiredPermission: authz.timesheet
+  },
+  {
+    name: 'projects',
+    to: paths.projects,
+    icon: GlobeAltIcon,
+    requiredPermission: authz.jobs_read
+  },
   {
     name: 'Clients',
     to: paths.clients,
     icon: ServerIcon,
     requiredPermission: authz.clients_read
   },
+  // TODO: add permissions
   { name: 'project Parts', to: paths.projectParts, icon: ServerIcon },
+  // TODO: add permissions
   { name: 'Schedule', to: paths.schedule, icon: GlobeAltIcon },
   {
     name: 'Employees',
@@ -33,5 +45,6 @@ export const routes: {
     icon: ServerIcon,
     requiredPermission: authz.roles_view_employee
   },
+  // TODO: add permissions
   { name: 'Reports', to: paths.projectReports, icon: SignalIcon }
 ];

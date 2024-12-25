@@ -28,7 +28,7 @@ export const ProjectsPage = () => {
 
   return (
     <PageLayout
-      title="Jobs"
+      title="Projects"
       description="List of jobs in the system. Click on a job to view more details. Click on the button to create a new job"
       onClick={() => {
         navigate({ to: paths.jobsCreate });
@@ -58,7 +58,7 @@ export const ProjectsPage = () => {
         headers={[
           { id: 'jobNumber', width: '10%' },
           { id: 'client', width: '10%', align: 'center' },
-          { id: 'address', width: '25%' },
+          { id: 'address', width: '100%' },
           { id: 'city' },
           { id: 'endClient', width: '10%' },
           { id: 'area', width: '1rem' },
@@ -68,9 +68,7 @@ export const ProjectsPage = () => {
         rows={data?.projects.map((job) => ({
           id: job.id,
           jobNumber: (
-            <span>
-              <strong>{job.jobNumber.toString().padStart(5, '0')}</strong>
-            </span>
+            <Color color={job.color} text={job.jobNumber.toString().padStart(5, '0')} />
           ),
           client: <Color color={job.clientColor} text={job.client} type="background" />,
           endClient: job.endClient,

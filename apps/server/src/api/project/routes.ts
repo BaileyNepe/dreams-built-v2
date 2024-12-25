@@ -80,6 +80,63 @@ export const projectsRouter = trpc.router({
         total
       };
     }),
+  infiniteList: protectedProcedure([authz.jobs_read])
+    .input(
+      z.object({
+        query: z.string().optional(),
+        cursor: z.string().nullish(),
+        limit: z.number().default(10)
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      const { query, limit, cursor } = input;
+
+      const orClause: Prisma.ProjectWhereInput[] = [];
+
+      // Attempt to parse integer
+      if (query) {
+        const parsed = parseInt(query, 10);
+        if (!Number.isNaN(parsed)) {
+          // add integer filter
+          orClause.push({ jobNumber: { equals: parsed } });
+        }
+
+        // add string filters
+        orClause.push(
+          { address: { contains: query, mode: 'insensitive' } }
+          // any other text fields
+        );
+      }
+
+      const where: Prisma.ProjectWhereInput = {
+        deleted: false,
+        AND: [orClause.length ? { OR: orClause } : {}]
+      };
+
+      // If we store the cursor as a project id or something
+      const projects = await ctx.db.project.findMany({
+        take: limit + 1,
+        skip: 0,
+        cursor: cursor ? { id: cursor } : undefined,
+        orderBy: { jobNumber: 'desc' },
+        where
+      });
+
+      // Determine nextCursor
+      let nextCursor: typeof cursor = null;
+      if (projects.length > limit) {
+        // pop the extra item
+        const next = projects.pop();
+        if (next) {
+          nextCursor = next.id;
+        }
+      }
+
+      return {
+        projects,
+        nextCursor
+      };
+    }),
 
   toggleInvoiced: protectedProcedure([authz.jobs_edit])
     .input(
