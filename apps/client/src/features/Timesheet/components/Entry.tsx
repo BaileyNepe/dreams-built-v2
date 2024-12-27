@@ -24,7 +24,10 @@ const Container = styled.div`
     padding: 1rem;
     border: 1px solid ${({ theme }) => theme.palette.grey[300]};
     border-radius: ${({ theme }) => theme.shape.borderRadius}px;
-    /* background-color: ${({ theme }) => theme.palette.grey[200]}; */
+
+    button {
+      margin-top: 1rem;
+    }
   }
 `;
 
@@ -70,7 +73,7 @@ export const Entry: FC<{ entryId: string }> = ({ entryId }) => {
         value={entry.projectId}
         onChange={(projectId) => updateEntry({ id: entry.id, projectId })}
       />
-      <Time>{elapsedTime.time}</Time>
+      {isDesktop && <Time>{elapsedTime.time}</Time>}
       <Button
         color="error"
         onClick={() => deleteEntry(entry.id)}
