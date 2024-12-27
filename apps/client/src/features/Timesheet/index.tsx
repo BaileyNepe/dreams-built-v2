@@ -1,4 +1,4 @@
-import { Container, Typography } from '@mui/material';
+import { Container } from '@mui/material';
 import { Button } from 'components/Button';
 import { TimesheetWeek } from './components/Week';
 import { useTimesheet } from './hooks/useTimesheet';
