@@ -1,6 +1,5 @@
 // TODO move this to a date util file
 import { DateTime } from 'luxon';
-import { isNumber } from './number';
 
 export const getOrdinal = (number: number) => {
   const superScript = ['th', 'st', 'nd', 'rd'];
@@ -45,23 +44,31 @@ export const calculateTimeDifference = (startTime?: string, endTime?: string) =>
   if (!startTime || !endTime) {
     return {
       time: '00:00',
-      durationInHours: 0
+      totalMinutes: 0
     };
   }
 
   const start = DateTime.fromFormat(startTime, 'HH:mm');
   const end = DateTime.fromFormat(endTime, 'HH:mm');
-  const diff = end.diff(start, 'hours');
+  const diffInMinutes = end.diff(start, 'minutes').as('minutes');
 
-  if (diff.hours < 0) {
+  // If end is before start, treat as zero
+  if (diffInMinutes <= 0) {
     return {
       time: '00:00',
-      durationInHours: 0
+      totalMinutes: 0
     };
   }
 
+  // Convert minutes back into HH:mm
+  const hours = Math.floor(diffInMinutes / 60);
+  const minutes = Math.floor(diffInMinutes % 60);
+  const timeString = `${hours.toString().padStart(2, '0')}:${minutes
+    .toString()
+    .padStart(2, '0')}`;
+
   return {
-    time: diff.toFormat('hh:mm'),
-    durationInHours: isNumber(diff.hours) ? diff.hours.toFixed(2) : 0
+    time: timeString,
+    totalMinutes: diffInMinutes
   };
 };

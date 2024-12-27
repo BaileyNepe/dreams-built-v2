@@ -30,7 +30,7 @@ const TimesheetContext = createContext<
       weekStart: string;
       userId: string | undefined;
       entries: Entry[];
-      comments: Note[];
+      notes: Note[];
       addEntry: (day: string) => void;
       deleteEntry: (id: string) => void;
       updateComment: (comment: { day: string; message: string }) => void;
@@ -161,7 +161,7 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
         weekStart,
         userId,
         entries,
-        comments: notes,
+        notes,
         addEntry,
         deleteEntry,
         updateComment,

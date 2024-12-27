@@ -5,6 +5,7 @@ import { type FC } from 'react';
 type InputProps = TextFieldProps & {
   name: string;
   error?: boolean;
+  hasLabel?: boolean;
 };
 
 export const Input: FC<InputProps> = ({
@@ -12,13 +13,14 @@ export const Input: FC<InputProps> = ({
   label,
   value,
   error,
+  hasLabel = true,
   helperText,
   ...props
 }) => (
   <TextField
     fullWidth
     error={!!error}
-    label={label ?? sentenceCase(name)}
+    label={hasLabel ? (label ?? sentenceCase(name)) : undefined}
     helperText={error ? helperText : undefined}
     value={value ?? ''}
     {...props}

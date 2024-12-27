@@ -7,7 +7,7 @@ export const ProjectSelect: FC<{
   value?: string;
   onChange: (projectId: string) => void;
   label?: string;
-}> = memo(({ value, onChange, label = 'Select Project' }) => {
+}> = memo(({ value, onChange, label }) => {
   const { data: projects, isLoading } = useProjectsLargeList();
 
   return (

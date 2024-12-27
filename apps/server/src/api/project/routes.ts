@@ -10,22 +10,17 @@ export const projectsRouter = trpc.router({
     .query(async ({ ctx, input }) => {
       const { query } = input;
 
-      // Attempt to parse the query to an integer
       const parsedJobNumber = Number.parseInt(query ?? '', 10);
       const isJobNumber = !Number.isNaN(parsedJobNumber);
 
-      // Build the OR array for the search
       const orClause: Prisma.ProjectWhereInput[] = [];
 
-      // If we can parse the string into a valid int,
-      // include jobNumber equality in the OR clause.
       if (isJobNumber) {
         orClause.push({
           jobNumber: parsedJobNumber
         });
       }
 
-      // Add string-based partial matches for other fields
       if (query) {
         orClause.push(
           { endClient: { contains: query, mode: 'insensitive' } },
@@ -36,10 +31,7 @@ export const projectsRouter = trpc.router({
 
       const whereParams: Prisma.ProjectWhereInput = {
         deleted: false,
-        AND: [
-          // Only attach the OR if there's at least one clause
-          orClause.length > 0 ? { OR: orClause } : {}
-        ]
+        AND: [orClause.length > 0 ? { OR: orClause } : {}]
       };
 
       const projects = await ctx.db.project.findMany({
