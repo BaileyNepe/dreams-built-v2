@@ -1,78 +1,32 @@
 // components/ProjectSelect.tsx
-import { Autocomplete, CircularProgress, TextField } from '@mui/material';
-import { useInfiniteProjects } from 'api/projects';
-import { useCallback, useRef, useState, type FC } from 'react';
-import { useDebounce } from 'utils/hooks/useDebounce';
+import { Autocomplete, TextField } from '@mui/material';
+import { useProjectsLargeList } from 'api/projects';
+import { memo, type FC } from 'react';
 
-interface ProjectSelectProps {
+export const ProjectSelect: FC<{
   value?: string;
-  onChange?: (projectId: string | null) => void;
+  onChange: (projectId: string) => void;
   label?: string;
-}
-
-export const ProjectSelect: FC<ProjectSelectProps> = ({
-  value,
-  onChange,
-  label = 'Select Project'
-}) => {
-  const [search, setSearch] = useState('');
-  const debouncedSearch = useDebounce(search, 300);
-
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useInfiniteProjects({ query: debouncedSearch });
-
-  const projects = data?.pages.flatMap((page) => page.projects) ?? [];
-
-  const selectedOption = projects.find((proj) => proj.id === value) ?? null;
-
-  const listboxRef = useRef<HTMLUListElement | null>(null);
-
-  const handleListboxScroll = useCallback(() => {
-    if (!listboxRef.current || isFetchingNextPage) return;
-    const listbox = listboxRef.current;
-    const { scrollTop, clientHeight, scrollHeight } = listbox;
-
-    if (scrollHeight - scrollTop - clientHeight < 100) {
-      if (hasNextPage) {
-        fetchNextPage();
-      }
-    }
-  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+}> = memo(({ value, onChange, label = 'Select Project' }) => {
+  const { data: projects, isLoading } = useProjectsLargeList();
 
   return (
     <Autocomplete
-      options={projects}
+      options={projects?.projects ?? []}
       getOptionLabel={(option) => `${option.jobNumber} - ${option.address}`}
-      value={selectedOption}
+      value={projects?.projects.find((proj) => proj.id === value) ?? null}
       onChange={(_event, newValue) => {
-        onChange?.(newValue?.id ?? null);
-      }}
-      inputValue={search}
-      onInputChange={(_event, newInputValue) => {
-        setSearch(newInputValue);
+        onChange(newValue?.id ?? '');
       }}
       loading={isLoading}
       renderInput={(params) => (
-        <TextField
-          {...params}
-          label={label}
-          InputProps={{
-            ...params.InputProps,
-            endAdornment: (
-              <>
-                {isLoading ? <CircularProgress color="inherit" size={20} /> : null}
-                {params.InputProps.endAdornment}
-              </>
-            )
-          }}
-        />
+        <TextField placeholder="Select Project..." {...params} label={label} />
       )}
       slotProps={{
-        listbox: { onScroll: handleListboxScroll, ref: listboxRef }
+        listbox: {
+          style: { maxHeight: 200, overflow: 'auto' }
+        }
       }}
-      // for large lists, you might want some performance props:
-      // disablePortal, blurOnSelect, filterOptions={() => projects} (to disable local filtering if your server does it)
-      filterOptions={(opts) => opts} // prevent MUI from filtering further
     />
   );
-};
+});

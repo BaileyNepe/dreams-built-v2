@@ -16,6 +16,12 @@ export const useProjectList = () => {
   };
 };
 
+export const useProjectsLargeList = () =>
+  api.projects.list.useQuery({
+    page: 1,
+    perPage: 400
+  });
+
 export const useToggleInvoiceProject = () => {
   const utils = api.useUtils();
   const pagination = usePagination();
@@ -72,21 +78,3 @@ export const useToggleInvoiceProject = () => {
     }
   });
 };
-
-export const useInfiniteProjects = ({
-  query,
-  enabled = true
-}: {
-  query?: string;
-  enabled?: boolean;
-}) =>
-  api.projects.infiniteList.useInfiniteQuery(
-    {
-      query,
-      limit: 1
-    },
-    {
-      enabled,
-      getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined
-    }
-  );

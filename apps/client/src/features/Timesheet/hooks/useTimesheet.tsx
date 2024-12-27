@@ -118,7 +118,7 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
       endTime
     }: {
       id: string;
-      projectId?: string;
+      projectId?: string | null;
       startTime?: string;
       endTime?: string;
     }) => {
@@ -127,6 +127,7 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
         if (index === -1) {
           return prev;
         }
+
         return prev.map((entry) => {
           if (entry.id === id) {
             return {
@@ -148,7 +149,10 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
   }, []);
 
   const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
-    // Call API to save entries
+    e.preventDefault();
+    // 1. Validate the entries
+    // 2. Submit the entries
+    // 3. feedback to the user
   }, []);
 
   return (

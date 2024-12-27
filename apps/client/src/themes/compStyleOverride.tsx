@@ -136,7 +136,8 @@ export default function componentStyleOverrides({
             transform: 'none',
             color: theme.palette.text.dark,
             fontWeight: 500,
-            top: '-8px' // Adjust this value to control label placement
+            marginTop: '16px',
+            top: '-6px' // Adjust this value to control label placement
           },
           '& .MuiInputLabel-shrink': {
             transform: 'none'

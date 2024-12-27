@@ -12,7 +12,7 @@ import superjson from 'superjson';
 import { useAuthInit } from './AuthProvider';
 
 const cacheTime = 1000 * 60 * 90; // 90 minutes
-const staleTime = 1000 * 60 * 5; // 5 minutes
+const staleTime = 1000 * 60 * 10; // 5 minutes
 
 const queryClient = new QueryClient({
   defaultOptions: {

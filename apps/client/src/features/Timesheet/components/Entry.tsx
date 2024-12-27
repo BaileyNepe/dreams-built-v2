@@ -36,9 +36,7 @@ export const Entry: FC<{ entryId: string }> = ({ entryId }) => {
       />
       <ProjectSelect
         value={entry.projectId}
-        onChange={(projectId) =>
-          updateEntry({ id: entry.id, projectId: projectId ?? undefined })
-        }
+        onChange={(projectId) => updateEntry({ id: entry.id, projectId })}
       />
       <p>Elapsed Time: {elapsedTime.time} hrs</p>
       <Button onClick={() => deleteEntry(entry.id)}>Delete</Button>
