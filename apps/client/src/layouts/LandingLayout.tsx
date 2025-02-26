@@ -1,8 +1,9 @@
-import { Outlet } from '@tanstack/react-router';
+import { Navigate, Outlet } from '@tanstack/react-router';
 import { Footer } from 'components/Footer';
 import { Header } from 'components/Header';
 import { type FC } from 'react';
 import styled from 'styled-components';
+import { useAuth } from 'utils/contexts/AuthProvider';
 
 const Layout = styled.div`
   display: flex;
@@ -14,12 +15,20 @@ const Main = styled.main`
   flex: 1;
 `;
 
-export const LandingLayout: FC = () => (
-  <Layout>
-    <Header />
-    <Main>
-      <Outlet />
-    </Main>
-    <Footer />
-  </Layout>
-);
+export const LandingLayout: FC = () => {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (!isLoading && isAuthenticated) {
+    return <Navigate to="/dashboard" />;
+  }
+
+  return (
+    <Layout>
+      <Header />
+      <Main>
+        <Outlet />
+      </Main>
+      <Footer />
+    </Layout>
+  );
+};
