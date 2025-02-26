@@ -27,6 +27,7 @@ interface Note {
 
 const TimesheetContext = createContext<
   | {
+      isLoading: boolean;
       weekStart: string;
       userId: string | undefined;
       entries: Entry[];
@@ -61,11 +62,13 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
   const [notes, setNotes] = useState<Note[]>([]);
 
   useEffect(() => {
-    setEntries(
-      userEntries.entries.sort((a, b) => a.startTime.localeCompare(b.startTime))
-    );
-    setNotes(userEntries.notes);
-  }, [userEntries]);
+    if (userEntries.data && !userEntries.isLoading) {
+      setEntries(
+        userEntries.data.entries.sort((a, b) => a.startTime.localeCompare(b.startTime))
+      );
+      setNotes(userEntries.data.notes);
+    }
+  }, [userEntries.data, userEntries.isLoading]);
 
   const addEntry = useCallback(
     (day: string) => {
@@ -158,6 +161,7 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
   return (
     <TimesheetContext.Provider
       value={{
+        isLoading: userEntries.isLoading,
         weekStart,
         userId,
         entries,

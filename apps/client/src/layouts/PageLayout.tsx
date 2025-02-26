@@ -12,12 +12,7 @@ const Container = styled.div`
 
   @media (min-width: 640px) {
     /* sm breakpoint */
-    padding: 1.5rem;
-  }
-
-  @media (min-width: 1024px) {
-    /* lg breakpoint */
-    padding: 2rem;
+    padding: 1rem 1.5rem;
   }
 `;
 

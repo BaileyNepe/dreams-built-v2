@@ -10,8 +10,8 @@ export const useTimeSheetEntries = ({
 }) => {
   const { user } = useAuth();
 
-  return api.timesheet.get.useSuspenseQuery({
+  return api.timesheet.get.useQuery({
     weekStart,
     userId: userId ?? user.id
-  })[0];
+  });
 };

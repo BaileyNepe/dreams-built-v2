@@ -1,14 +1,14 @@
 import { Container } from '@mui/material';
-import { Button } from 'components/Button';
+import { BasicDatePicker } from 'components/DatePicker';
 import { TimesheetWeek } from './components/Week';
 import { useTimesheet } from './hooks/useTimesheet';
 
 export const Timesheet = () => {
-  const { changeDate } = useTimesheet();
+  const { changeDate, weekStart } = useTimesheet();
 
   return (
     <Container>
-      <Button onClick={() => changeDate('20/05/2024')}>Change Date</Button>
+      <BasicDatePicker value={weekStart} onChange={changeDate} />
       <TimesheetWeek />
     </Container>
   );

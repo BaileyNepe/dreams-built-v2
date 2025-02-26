@@ -2,6 +2,7 @@ import PlusIcon from '@mui/icons-material/Add';
 import MessageRoundedIcon from '@mui/icons-material/MessageRounded';
 import { IconButton, Typography } from '@mui/material';
 import { Button } from 'components/Button';
+import Loader from 'components/Loader';
 import { useMemo, type FC } from 'react';
 import styled from 'styled-components';
 import { calculateTimeDifference } from 'utils/date';
@@ -70,7 +71,7 @@ export const TimesheetDay: FC<{
   ordinal: string;
   month: string;
 }> = ({ day, ordinal, month, date }) => {
-  const { entries, addEntry, notes } = useTimesheet();
+  const { entries, addEntry, notes, isLoading } = useTimesheet();
   const isDesktop = useResponsive('up', 'md');
 
   const dayEntries = useMemo(
@@ -127,9 +128,11 @@ export const TimesheetDay: FC<{
         </Header>
       )}
       <Body>
-        {dayEntries.map((entry) => (
-          <Entry key={entry.id} entryId={entry.id} />
-        ))}
+        {isLoading ? (
+          <Loader />
+        ) : (
+          dayEntries.map((entry) => <Entry key={entry.id} entryId={entry.id} />)
+        )}
       </Body>
       {!!dayEntries.length && (
         <Footer>

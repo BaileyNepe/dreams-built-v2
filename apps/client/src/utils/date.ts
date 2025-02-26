@@ -17,6 +17,14 @@ export const generateWeeks = (
     weekEnd: weekEndInit.minus({ days: i * 7 }).toFormat('dd/MM/yyyy')
   }));
 
+export const formatDate = (date: DateTime) => date.toFormat('dd/MM/yyyy');
+
+export const getDate = (date?: string) =>
+  date ? DateTime.fromFormat(date, 'dd/MM/yyyy') : DateTime.now().toFormat('dd/MM/yyyy');
+
+export const getLuxonDate = (date?: string) =>
+  date ? DateTime.fromFormat(date, 'dd/MM/yyyy') : DateTime.now();
+
 export const generateWeekArray = (weekStart: string) =>
   Array.from({ length: 7 }, (_, i) => {
     const dateFormat = DateTime.fromFormat(weekStart, 'dd/MM/yyyy').plus({
