@@ -19,10 +19,30 @@ const HeaderContainer = styled.div`
   flex-direction: column;
   gap: 1rem;
 
-  @media (min-width: 768px) {
-    flex-direction: row;
+  /* For desktop, switch to a grid layout with 3 columns */
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    justify-content: space-between;
+    gap: 1rem;
+  }
+`;
+
+const LeftItem = styled.div`
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
+    justify-self: start;
+  }
+`;
+
+const CenterItem = styled.div`
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
+    justify-self: center;
+  }
+`;
+
+const RightItem = styled.div`
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
+    justify-self: end;
   }
 `;
 
@@ -44,18 +64,29 @@ export const Timesheet = () => {
     user: { permissions }
   } = useAuth();
 
-  const canEditOthers = permissions?.includes(authz.timesheet_view_all);
+  const canEditOtherUsers = permissions?.includes(authz.timesheet_view_all);
 
   return (
     <Container>
       <Form>
         <HeaderContainer>
-          <BasicDatePicker value={weekStart} onChange={changeDate} />
-          {canEditOthers && <UserSelect value={userId} onChange={updateUser} />}
-          <SubmitButton
-            isLoading={false}
-            onClick={() => notify('Timesheet saved successfully', { type: 'success' })}
-          />
+          <LeftItem>
+            <BasicDatePicker value={weekStart} onChange={changeDate} />
+          </LeftItem>
+          {canEditOtherUsers ? (
+            <CenterItem>
+              <UserSelect value={userId} onChange={updateUser} />
+            </CenterItem>
+          ) : (
+            // User to keep the layout consistent
+            <CenterItem />
+          )}
+          <RightItem>
+            <SubmitButton
+              isLoading={false}
+              onClick={() => notify('Timesheet saved successfully', { type: 'success' })}
+            />
+          </RightItem>
         </HeaderContainer>
 
         <TimesheetWeek />

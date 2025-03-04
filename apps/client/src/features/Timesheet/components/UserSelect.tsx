@@ -13,6 +13,9 @@ export const UserSelect: FC<{
 
   return (
     <Autocomplete
+      sx={{
+        minWidth: 200
+      }}
       options={users}
       getOptionLabel={(option) => `${option.name}`}
       value={users.find((user) => user.id === value) ?? null}
