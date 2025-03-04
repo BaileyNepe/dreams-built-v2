@@ -68,6 +68,28 @@ const FooterRow = styled.div`
   }
 `;
 
+const NoteIconButton: FC<{
+  hasNote: boolean;
+  onClick: () => void;
+}> = ({ hasNote, onClick }) => (
+  <IconButton
+    aria-label="add note"
+    color={hasNote ? 'success' : 'default'}
+    onClick={onClick}
+  >
+    <MessageRoundedIcon sx={{ width: 18, height: 18 }} />
+  </IconButton>
+);
+
+const AddEntryButton: FC<{ fullWidth?: boolean; onClick: () => void }> = ({
+  fullWidth,
+  onClick
+}) => (
+  <Button onClick={onClick} startIcon={<PlusIcon />} fullWidth={fullWidth}>
+    Add Entry
+  </Button>
+);
+
 /* ----------------------------- Desktop View ---------------------------- */
 
 interface TimesheetDayViewProps {
@@ -93,22 +115,14 @@ const TimesheetDayDesktopView: FC<TimesheetDayViewProps> = ({
   openCommentModal,
   hasNote
 }) => (
-  <Container>
+  <>
     <CardHeader>
       <Typography variant="h5" component="h2">
         {day} - {dateLabel}
       </Typography>
       <div style={{ display: 'flex', gap: '0.5rem' }}>
-        <IconButton
-          aria-label="add note"
-          color={hasNote ? 'success' : 'default'}
-          onClick={openCommentModal}
-        >
-          <MessageRoundedIcon sx={{ width: 18, height: 18 }} />
-        </IconButton>
-        <Button onClick={onAddEntry} startIcon={<PlusIcon />}>
-          Add Entry
-        </Button>
+        <NoteIconButton hasNote={hasNote} onClick={openCommentModal} />
+        <AddEntryButton onClick={onAddEntry} />
       </div>
     </CardHeader>
 
@@ -135,7 +149,7 @@ const TimesheetDayDesktopView: FC<TimesheetDayViewProps> = ({
         <span />
       </FooterRow>
     )}
-  </Container>
+  </>
 );
 
 /* ----------------------------- Mobile View ---------------------------- */
@@ -151,18 +165,12 @@ const TimesheetDayMobileView: FC<TimesheetDayViewProps> = ({
   openCommentModal,
   hasNote
 }) => (
-  <Container>
+  <>
     <CardHeader>
       <Typography variant="h5" component="h2">
         {day} - {dateLabel}
       </Typography>
-      <IconButton
-        aria-label="add note"
-        color={!hasNote ? 'success' : 'default'}
-        onClick={openCommentModal}
-      >
-        <MessageRoundedIcon sx={{ width: 18, height: 18 }} color="success" />
-      </IconButton>
+      <NoteIconButton hasNote={hasNote} onClick={openCommentModal} />
     </CardHeader>
 
     <Body>{isLoading ? <Loader /> : dayEntriesJSX}</Body>
@@ -173,10 +181,8 @@ const TimesheetDayMobileView: FC<TimesheetDayViewProps> = ({
       </Typography>
     )}
 
-    <Button onClick={onAddEntry} startIcon={<PlusIcon />} fullWidth>
-      Add Entry
-    </Button>
-  </Container>
+    <AddEntryButton fullWidth onClick={onAddEntry} />
+  </>
 );
 
 /* ----------------------------- Main TimesheetDay ---------------------------- */
@@ -192,12 +198,8 @@ export const TimesheetDay: FC<{
   const isDesktop = useResponsive('up', 'md');
 
   // Filter the day-specific entries and note
-  const dayEntries = useMemo(
-    () => entries.filter((entry) => entry.day === day),
-    [entries, day]
-  );
-  const todayNotes = useMemo(() => notes.find((note) => note.day === day), [notes, day]);
-
+  const dayEntries = entries.filter((entry) => entry.day === day);
+  const todayNotes = notes.find((note) => note.day === day);
   const dayEntriesJSX = useMemo(
     () => dayEntries.map((entry) => <Entry key={entry.id} entryId={entry.id} />),
     [dayEntries]
@@ -232,11 +234,13 @@ export const TimesheetDay: FC<{
 
   return (
     <>
-      {isDesktop ? (
-        <TimesheetDayDesktopView {...viewProps} />
-      ) : (
-        <TimesheetDayMobileView {...viewProps} />
-      )}
+      <Container>
+        {isDesktop ? (
+          <TimesheetDayDesktopView {...viewProps} />
+        ) : (
+          <TimesheetDayMobileView {...viewProps} />
+        )}
+      </Container>
       <CommentModal
         isOpen={isCommentModalOpen}
         onClose={() => setIsCommentModalOpen(false)}

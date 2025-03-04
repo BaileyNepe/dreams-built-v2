@@ -19,9 +19,7 @@ export const UserSelect: FC<{
       options={users}
       getOptionLabel={(option) => `${option.name}`}
       value={users.find((user) => user.id === value) ?? null}
-      onChange={(_event, newValue) => {
-        onChange(newValue?.id ?? '');
-      }}
+      onChange={(_event, newValue) => onChange(newValue?.id ?? '')}
       renderInput={(params) => (
         <TextField placeholder="Select User..." {...params} label={label} />
       )}

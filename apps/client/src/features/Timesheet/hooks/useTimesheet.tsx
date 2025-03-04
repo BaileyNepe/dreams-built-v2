@@ -1,5 +1,7 @@
+import { authz } from '@dreams-built/shared/src/auth/permissions';
 import { generateCuid } from '@dreams-built/shared/src/utils/utils';
 import { useTimeSheetEntries } from 'api/timesheet';
+import { notify } from 'libs/Notify';
 import {
   createContext,
   useCallback,
@@ -9,6 +11,7 @@ import {
   type FC,
   type PropsWithChildren
 } from 'react';
+import { useAuth } from 'utils/contexts/AuthProvider';
 import { getWeekStart } from 'utils/date';
 
 interface Entry {
@@ -44,7 +47,7 @@ const TimesheetContext = createContext<
       }) => void;
 
       handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-      updateUser: (userId?: string) => void;
+      changeUser: (userId?: string) => void;
     }
   | undefined
 >(undefined);
@@ -147,9 +150,24 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
     []
   );
 
-  const updateUser = useCallback((newUserId?: string) => {
-    setUserId(newUserId);
-  }, []);
+  const {
+    user: { permissions }
+  } = useAuth();
+
+  const canEditOtherUsers = permissions?.includes(authz.timesheet_view_all);
+
+  const changeUser = useCallback(
+    (newUserId?: string) => {
+      if (!canEditOtherUsers) {
+        notify('You do not have permission to view other users timesheets', {
+          type: 'error'
+        });
+        return;
+      }
+      setUserId(newUserId);
+    },
+    [canEditOtherUsers]
+  );
 
   const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -172,7 +190,7 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
         changeDate,
         updateEntry,
         handleSubmit,
-        updateUser
+        changeUser
       }}
     >
       {children}

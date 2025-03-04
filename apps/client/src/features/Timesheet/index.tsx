@@ -49,8 +49,6 @@ const RightItem = styled.div`
 const FooterContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  margin-top: 1rem;
 
   @media (min-width: 768px) {
     flex-direction: row;
@@ -59,7 +57,7 @@ const FooterContainer = styled.div`
 `;
 
 export const Timesheet = () => {
-  const { changeDate, weekStart, userId, updateUser } = useTimesheet();
+  const { changeDate, weekStart, userId, changeUser: updateUser } = useTimesheet();
   const {
     user: { permissions }
   } = useAuth();
@@ -68,7 +66,12 @@ export const Timesheet = () => {
 
   return (
     <Container>
-      <Form>
+      <Form
+        onSubmit={(e) => {
+          e.preventDefault();
+          notify('Timesheet submitted', { type: 'success' });
+        }}
+      >
         <HeaderContainer>
           <LeftItem>
             <BasicDatePicker value={weekStart} onChange={changeDate} />
@@ -82,20 +85,14 @@ export const Timesheet = () => {
             <CenterItem />
           )}
           <RightItem>
-            <SubmitButton
-              isLoading={false}
-              onClick={() => notify('Timesheet saved successfully', { type: 'success' })}
-            />
+            <SubmitButton isLoading={false} />
           </RightItem>
         </HeaderContainer>
 
         <TimesheetWeek />
 
         <FooterContainer>
-          <SubmitButton
-            isLoading={false}
-            onClick={() => notify('Timesheet saved successfully', { type: 'success' })}
-          />
+          <SubmitButton isLoading={false} />
         </FooterContainer>
       </Form>
     </Container>
