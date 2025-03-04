@@ -12,11 +12,12 @@ import { useTimesheet } from './hooks/useTimesheet';
 const Form = styled.form`
   display: grid;
   gap: 1rem;
+  padding-bottom: 2rem;
 `;
 
 const HeaderContainer = styled.div`
-  display: flex;
-  flex-direction: column;
+  display: grid;
+
   gap: 1rem;
 
   /* For desktop, switch to a grid layout with 3 columns */
@@ -41,6 +42,9 @@ const CenterItem = styled.div`
 `;
 
 const RightItem = styled.div`
+  button {
+    width: 100%;
+  }
   @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     justify-self: end;
   }
@@ -50,7 +54,7 @@ const FooterContainer = styled.div`
   display: flex;
   flex-direction: column;
 
-  @media (min-width: 768px) {
+  @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     flex-direction: row;
     justify-content: flex-end;
   }

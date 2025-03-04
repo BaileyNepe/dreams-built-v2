@@ -7,7 +7,7 @@ import { TimesheetDay } from './Day';
 const Container = styled.div`
   display: grid;
   gap: 1rem;
-  padding: 1rem 0 2rem;
+  padding: 1rem 0;
 `;
 
 export const TimesheetWeek: FC = () => {

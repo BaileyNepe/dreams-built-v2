@@ -12,6 +12,8 @@ export const CommentModal: FC<{ isOpen: boolean; onClose: () => void; day: strin
   const currentNote = notes.find((note) => note.day === day);
   const message = currentNote?.message || '';
 
+  const maxLength = 1000;
+
   return (
     <BasicModal open={isOpen} onClose={onClose} title={`Note for ${day}`}>
       <TextField
@@ -21,8 +23,8 @@ export const CommentModal: FC<{ isOpen: boolean; onClose: () => void; day: strin
         minRows={4}
         value={message}
         onChange={(e) => updateComment({ day, message: e.target.value })}
-        slotProps={{ htmlInput: { maxLength: 1000 } }}
-        helperText={`${message.length}/1000`}
+        slotProps={{ htmlInput: { maxLength } }}
+        helperText={`${message.length}/${maxLength}`}
         variant="outlined"
       />
     </BasicModal>
