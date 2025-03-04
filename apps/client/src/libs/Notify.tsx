@@ -1,15 +1,11 @@
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+// import 'react-toastify/dist/ReactToastify.css';
 import styled, { type DefaultTheme } from 'styled-components';
 
 type Type = 'info' | 'success' | 'warning' | 'error';
 
-export const notify = (
-  message: string,
-  options: {
-    type?: Type;
-  } = {}
-) => toast[options.type ?? 'info'](message);
+export const notify = (message: string, options: { type?: Type } = {}) =>
+  toast[options.type ?? 'info'](message);
 
 // Helper function to get the color styles based on toast type
 const getToastColorStyles = (type: Type, theme: DefaultTheme) => `
