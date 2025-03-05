@@ -1,17 +1,41 @@
-import { useAuth } from 'utils/contexts/AuthProvider';
+import { notify } from 'libs/Notify';
 import { api } from './trpc';
 
-export const useTimeSheetEntries = ({
+export const useTimesheetEntries = ({
   weekStart,
   userId
 }: {
   weekStart: string;
-  userId?: string;
-}) => {
-  const { user } = useAuth();
-
-  return api.timesheet.get.useQuery({
+  userId: string;
+}) =>
+  api.timesheet.get.useQuery({
     weekStart,
-    userId: userId ?? user.id
+    userId
+  });
+
+export const useTimesheetMutation = ({
+  userId,
+  weekStart
+}: {
+  userId: string;
+  weekStart: string;
+}) => {
+  const utils = api.useUtils();
+
+  return api.timesheet.update.useMutation({
+    onSuccess: () => {
+      // TODO: clear cache for reports
+
+      notify('Timesheet updated', { type: 'success' });
+    },
+    onError: (error) => {
+      notify(error.message, { type: 'error' });
+    },
+    onSettled: () => {
+      utils.timesheet.get.invalidate({
+        weekStart,
+        userId
+      });
+    }
   });
 };

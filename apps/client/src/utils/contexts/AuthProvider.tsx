@@ -25,7 +25,7 @@ export const useAuthInit = () => {
   return { ...auth, getAccessToken, authSub: auth.user?.sub ?? '' };
 };
 
-export const useAuth = () => {
+export const useAuthOptionalUser = () => {
   const auth = useAuthInit();
 
   const login = useProfileQuery({
@@ -36,7 +36,7 @@ export const useAuth = () => {
     image: auth.user?.picture ?? ''
   });
 
-  const user = { ...auth.user, ...login.data };
+  const user = login.data ? { ...auth.user, ...login.data } : null;
 
   return {
     ...auth,
@@ -46,6 +46,18 @@ export const useAuth = () => {
     isError: auth.error || login.isError,
     errorMessage: auth.error?.message ?? login.error?.message ?? ''
   };
+};
+
+export const useAuth = () => {
+  const auth = useAuthOptionalUser();
+  if (auth.user !== null) {
+    return {
+      ...auth,
+      user: auth.user
+    };
+  }
+
+  throw new Error('useAuth must be used within an authenticated context');
 };
 
 export type User = ReturnType<typeof useAuth>['user'];

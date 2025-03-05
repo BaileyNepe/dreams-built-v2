@@ -3,10 +3,10 @@ import { initTRPC, TRPCError } from '@trpc/server'
 import superjson from 'superjson'
 import { ZodError } from 'zod'
 
+import { getRolePermissions } from '@dreams-built/shared/src/auth/roles'
+import { Authz } from '@dreams-built/shared/src/auth/types'
 import { type NextRequest, NextResponse } from 'next/server'
 import { db } from 'server/db'
-import { getRolePermissions } from 'utils/auth/roles'
-import { type Authz } from 'utils/auth/types'
 
 /**
  * YOU PROBABLY DON'T NEED TO EDIT THIS FILE, UNLESS:
@@ -57,12 +57,20 @@ export const createTRPCContext = async (
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
+    let { message } = shape
+    let zodError = null
+
+    if (error.cause instanceof ZodError) {
+      zodError = error.cause.flatten()
+      message = error.cause.errors.map((issue) => `${issue.message}`).join(', ')
+    }
+
     return {
       ...shape,
+      message,
       data: {
         ...shape.data,
-        zodError:
-          error.cause instanceof ZodError ? error.cause.flatten() : null,
+        zodError,
       },
     }
   },

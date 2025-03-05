@@ -1,6 +1,6 @@
 import { authz } from '@dreams-built/shared/src/auth/permissions';
 import { generateCuid } from '@dreams-built/shared/src/utils/utils';
-import { useTimeSheetEntries } from 'api/timesheet';
+import { useTimesheetEntries, useTimesheetMutation } from 'api/timesheet';
 import { notify } from 'libs/Notify';
 import {
   createContext,
@@ -12,7 +12,7 @@ import {
   type PropsWithChildren
 } from 'react';
 import { useAuth } from 'utils/contexts/AuthProvider';
-import { getWeekStart } from 'utils/date';
+import { calculateTimeDifference, getWeekStart } from 'utils/date';
 
 interface Entry {
   id: string;
@@ -47,16 +47,21 @@ const TimesheetContext = createContext<
       }) => void;
 
       handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-      changeUser: (userId?: string) => void;
+      updateUser: (userId?: string) => void;
     }
   | undefined
 >(undefined);
 
 export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
+  const { user } = useAuth();
   const [weekStart, setWeekStart] = useState(getWeekStart());
 
-  const [userId, setUserId] = useState<string | undefined>(undefined);
-  const userEntries = useTimeSheetEntries({
+  const [userId, setUserId] = useState<string>(user.id);
+  const updateTimesheet = useTimesheetMutation({
+    userId,
+    weekStart
+  });
+  const userEntries = useTimesheetEntries({
     weekStart,
     userId
   });
@@ -164,17 +169,33 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
         });
         return;
       }
-      setUserId(newUserId);
+      setUserId(newUserId ?? user.id);
     },
-    [canEditOtherUsers]
+    [canEditOtherUsers, user.id]
   );
 
-  const handleSubmit = useCallback((e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // 1. Validate the entries
-    // 2. Submit the entries
-    // 3. feedback to the user
-  }, []);
+  const handleSubmit = useCallback(
+    (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      // 1. Validate the entries
+      // 2. Submit the entries
+
+      updateTimesheet.mutate({
+        userId,
+        weekStart,
+        entries: entries.map((entry) => ({
+          id: entry.id,
+          day: entry.day,
+          projectId: entry.projectId,
+          startTime: entry.startTime,
+          endTime: entry.endTime,
+          duration: calculateTimeDifference(entry.startTime, entry.endTime).totalMinutes
+        })),
+        notes
+      });
+    },
+    [entries, notes, updateTimesheet, userId, weekStart]
+  );
 
   return (
     <TimesheetContext.Provider
@@ -190,7 +211,7 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
         changeDate,
         updateEntry,
         handleSubmit,
-        changeUser
+        updateUser: changeUser
       }}
     >
       {children}

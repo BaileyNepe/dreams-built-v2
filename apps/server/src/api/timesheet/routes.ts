@@ -61,22 +61,22 @@ export const timesheetRouter = trpc.router({
   update: protectedProcedure([authz.timesheet])
     .input(
       z.object({
-        userId: z.string().cuid(),
+        userId: z.string().cuid2(),
         weekStart: z.string(),
         entries: z.array(
           z.object({
-            id: z.string().cuid(),
-            day: z.string().regex(/^\d{2}$/),
+            id: z.string().cuid2(),
+            day: z.string(),
             duration: z.number(),
-            projectId: z.string().cuid(),
+            projectId: z.string().cuid2(),
             startTime: z.string().regex(/^\d{2}:\d{2}$/),
             endTime: z.string().regex(/^\d{2}:\d{2}$/)
           })
         ),
         notes: z.array(
           z.object({
-            day: z.string().regex(/^\d{2}$/),
-            message: z.string().max(255)
+            day: z.string(),
+            message: z.string().max(2000)
           })
         )
       })

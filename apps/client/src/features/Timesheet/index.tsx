@@ -2,7 +2,6 @@ import { authz } from '@dreams-built/shared/src/auth/permissions';
 import { Container } from '@mui/material';
 import { BasicDatePicker } from 'components/DatePicker';
 import { SubmitButton } from 'components/SubmitButton';
-import { notify } from 'libs/Notify';
 import styled from 'styled-components';
 import { useAuth } from 'utils/contexts/AuthProvider';
 import { UserSelect } from './components/UserSelect';
@@ -61,7 +60,7 @@ const FooterContainer = styled.div`
 `;
 
 export const Timesheet = () => {
-  const { changeDate, weekStart, userId, changeUser: updateUser } = useTimesheet();
+  const { changeDate, weekStart, userId, updateUser, handleSubmit } = useTimesheet();
   const {
     user: { permissions }
   } = useAuth();
@@ -70,12 +69,7 @@ export const Timesheet = () => {
 
   return (
     <Container>
-      <Form
-        onSubmit={(e) => {
-          e.preventDefault();
-          notify('Timesheet submitted', { type: 'success' });
-        }}
-      >
+      <Form onSubmit={handleSubmit}>
         <HeaderContainer>
           <LeftItem>
             <BasicDatePicker value={weekStart} onChange={changeDate} />

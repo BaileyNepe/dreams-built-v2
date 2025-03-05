@@ -7,7 +7,7 @@ import { styled } from 'styled-components';
 
 import { Outlet } from '@tanstack/react-router';
 import Loader from 'components/Loader';
-import { useAuth } from 'utils/contexts/AuthProvider';
+import { useAuthOptionalUser } from 'utils/contexts/AuthProvider';
 import { Header } from './Header';
 import { NavBar } from './Navbar';
 import { DRAWER_WIDTH, HEADER_HEIGHT } from './constants';
@@ -28,7 +28,7 @@ const Container = styled.div`
 `;
 
 export const Dashboard: FC = () => {
-  const { isAuthenticated, isLoading, loginWithRedirect } = useAuth();
+  const { isAuthenticated, isLoading, loginWithRedirect } = useAuthOptionalUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('xl'));
@@ -43,6 +43,14 @@ export const Dashboard: FC = () => {
     });
 
     return <Loader />;
+  }
+
+  if (isLoading || !isAuthenticated) {
+    return (
+      <Main>
+        <Loader />
+      </Main>
+    );
   }
 
   return (
@@ -74,7 +82,7 @@ export const Dashboard: FC = () => {
 
       {/* Main Content */}
       <Main>
-        <Suspense>{isAuthenticated ? <Outlet /> : <Loader />}</Suspense>
+        <Suspense>{isAuthenticated && !isLoading ? <Outlet /> : <Loader />}</Suspense>
       </Main>
     </Container>
   );
