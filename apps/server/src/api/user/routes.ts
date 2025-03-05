@@ -18,9 +18,7 @@ export const userRouter = trpc.router({
       }
     });
 
-    const filteredUsers = getViewableUsers(new Set(ctx.user.permissions), users);
-
-    return filteredUsers;
+    return getViewableUsers(new Set(ctx.user.permissions), users);
   }),
   profile: protectedProcedure()
     .input(
