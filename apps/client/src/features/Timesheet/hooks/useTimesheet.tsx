@@ -28,46 +28,49 @@ interface Note {
   message: string;
 }
 
-const TimesheetContext = createContext<
-  | {
-      isLoading: boolean;
-      weekStart: string;
-      userId: string | undefined;
-      entries: Entry[];
-      notes: Note[];
-      addEntry: (day: string) => void;
-      deleteEntry: (id: string) => void;
-      updateComment: (comment: { day: string; message: string }) => void;
-      changeDate: (date: string) => void;
-      updateEntry: (entry: {
-        id: string;
-        projectId?: string;
-        startTime?: string;
-        endTime?: string;
-      }) => void;
+// Types for field-level errors
+type FieldErrorType = 'startTime' | 'endTime' | 'projectId';
 
-      handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
-      updateUser: (userId?: string) => void;
-    }
-  | undefined
->(undefined);
+interface FieldError {
+  id: string; // The entry id
+  type: FieldErrorType;
+  message: string;
+}
+
+interface TimesheetContextValue {
+  isLoading: boolean;
+  weekStart: string;
+  userId: string | undefined;
+  entries: Entry[];
+  notes: Note[];
+  errors: FieldError[]; // <= Expose errors to the context
+  addEntry: (day: string) => void;
+  deleteEntry: (id: string) => void;
+  updateComment: (comment: { day: string; message: string }) => void;
+  changeDate: (date: string) => void;
+  updateEntry: (entry: {
+    id: string;
+    projectId?: string;
+    startTime?: string;
+    endTime?: string;
+  }) => void;
+  handleSubmit: (e: React.FormEvent<HTMLFormElement>) => void;
+  updateUser: (userId?: string) => void;
+}
+
+const TimesheetContext = createContext<TimesheetContextValue | undefined>(undefined);
 
 export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
   const { user } = useAuth();
   const [weekStart, setWeekStart] = useState(getWeekStart());
-
   const [userId, setUserId] = useState<string>(user.id);
-  const updateTimesheet = useTimesheetMutation({
-    userId,
-    weekStart
-  });
-  const userEntries = useTimesheetEntries({
-    weekStart,
-    userId
-  });
+
+  const updateTimesheet = useTimesheetMutation({ userId, weekStart });
+  const userEntries = useTimesheetEntries({ weekStart, userId });
 
   const [entries, setEntries] = useState<Entry[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
+  const [errors, setErrors] = useState<FieldError[]>([]);
 
   useEffect(() => {
     if (userEntries.data && !userEntries.isLoading) {
@@ -106,12 +109,7 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
         if (index === -1) {
           return [...prev, { day, message }];
         }
-        return prev.map((note) => {
-          if (note.day === day) {
-            return { day, message };
-          }
-          return note;
-        });
+        return prev.map((note) => (note.day === day ? { day, message } : note));
       });
     },
     []
@@ -135,9 +133,7 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
     }) => {
       setEntries((prev) => {
         const index = prev.findIndex((entry) => entry.id === id);
-        if (index === -1) {
-          return prev;
-        }
+        if (index === -1) return prev;
 
         return prev.map((entry) => {
           if (entry.id === id) {
@@ -177,9 +173,103 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
   const handleSubmit = useCallback(
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
-      // 1. Validate the entries
-      // 2. Submit the entries
 
+      const newErrors: FieldError[] = [];
+
+      // --- Validate each entry ---
+      // 1) Missing fields, invalid format
+      entries.forEach((entry) => {
+        if (!entry.startTime) {
+          newErrors.push({
+            id: entry.id,
+            type: 'startTime',
+            message: 'Start time is required'
+          });
+        } else if (!/^\d{2}:\d{2}$/.test(entry.startTime)) {
+          newErrors.push({
+            id: entry.id,
+            type: 'startTime',
+            message: 'Start time must be valid (HH:MM)'
+          });
+        }
+
+        if (!entry.endTime) {
+          newErrors.push({
+            id: entry.id,
+            type: 'endTime',
+            message: 'End time is required'
+          });
+        } else if (!/^\d{2}:\d{2}$/.test(entry.endTime)) {
+          newErrors.push({
+            id: entry.id,
+            type: 'endTime',
+            message: 'End time must be valid (HH:MM)'
+          });
+        }
+
+        if (!entry.projectId) {
+          newErrors.push({
+            id: entry.id,
+            type: 'projectId',
+            message: 'Please select a project'
+          });
+        }
+      });
+
+      // 2) Overlapping times (only compare entries with the same day)
+      entries.forEach((entry, i) => {
+        const startTime = new Date(`2021-01-01T${entry.startTime}`);
+        const endTime = new Date(`2021-01-01T${entry.endTime}`);
+
+        entries.forEach((otherEntry, j) => {
+          if (i === j) return; // skip self
+
+          if (entry.day === otherEntry.day) {
+            const otherStart = new Date(`2021-01-01T${otherEntry.startTime}`);
+            const otherEnd = new Date(`2021-01-01T${otherEntry.endTime}`);
+
+            const overlaps =
+              (startTime >= otherStart && startTime < otherEnd) ||
+              (endTime > otherStart && endTime <= otherEnd) ||
+              (startTime <= otherStart && endTime >= otherEnd);
+
+            if (overlaps) {
+              // Instead of pushing multiple error messages for the same entry,
+              // you could push a single 'time overlap' error. For demonstration:
+              newErrors.push({
+                id: entry.id,
+                type: 'startTime',
+                message: 'Time range overlaps with another entry'
+              });
+            }
+          }
+        });
+      });
+
+      // 3) Durations (between 1 minute and 24 hours)
+      entries.forEach((entry) => {
+        const duration = calculateTimeDifference(
+          entry.startTime,
+          entry.endTime
+        ).totalMinutes;
+        if (duration < 1 || duration > 24 * 60) {
+          newErrors.push({
+            id: entry.id,
+            type: 'endTime', // or 'startTime' – whichever you prefer to highlight
+            message: 'Entry must be between 1 minute and 24 hours'
+          });
+        }
+      });
+
+      // Store errors
+      setErrors(newErrors);
+
+      if (newErrors.length > 0) {
+        notify('Please fix the highlighted errors before submitting.', { type: 'error' });
+        return;
+      }
+
+      // If we pass all checks, proceed
       updateTimesheet.mutate({
         userId,
         weekStart,
@@ -205,6 +295,7 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
         userId,
         entries,
         notes,
+        errors, // <= Make sure to provide errors here
         addEntry,
         deleteEntry,
         updateComment,

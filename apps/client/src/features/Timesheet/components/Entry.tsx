@@ -12,19 +12,15 @@ export const timesheetTemplateColumns = '1fr 1fr 3fr 3rem 4rem';
 
 const Container = styled.div`
   align-items: center;
-
   display: grid;
-
   gap: 0.5rem;
   grid-template-columns: ${timesheetTemplateColumns};
 
   @media screen and (max-width: ${({ theme }) => theme.breakpoints.values.md}px) {
     grid-template-columns: 1fr;
-
     padding: 1rem;
     border: 1px solid ${({ theme }) => theme.palette.grey[300]};
     border-radius: ${({ theme }) => theme.shape.borderRadius}px;
-
     button {
       margin-top: 1rem;
     }
@@ -37,20 +33,27 @@ const Time = styled.p`
 `;
 
 export const Entry: FC<{ entryId: string }> = ({ entryId }) => {
-  const { entries, updateEntry, deleteEntry } = useTimesheet();
+  const { entries, errors, updateEntry, deleteEntry } = useTimesheet();
   const isDesktop = useResponsive('up', 'md');
+
+  // Find the entry
   const entry = useMemo(() => {
-    const result = entries.find(({ id }) => id === entryId);
-    if (!result) {
+    const found = entries.find(({ id }) => id === entryId);
+    if (!found) {
       throw new Error(`Entry with id ${entryId} not found`);
     }
-    return result;
+    return found;
   }, [entries, entryId]);
 
+  // Compute elapsed time
   const elapsedTime = useMemo(
     () => calculateTimeDifference(entry.startTime, entry.endTime),
     [entry.startTime, entry.endTime]
   );
+
+  // Helper to get a specific error (if any) for the given field
+  const getFieldError = (field: 'startTime' | 'endTime' | 'projectId') =>
+    errors.find((err) => err.id === entry.id && err.type === field)?.message;
 
   return (
     <Container>
@@ -60,6 +63,9 @@ export const Entry: FC<{ entryId: string }> = ({ entryId }) => {
         onChange={(e) => updateEntry({ id: entry.id, startTime: e.target.value })}
         type="time"
         hasLabel={!isDesktop}
+        // Show error styles / message
+        error={Boolean(getFieldError('startTime'))}
+        helperText={getFieldError('startTime') ?? ''}
       />
       <Input
         name="endTime"
@@ -67,11 +73,17 @@ export const Entry: FC<{ entryId: string }> = ({ entryId }) => {
         onChange={(e) => updateEntry({ id: entry.id, endTime: e.target.value })}
         type="time"
         hasLabel={!isDesktop}
+        // Show error styles / message
+        error={Boolean(getFieldError('endTime'))}
+        helperText={getFieldError('endTime') ?? ''}
       />
       <ProjectSelect
         label={!isDesktop ? 'Select Project' : undefined}
         value={entry.projectId}
         onChange={(projectId) => updateEntry({ id: entry.id, projectId })}
+        // If you support an "error" prop, pass it here similarly:
+        error={Boolean(getFieldError('projectId'))}
+        helperText={getFieldError('projectId') ?? ''}
       />
       {isDesktop && <Time>{elapsedTime.time}</Time>}
       <Button

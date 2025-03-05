@@ -3,7 +3,7 @@ import { Footer } from 'components/Footer';
 import { Header } from 'components/Header';
 import { type FC } from 'react';
 import styled from 'styled-components';
-import { useAuth } from 'utils/contexts/AuthProvider';
+import { useAuthOptionalUser } from 'utils/contexts/AuthProvider';
 
 const Layout = styled.div`
   display: flex;
@@ -16,7 +16,7 @@ const Main = styled.main`
 `;
 
 export const LandingLayout: FC = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading } = useAuthOptionalUser();
 
   if (!isLoading && isAuthenticated) {
     return <Navigate to="/dashboard" />;

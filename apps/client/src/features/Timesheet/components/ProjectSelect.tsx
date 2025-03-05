@@ -7,7 +7,9 @@ export const ProjectSelect: FC<{
   value?: string;
   onChange: (projectId: string) => void;
   label?: string;
-}> = memo(({ value, onChange, label }) => {
+  error?: boolean;
+  helperText?: string;
+}> = memo(({ value, onChange, label, error, helperText }) => {
   const { data: projects, isLoading } = useProjectsLargeList();
 
   return (
@@ -20,7 +22,13 @@ export const ProjectSelect: FC<{
       }}
       loading={isLoading}
       renderInput={(params) => (
-        <TextField placeholder="Select Project..." {...params} label={label} />
+        <TextField
+          placeholder="Select Project..."
+          {...params}
+          label={label}
+          error={error}
+          helperText={helperText}
+        />
       )}
       slotProps={{
         listbox: {

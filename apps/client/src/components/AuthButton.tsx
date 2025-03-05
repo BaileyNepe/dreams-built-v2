@@ -1,9 +1,9 @@
 import { type FC } from 'react';
-import { useAuth } from 'utils/contexts/AuthProvider';
+import { useAuthOptionalUser } from 'utils/contexts/AuthProvider';
 import { Button } from './Button';
 
 export const AuthButton: FC = () => {
-  const { isAuthenticated, loginWithPopup, logout, isLoading } = useAuth();
+  const { isAuthenticated, loginWithPopup, logout, isLoading } = useAuthOptionalUser();
 
   const text = isAuthenticated ? 'Sign Out' : 'Sign In';
 
