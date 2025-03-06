@@ -31,6 +31,7 @@ export const useUpdateClientMutation = ({ clientId }: { clientId: string }) => {
     },
     onSettled: () => {
       utils.clients.list.invalidate();
+      utils.projects.invalidate();
       utils.clients.get.invalidate(clientId);
     }
   });

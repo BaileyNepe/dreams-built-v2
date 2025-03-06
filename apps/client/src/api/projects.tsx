@@ -1,4 +1,5 @@
 'use client';
+import { notify } from 'libs/Notify';
 import { usePagination } from 'utils/hooks/usePagination';
 import { api } from './trpc';
 
@@ -19,7 +20,7 @@ export const useProjectList = () => {
 export const useProjectsLargeList = () =>
   api.projects.list.useQuery({
     page: 1,
-    perPage: 400
+    perPage: 1000
   });
 
 export const useToggleInvoiceProject = () => {
@@ -75,6 +76,35 @@ export const useToggleInvoiceProject = () => {
 
     onSuccess: () => {
       utils.projects.list.invalidate();
+    }
+  });
+};
+
+export const useNextJobNumberQuery = () =>
+  api.projects.nextJobNumber.useSuspenseQuery()[0];
+
+export const useCreateProjectMutation = () => {
+  const utils = api.useUtils();
+
+  return api.projects.create.useMutation({
+    onSuccess: () => {
+      notify('Project created successfully', { type: 'success' });
+    },
+    onSettled: () => {
+      utils.projects.list.invalidate();
+    }
+  });
+};
+
+export const useUpdateProjectMutation = ({ projectId }: { projectId: string }) => {
+  const utils = api.useUtils();
+  return api.projects.update.useMutation({
+    onSuccess: () => {
+      notify('Project updated successfully', { type: 'success' });
+    },
+    onSettled: () => {
+      utils.projects.list.invalidate();
+      utils.projects.get.invalidate(projectId);
     }
   });
 };

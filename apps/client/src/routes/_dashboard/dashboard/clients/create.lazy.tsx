@@ -31,10 +31,8 @@ const ClientsCreatePage = () => {
         });
       })}
     >
-      <div className="space-y-4 w-3">
-        <TextFieldRHF name="name" {...methods} />
-        <TextFieldRHF name="color" {...methods} type="color" />
-      </div>
+      <TextFieldRHF name="name" {...methods} />
+      <TextFieldRHF name="color" {...methods} type="color" />
     </FormLayout>
   );
 };
