@@ -60,7 +60,8 @@ const FooterContainer = styled.div`
 `;
 
 export const Timesheet = () => {
-  const { changeDate, weekStart, userId, updateUser, handleSubmit } = useTimesheet();
+  const { changeDate, weekStart, userId, updateUser, handleSubmit, isSubmitting } =
+    useTimesheet();
   const {
     user: { permissions }
   } = useAuth();
@@ -83,14 +84,14 @@ export const Timesheet = () => {
             <CenterItem />
           )}
           <RightItem>
-            <SubmitButton isLoading={false} />
+            <SubmitButton isLoading={isSubmitting} />
           </RightItem>
         </HeaderContainer>
 
         <TimesheetWeek />
 
         <FooterContainer>
-          <SubmitButton isLoading={false} />
+          <SubmitButton isLoading={isSubmitting} />
         </FooterContainer>
       </Form>
     </Container>

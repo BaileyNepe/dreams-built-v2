@@ -9,11 +9,9 @@ export const SubmitButton: FC<{
   <Button
     startIcon={<SaveIcon />}
     loading={isLoading}
-    loadingIndicator="Saving…"
     type="submit"
     variant="contained"
     onClick={onClick}
-    
   >
     Save
   </Button>

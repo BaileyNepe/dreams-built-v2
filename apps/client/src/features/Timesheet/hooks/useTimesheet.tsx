@@ -43,6 +43,7 @@ interface TimesheetContextValue {
   entries: Entry[];
   notes: Note[];
   errors: FieldError[];
+  isSubmitting: boolean;
   addEntry: (day: string) => void;
   deleteEntry: (id: string) => void;
   updateComment: (comment: { day: string; message: string }) => void;
@@ -116,9 +117,6 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
     setWeekStart(getWeekStart(date));
   }, []);
 
-  // This is the important part:
-  // Whenever we update a field (e.g. startTime), we remove
-  // existing errors for that specific field from the errors array.
   const updateEntry = useCallback(
     ({
       id,
@@ -171,7 +169,7 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
 
   const canEditOtherUsers = permissions?.includes(authz.timesheet_view_all);
 
-  const changeUser = useCallback(
+  const updateUser = useCallback(
     (newUserId?: string) => {
       if (!canEditOtherUsers) {
         notify('You do not have permission to view other users timesheets', {
@@ -188,8 +186,6 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
     (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       const newErrors: FieldError[] = [];
-
-      // Example validations
 
       // 1) Missing or invalid field formats
       entries.forEach((entry) => {
@@ -228,13 +224,88 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
         }
       });
 
-      // 2) Overlapping time checks (skipped for brevity)
-      // 3) Duration checks (skipped for brevity)
+      // Helper to convert HH:MM to minutes since midnight
+      const timeToMinutes = (time: string): number => {
+        const [hours, minutes] = time.split(':').map(Number);
+        return hours * 60 + minutes;
+      };
+
+      // Group entries by day (only those with valid time format)
+      const entriesByDay: Record<string, Entry[]> = {};
+      entries.forEach((entry) => {
+        if (
+          /^\d{2}:\d{2}$/.test(entry.startTime) &&
+          /^\d{2}:\d{2}$/.test(entry.endTime)
+        ) {
+          if (!entriesByDay[entry.day]) {
+            entriesByDay[entry.day] = [];
+          }
+          entriesByDay[entry.day].push(entry);
+        }
+      });
+
+      // Validate each day's entries
+      Object.keys(entriesByDay).forEach((day) => {
+        // Sort by start time
+        const dayEntries = entriesByDay[day].sort(
+          (a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime)
+        );
+        let totalDayMinutes = 0;
+        for (let i = 0; i < dayEntries.length; i++) {
+          const entry = dayEntries[i];
+          const start = timeToMinutes(entry.startTime);
+          const end = timeToMinutes(entry.endTime);
+          const duration = end - start;
+
+          // Check for valid duration (> 0 and < 24 hours)
+          if (duration <= 0) {
+            newErrors.push({
+              id: entry.id,
+              type: 'startTime',
+              message: 'Duration must be greater than 0'
+            });
+          } else if (duration >= 1440) {
+            newErrors.push({
+              id: entry.id,
+              type: 'endTime',
+              message: 'Duration must be less than 24 hours'
+            });
+          }
+
+          totalDayMinutes += duration;
+
+          // Check for overlapping entries
+          if (i > 0) {
+            const prevEntry = dayEntries[i - 1];
+            const prevEnd = timeToMinutes(prevEntry.endTime);
+            if (start < prevEnd) {
+              newErrors.push({
+                id: entry.id,
+                type: 'startTime',
+                message: 'Entry overlaps with a previous entry'
+              });
+            }
+          }
+        }
+
+        // Check if total duration for the day exceeds 24 hours
+        if (totalDayMinutes > 1440) {
+          dayEntries.forEach((entry) => {
+            newErrors.push({
+              id: entry.id,
+              type: 'startTime',
+              message: 'Total duration for the day exceeds 24 hours'
+            });
+          });
+        }
+      });
 
       setErrors(newErrors);
 
       if (newErrors.length > 0) {
-        notify('Please fix errors before submitting.', { type: 'error' });
+        newErrors.slice(0, 5).forEach((err) => {
+          notify(err.message, { type: 'error' });
+        });
         return;
       }
 
@@ -258,7 +329,8 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
   return (
     <TimesheetContext.Provider
       value={{
-        isLoading: userEntries.isLoading,
+        isLoading: userEntries.isLoading || userEntries.isPending,
+        isSubmitting: updateTimesheet.isPending,
         weekStart,
         userId,
         entries,
@@ -270,7 +342,7 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
         changeDate,
         updateEntry,
         handleSubmit,
-        updateUser: changeUser
+        updateUser
       }}
     >
       {children}

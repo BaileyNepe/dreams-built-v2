@@ -36,8 +36,6 @@ export const routes: {
     requiredPermission: authz.clients_read
   },
   // TODO: add permissions
-  { name: 'project Parts', to: paths.projectParts, icon: ServerIcon },
-  // TODO: add permissions
   { name: 'Schedule', to: paths.schedule, icon: GlobeAltIcon },
   {
     name: 'Employees',
