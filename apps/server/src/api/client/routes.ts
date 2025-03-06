@@ -1,4 +1,5 @@
 import { protectedProcedure, trpc } from '@config/trpc';
+import { clientSchema } from '@dreams-built/shared/src/schemas';
 
 import { authz } from '@dreams-built/shared/src/auth/permissions';
 import { PaginationSchema } from '@dreams-built/shared/src/pagination/types';
@@ -35,12 +36,7 @@ export const clientRouter = trpc.router({
       };
     }),
   create: protectedProcedure([authz.clients_edit])
-    .input(
-      z.object({
-        name: z.string(),
-        color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/)
-      })
-    )
+    .input(clientSchema)
     .mutation(({ ctx, input }) =>
       ctx.db.client.create({
         data: {
@@ -60,11 +56,11 @@ export const clientRouter = trpc.router({
     ),
   update: protectedProcedure([authz.clients_edit])
     .input(
-      z.object({
-        id: z.string().cuid(),
-        name: z.string(),
-        color: z.string().regex(/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/)
-      })
+      z
+        .object({
+          id: z.string().cuid()
+        })
+        .and(clientSchema)
     )
     .mutation(({ ctx, input }) =>
       ctx.db.client.update({

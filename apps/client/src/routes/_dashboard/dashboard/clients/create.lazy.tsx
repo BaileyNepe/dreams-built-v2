@@ -1,11 +1,44 @@
-import { createLazyFileRoute } from '@tanstack/react-router'
+import { clientSchema } from '@dreams-built/shared/src/schemas';
+import { createLazyFileRoute } from '@tanstack/react-router';
+import { useCreateClientMutation } from 'api/clients';
+import { TextFieldRHF } from 'components/Forms/TextFieldRHF';
+import { FormLayout } from 'layouts/FormLayout';
+import { generateRandomColor } from 'utils/color';
+import { useCustomForm } from 'utils/hooks/useForm';
+import { useNavigate } from 'utils/hooks/useNavigate';
+import { paths } from 'utils/paths';
 
-export const Route = createLazyFileRoute(
-  '/_dashboard/dashboard/clients/create',
-)({
-  component: RouteComponent,
-})
+const ClientsCreatePage = () => {
+  const create = useCreateClientMutation();
+  const navigate = useNavigate();
 
-function RouteComponent() {
-  return <div>Hello "/_dashboard/dashboard/clients/create"!</div>
-}
+  const methods = useCustomForm({
+    schema: clientSchema,
+    defaultValues: {
+      name: '',
+      color: generateRandomColor()
+    }
+  });
+
+  return (
+    <FormLayout
+      title="Create Client"
+      onSubmit={methods.handleSubmit((data) => {
+        create.mutate(data, {
+          onSuccess: () => {
+            navigate({ to: paths.clients });
+          }
+        });
+      })}
+    >
+      <div className="space-y-4 w-3">
+        <TextFieldRHF name="name" {...methods} />
+        <TextFieldRHF name="color" {...methods} type="color" />
+      </div>
+    </FormLayout>
+  );
+};
+
+export const Route = createLazyFileRoute('/_dashboard/dashboard/clients/create')({
+  component: ClientsCreatePage
+});

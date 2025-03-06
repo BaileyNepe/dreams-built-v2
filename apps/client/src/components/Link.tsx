@@ -20,7 +20,11 @@ const StyledRouterLink = styled((props: React.ComponentProps<typeof Link>) => (
 export const RouterLink: React.FC<LinkProps & { children: React.ReactNode }> = ({
   children,
   ...rest
-}) => <StyledRouterLink {...rest}>{children}</StyledRouterLink>;
+}) => (
+  <StyledRouterLink {...(rest as React.ComponentProps<typeof Link>)}>
+    {children}
+  </StyledRouterLink>
+);
 
 export const LinkButton = styled(StyledRouterLink)`
   background-color: ${({ theme }) => theme.palette.primary.main};

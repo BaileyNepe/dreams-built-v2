@@ -7,6 +7,7 @@ import {
 import { httpBatchLink } from '@trpc/client';
 import { api } from 'api/trpc';
 import { env } from 'config/env';
+import { notify } from 'libs/Notify';
 import { type FC, type PropsWithChildren } from 'react';
 import superjson from 'superjson';
 import { useAuthInit } from './AuthProvider';
@@ -27,7 +28,10 @@ const queryClient = new QueryClient({
       staleTime
     },
     mutations: {
-      retry: false
+      retry: false,
+      onError: (error) => {
+        notify(error.message, { type: 'error' });
+      }
     }
   }
 });

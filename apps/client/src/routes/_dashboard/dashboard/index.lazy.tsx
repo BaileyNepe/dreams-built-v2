@@ -1,9 +1,10 @@
-import { createLazyFileRoute } from '@tanstack/react-router'
+/* eslint-disable @typescript-eslint/no-use-before-define */
+import { createLazyFileRoute } from '@tanstack/react-router';
 
 export const Route = createLazyFileRoute('/_dashboard/dashboard/')({
-  component: RouteComponent,
-})
+  component: RouteComponent
+});
 
 function RouteComponent() {
-  return <div>Hello "/_dashboard/dashboard"!</div>
+  return <div>Hetestboard"!</div>;
 }

@@ -1,5 +1,6 @@
 import PlusIcon from '@mui/icons-material/Add';
 import { Button, Typography } from '@mui/material';
+import { Link, type LinkProps } from '@tanstack/react-router';
 import { type FC, type PropsWithChildren } from 'react';
 import { styled } from 'styled-components';
 
@@ -11,7 +12,6 @@ const Container = styled.div`
   padding: 1rem;
 
   @media (min-width: 640px) {
-    /* sm breakpoint */
     padding: 1rem 1.5rem;
   }
 `;
@@ -35,7 +35,7 @@ const ButtonContainer = styled.div`
   margin-top: 1rem;
 
   @media (min-width: 640px) {
-    margin-left: 4rem; /* similar spacing to sm:ml-16 in Tailwind (~4rem) */
+    margin-left: 4rem;
     margin-top: 0;
     flex-shrink: 0;
   }
@@ -44,10 +44,10 @@ const ButtonContainer = styled.div`
 const PageLayout: FC<
   PropsWithChildren & {
     title: string;
-    onClick?: () => void;
+    to?: LinkProps['to'];
     description?: string;
   }
-> = ({ children, title, onClick, description }) => (
+> = ({ children, title, to, description }) => (
   <Container>
     <HeaderContainer>
       <TextContainer>
@@ -60,11 +60,13 @@ const PageLayout: FC<
           </Typography>
         )}
       </TextContainer>
-      {onClick && (
+      {to && (
         <ButtonContainer>
-          <Button variant="contained" startIcon={<PlusIcon />} onClick={onClick}>
-            Add
-          </Button>
+          <Link to={to} preload="intent">
+            <Button variant="contained" startIcon={<PlusIcon />}>
+              Add
+            </Button>
+          </Link>
         </ButtonContainer>
       )}
     </HeaderContainer>
