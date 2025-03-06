@@ -1,10 +1,12 @@
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { createLazyFileRoute } from '@tanstack/react-router';
 import { useClientList } from 'api/clients';
+import { api } from 'api/trpc';
 import { EnhancedTable } from 'components/EnhancedTable';
 import { Color } from 'components/EnhancedTable/components/Color';
 import PageLayout from 'layouts/PageLayout';
 import { type FC } from 'react';
+import { useDebouncedCallback } from 'use-debounce';
 import { useNavigate } from 'utils/hooks/useNavigate';
 import { usePagination } from 'utils/hooks/usePagination';
 import { paths } from 'utils/paths';
@@ -21,6 +23,10 @@ export const ClientsPage: FC = () => {
     handleSearchChange
   } = usePagination();
   const clients = useClientList({ page, perPage, query: debouncedQuery });
+  const apiUtils = api.useUtils();
+  const prefetch = useDebouncedCallback((id: string) => {
+    apiUtils.clients.get.prefetch(id);
+  }, 50);
 
   return (
     <PageLayout
@@ -54,6 +60,8 @@ export const ClientsPage: FC = () => {
           { id: 'name', width: '100%' },
           { id: 'actions' }
         ]}
+        onRowEnter={prefetch}
+        onRowLeave={prefetch.cancel}
         rows={clients.data?.clients.map((client) => ({
           id: client.id,
           name: client.name,

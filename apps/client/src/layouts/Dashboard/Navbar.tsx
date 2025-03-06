@@ -30,9 +30,9 @@ const List = styled.ul`
   padding: 0.2rem 0.5rem;
 `;
 
-const Button = styled.div<{ isActive: boolean }>`
+const Button = styled.div<{ $isActive: boolean }>`
   align-items: center;
-  background-color: ${({ theme, isActive }) =>
+  background-color: ${({ theme, $isActive: isActive }) =>
     isActive ? theme.palette.primary.light : 'transparent'};
   border-radius: ${({ theme }) => theme.shape.borderRadius}px;
   cursor: pointer;
@@ -87,7 +87,7 @@ export const NavBar: FC = () => {
             const active = pathname === item.to;
             return (
               <RouterLink key={item.name} to={item.to}>
-                <Button isActive={active}>
+                <Button $isActive={active}>
                   <ListItemIcon>
                     <item.icon />
                   </ListItemIcon>

@@ -47,7 +47,9 @@ export const EnhancedBody: FC<{
   rows: EnhancedData[];
   headCells: HeadCell[];
   onRowClick?: (id: string) => void;
-}> = ({ rows, isLoading, headCells, onRowClick }) => {
+  onRowEnter?: (id: string) => void;
+  onRowLeave?: () => void;
+}> = ({ rows, isLoading, headCells, onRowClick, onRowEnter, onRowLeave }) => {
   if (isLoading) {
     return Array.from({ length: 3 }).map((_, index) => (
       <StyledRow key={index} $hasOnClick={!!onRowClick}>
@@ -71,6 +73,8 @@ export const EnhancedBody: FC<{
             onClick={() => {
               onRowClick?.(row.id);
             }}
+            onMouseEnter={onRowEnter ? () => onRowEnter?.(row.id) : undefined}
+            onMouseLeave={onRowLeave}
           >
             <>
               {Object.keys(row)

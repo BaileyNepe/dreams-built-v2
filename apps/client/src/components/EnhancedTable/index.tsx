@@ -32,6 +32,9 @@ export const EnhancedTable: FC<{
   headers: HeadCell[];
   isLoading?: boolean;
   size?: 'small' | 'medium';
+  onRowEnter?: (id: string) => void;
+  onRowLeave?: () => void;
+  onRowClick?: (id: string) => void;
   pagination: {
     page: number;
     perPage: number;
@@ -53,6 +56,9 @@ export const EnhancedTable: FC<{
   hasShadow?: boolean;
 }> = ({
   rows = [],
+  onRowClick,
+  onRowEnter,
+  onRowLeave,
   hasShadow = true,
   headers,
   size = 'small',
@@ -83,7 +89,14 @@ export const EnhancedTable: FC<{
             headCells={headers}
           />
           <TableBody>
-            <EnhancedBody isLoading={isLoading} rows={rows} headCells={headers} />
+            <EnhancedBody
+              isLoading={isLoading}
+              rows={rows}
+              headCells={headers}
+              onRowClick={onRowClick}
+              onRowEnter={onRowEnter}
+              onRowLeave={onRowLeave}
+            />
           </TableBody>
         </Table>
       </TableContainer>
