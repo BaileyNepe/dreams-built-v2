@@ -6,16 +6,23 @@ import { SubmitButton } from 'components/SubmitButton';
 import { type FC } from 'react';
 import styled from 'styled-components';
 
-const Form = styled.form`
+const FormContainer = styled.div`
   background-color: ${({ theme }) => theme.palette.background.paper};
   border-radius: ${({ theme }) => theme.shape.borderRadius}px;
   box-shadow: ${({ theme }) => theme.customShadows.outline};
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1rem;
   margin: 0 auto;
   max-width: 600px;
   padding: 1rem;
+  width: 100dvw;
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
   width: 100%;
 `;
 const Container = styled.div`
@@ -48,11 +55,23 @@ const ButtonContainer = styled.div`
   }
 `;
 
-export const FormLayout: FC<{
+export const FormBody: FC<{
   children: React.ReactNode;
-  title: string;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
-}> = ({ children, title, onSubmit }) => {
+}> = ({ children, onSubmit }) => (
+  <Form onSubmit={onSubmit}>
+    <div>{children}</div>
+    <ButtonContainer>
+      <SubmitButton isLoading={false} />
+    </ButtonContainer>
+  </Form>
+);
+
+export const FormLayout: FC<{
+  title: string;
+  children: React.ReactNode;
+  onSubmit?: (event: React.FormEvent<HTMLFormElement>) => void;
+}> = ({ title, onSubmit, children }) => {
   const router = useRouter();
 
   return (
@@ -66,8 +85,7 @@ export const FormLayout: FC<{
           Back
         </Button>
       </HeaderContainer>
-
-      <Form onSubmit={onSubmit}>
+      <FormContainer>
         <Typography
           variant="h3"
           component="h1"
@@ -77,11 +95,8 @@ export const FormLayout: FC<{
         >
           {title}
         </Typography>
-        <div>{children}</div>
-        <ButtonContainer>
-          <SubmitButton isLoading={false} />
-        </ButtonContainer>
-      </Form>
+        {onSubmit ? <FormBody onSubmit={onSubmit}>{children}</FormBody> : children}
+      </FormContainer>
     </Container>
   );
 };

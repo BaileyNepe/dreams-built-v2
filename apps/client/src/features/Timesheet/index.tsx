@@ -2,6 +2,7 @@ import { authz } from '@dreams-built/shared/src/auth/permissions';
 import { Container } from '@mui/material';
 import { BasicDatePicker } from 'components/DatePicker';
 import { SubmitButton } from 'components/SubmitButton';
+import { DateTime } from 'luxon';
 import styled from 'styled-components';
 import { useAuth } from 'utils/contexts/AuthProvider';
 import { UserSelect } from '../../components/Forms/Selects/UserSelect';
@@ -73,7 +74,13 @@ export const Timesheet = () => {
       <Form onSubmit={handleSubmit}>
         <HeaderContainer>
           <LeftItem>
-            <BasicDatePicker value={weekStart} onChange={changeDate} />
+            <BasicDatePicker
+              value={weekStart}
+              onChange={changeDate}
+              // TODO: move to date utils
+              maxDate={DateTime.now().endOf('week').toFormat('dd/MM/yyyy')}
+              minDate={DateTime.now().minus({ months: 6 }).toFormat('dd/MM/yyyy')}
+            />
           </LeftItem>
           {canEditOtherUsers ? (
             <CenterItem>

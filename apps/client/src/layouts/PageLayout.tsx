@@ -41,6 +41,12 @@ const ButtonContainer = styled.div`
   }
 `;
 
+const Main = styled.div`
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 1rem 0.1rem;
+`;
+
 const PageLayout: FC<
   PropsWithChildren & {
     title: string;
@@ -70,7 +76,7 @@ const PageLayout: FC<
         </ButtonContainer>
       )}
     </HeaderContainer>
-    <div>{children}</div>
+    <Main>{children}</Main>
   </Container>
 );
 

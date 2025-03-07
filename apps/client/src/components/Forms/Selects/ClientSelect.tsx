@@ -10,6 +10,7 @@ import { getObjectValue } from '../utils';
 export const ClientSelectRHF = <TFieldValues extends Record<string, unknown>>(
   props: ControlInputProps<TFieldValues> & {
     control: Control<TFieldValues>;
+    className?: string;
   }
 ) => {
   const {
@@ -18,6 +19,7 @@ export const ClientSelectRHF = <TFieldValues extends Record<string, unknown>>(
     formState: { errors },
     validationRules,
     label,
+
     ...rest
   } = props;
 

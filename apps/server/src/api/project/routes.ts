@@ -85,6 +85,7 @@ export const projectsRouter = trpc.router({
         })
     ),
   nextJobNumber: protectedProcedure([authz.jobs_read]).query(async ({ ctx }) => {
+    // TODO: base it on the year.
     const project = (await ctx.db.project.findFirst({
       select: {
         jobNumber: true
@@ -100,6 +101,11 @@ export const projectsRouter = trpc.router({
     .input(projectSchema)
     .mutation(
       async ({ ctx, input }) =>
+        // TODO: need to do checks before creating a project
+
+        // 1. Check if the client exists
+        // 2. Check if the job number is unique
+        // 3. Check the address is unique
         await ctx.db.project.create({
           data: {
             address: input.address,
@@ -131,6 +137,11 @@ export const projectsRouter = trpc.router({
     )
     .mutation(
       async ({ ctx, input }) =>
+        // TODO: need to do checks before creating a project
+
+        // 1. Check if the client exists
+        // 2. Check if the job number is unique
+        // 3. Check the address is unique
         await ctx.db.project.update({
           where: {
             id: input.projectId
