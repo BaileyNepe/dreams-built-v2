@@ -2,11 +2,11 @@ import { projectSchema } from '@dreams-built/shared/src/schemas';
 import { createLazyFileRoute } from '@tanstack/react-router';
 import { useCreateProjectMutation, useNextJobNumberQuery } from 'api/projects';
 import { api } from 'api/trpc';
+import { ClientSelectRHF } from 'components/Forms/Selects/ClientSelect';
 import { TextFieldRHF } from 'components/Forms/TextFieldRHF';
 import { FormLayout } from 'layouts/FormLayout';
 import { generateRandomColor } from 'utils/color';
 import { useCustomForm } from 'utils/hooks/useForm';
-import { z } from 'zod';
 
 const Page = () => {
   const create = useCreateProjectMutation();
@@ -30,19 +30,29 @@ const Page = () => {
     <FormLayout
       title="Create Project"
       onSubmit={methods.handleSubmit((data) => {
-        create.mutate(data, {
-          onSuccess: () => {
-            utils.projects.nextJobNumber.invalidate();
-            methods.reset();
-            // make jobNumber auto increment
+        create.mutate(
+          { ...data, jobNumber: Number(data.jobNumber), area: Number(data.area) },
+          {
+            onSuccess: async () => {
+              await utils.projects.nextJobNumber.invalidate();
+              methods.reset({
+                address: '',
+                area: 0,
+                city: '',
+                clientId: '',
+                endClient: '',
+                jobNumber: nextJobNumber + 1,
+                color: generateRandomColor()
+              });
+            }
           }
-        });
+        );
       })}
     >
       <TextFieldRHF name="address" {...methods} />
       <TextFieldRHF name="area" {...methods} type="number" />
       <TextFieldRHF name="city" {...methods} />
-      <TextFieldRHF name="clientId" {...methods} />
+      <ClientSelectRHF name="clientId" {...methods} />
       <TextFieldRHF name="endClient" {...methods} />
       <TextFieldRHF name="jobNumber" {...methods} type="number" />
 

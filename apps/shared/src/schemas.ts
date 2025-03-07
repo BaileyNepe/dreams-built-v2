@@ -9,10 +9,10 @@ export const clientSchema = z.object({
 
 export const projectSchema = z.object({
   address: z.string().nonempty('Address is required'),
-  area: z.number(),
+  area: z.coerce.number(),
   city: z.string(),
-  clientId: z.string().cuid2(),
+  clientId: z.string().cuid2('Client is required'),
   color: z.string().regex(colorRegex, 'Color must be a valid hex color'),
-  jobNumber: z.number().int().min(5).max(6),
+  jobNumber: z.coerce.number().int().positive(),
   endClient: z.string()
 });

@@ -4,7 +4,7 @@ import { BasicDatePicker } from 'components/DatePicker';
 import { SubmitButton } from 'components/SubmitButton';
 import styled from 'styled-components';
 import { useAuth } from 'utils/contexts/AuthProvider';
-import { UserSelect } from './components/UserSelect';
+import { UserSelect } from '../../components/Forms/Selects/UserSelect';
 import { TimesheetWeek } from './components/Week';
 import { useTimesheet } from './hooks/useTimesheet';
 

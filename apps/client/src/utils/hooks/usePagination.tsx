@@ -8,7 +8,7 @@ export const usePagination = () => {
   const navigate = useNavigate();
 
   const handlePageChange = (newPage: number) => {
-    navigate({ search: (prev) => ({ ...prev, page: newPage }) });
+    navigate({ search: (prev) => ({ ...prev, page: newPage + 1 }) });
   };
 
   const handlePerPageChange = (newPerPage: number) => {

@@ -5,8 +5,8 @@ import { type FC, useMemo } from 'react';
 import styled from 'styled-components';
 import { calculateTimeDifference } from 'utils/date';
 import { useResponsive } from 'utils/hooks/useResponsive';
+import { ProjectSelect } from '../../../components/Forms/Selects/ProjectSelect';
 import { useTimesheet } from '../hooks/useTimesheet';
-import { ProjectSelect } from './ProjectSelect';
 
 export const timesheetTemplateColumns = '1fr 1fr 3fr 3rem 4rem';
 
