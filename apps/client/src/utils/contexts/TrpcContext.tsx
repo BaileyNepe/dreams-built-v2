@@ -15,7 +15,7 @@ import { useAuthInit } from './AuthProvider';
 const cacheTime = 1000 * 60 * 90; // 90 minutes
 const staleTime = 1000 * 60 * 10; // 5 minutes
 
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: 3,

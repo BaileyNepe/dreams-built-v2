@@ -6,19 +6,12 @@ import { type DateTime } from 'luxon';
 import { type FC } from 'react';
 import { formatDate, getLuxonDate } from 'utils/date';
 
-type BasicDatePickerProps = {
+export const BasicDatePicker: FC<{
   onChange: (value: string) => void;
   value: string;
   minDate?: string;
   maxDate?: string;
-};
-
-export const BasicDatePicker: FC<BasicDatePickerProps> = ({
-  value,
-  onChange,
-  minDate,
-  maxDate
-}) => {
+}> = ({ value, onChange, minDate, maxDate }) => {
   // A small helper to see if 'date' is within [minDate, maxDate].
   const isWithinRange = (date: DateTime, min?: DateTime, max?: DateTime): boolean => {
     if (min && date < min) return false;

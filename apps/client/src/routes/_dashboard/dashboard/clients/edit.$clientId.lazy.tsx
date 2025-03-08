@@ -11,7 +11,7 @@ import { useClientParams } from './edit.$clientId';
 const ClientsEditPage = () => {
   const { clientId } = useClientParams();
   const client = useClient(clientId);
-  const create = useUpdateClientMutation({ clientId });
+  const update = useUpdateClientMutation({ clientId });
 
   const navigate = useNavigate();
 
@@ -27,7 +27,7 @@ const ClientsEditPage = () => {
     <FormLayout
       title="Edit Client"
       onSubmit={methods.handleSubmit((data) => {
-        create.mutate(
+        update.mutate(
           { ...data, id: clientId },
           {
             onSuccess: () => {

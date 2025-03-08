@@ -8,10 +8,10 @@ export const useClientList = (params: {
 }) => api.clients.list.useQuery(params);
 
 export const useClientsList = () =>
-  api.clients.list.useQuery({
+  api.clients.list.useSuspenseQuery({
     page: 1,
     perPage: 1000
-  });
+  })[0];
 
 export const useClient = (clientId: string) =>
   api.clients.get.useSuspenseQuery(clientId)[0];

@@ -5,22 +5,18 @@ import { type FC, type PropsWithChildren } from 'react';
 import { styled } from 'styled-components';
 
 const Container = styled.div`
-  display: flex;
-
-  flex-direction: column;
-  gap: 2rem;
-  padding: 1rem;
-
-  @media (min-width: 640px) {
-    padding: 1rem 1.5rem;
-  }
+  display: grid;
+  gap: 0.5rem;
 `;
 
 const HeaderContainer = styled.div`
   display: flex;
   flex-direction: column;
 
+  padding: 0.2rem;
+
   @media (min-width: 640px) {
+    padding: 0 1rem;
     /* sm breakpoint */
     flex-direction: row;
     align-items: center;
@@ -34,17 +30,28 @@ const TextContainer = styled.div`
 const ButtonContainer = styled.div`
   margin-top: 1rem;
 
+  button {
+    width: 100%;
+  }
+
   @media (min-width: 640px) {
     margin-left: 4rem;
     margin-top: 0;
     flex-shrink: 0;
+
+    button {
+      width: auto;
+    }
   }
 `;
 
 const Main = styled.div`
   overflow-x: auto;
-  overflow-y: hidden;
-  padding: 1rem 0.1rem;
+  padding: 0.2rem;
+
+  @media (min-width: 640px) {
+    padding: 1rem;
+  }
 `;
 
 const PageLayout: FC<

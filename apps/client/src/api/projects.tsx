@@ -1,4 +1,3 @@
-'use client';
 import { notify } from 'libs/Notify';
 import { usePagination } from 'utils/hooks/usePagination';
 import { api } from './trpc';
@@ -108,3 +107,6 @@ export const useUpdateProjectMutation = ({ projectId }: { projectId: string }) =
     }
   });
 };
+
+export const useProject = (projectId: string) =>
+  api.projects.get.useSuspenseQuery(projectId)[0];

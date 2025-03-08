@@ -8,7 +8,7 @@ export const paths = {
 
   projects: '/dashboard/projects',
   projectsCreate: '/dashboard/projects/create',
-  projectsEdit: '/dashboard/projects/$projectId',
+  projectsEdit: '/dashboard/projects/edit/$projectId',
 
   projectParts: '/dashboard/project-parts',
 

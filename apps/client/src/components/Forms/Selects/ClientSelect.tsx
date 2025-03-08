@@ -19,12 +19,10 @@ export const ClientSelectRHF = <TFieldValues extends Record<string, unknown>>(
     formState: { errors },
     validationRules,
     label,
-
     ...rest
   } = props;
 
-  const { data, isLoading } = useClientsList();
-  const clients = data?.clients;
+  const { clients } = useClientsList();
 
   const error = getObjectValue(errors, fieldName) as { message?: string } | undefined;
 
@@ -37,15 +35,14 @@ export const ClientSelectRHF = <TFieldValues extends Record<string, unknown>>(
       render={({ field }) => (
         <Autocomplete
           {...field}
-          value={clients?.find((client) => client.id === field.value)}
+          value={clients.find((client) => client.id === field.value)}
           onChange={(_, value) => {
             field.onChange(value?.id ?? null);
           }}
           sx={{
             minWidth: 200
           }}
-          loading={isLoading}
-          options={clients ?? []}
+          options={clients}
           getOptionLabel={(option) => `${option.name}`}
           renderInput={(params) => (
             <TextField

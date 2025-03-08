@@ -10,37 +10,32 @@ const FormContainer = styled.div`
   background-color: ${({ theme }) => theme.palette.background.paper};
   border-radius: ${({ theme }) => theme.shape.borderRadius}px;
   box-shadow: ${({ theme }) => theme.customShadows.outline};
-  display: flex;
-  flex-direction: column;
+  display: grid;
+
   gap: 1rem;
   margin: 0 auto;
   max-width: 600px;
   padding: 1rem;
-  width: 100dvw;
+  width: 100%;
 `;
 
 const Form = styled.form`
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 2rem;
   width: 100%;
 `;
 const Container = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+  display: grid;
+  gap: 1rem;
   padding: 1rem;
   @media (min-width: 640px) {
     padding: 1rem 1.5rem;
   }
 `;
 const HeaderContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  display: grid;
   @media (min-width: 640px) {
-    flex-direction: row;
-    align-items: center;
+    width: max-content;
   }
 `;
 

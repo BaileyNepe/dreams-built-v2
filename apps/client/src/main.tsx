@@ -5,7 +5,8 @@ import { routeTree } from './routeTree.gen';
 // Set up a Router instance
 const router = createRouter({
   routeTree,
-  defaultPreload: 'intent'
+  defaultPreload: 'intent',
+  notFoundMode: 'fuzzy'
 });
 
 // Register things for typesafety
