@@ -4,9 +4,11 @@ import { authz } from '@dreams-built/shared/src/auth/permissions';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { Checkbox } from '@mui/material';
 import { useProjectList, useToggleInvoiceProject } from 'api/projects';
+import { api } from 'api/trpc';
 import { EnhancedTable } from 'components/EnhancedTable';
 import { Color } from 'components/EnhancedTable/components/Color';
 import PageLayout from 'layouts/PageLayout';
+import { useDebouncedCallback } from 'use-debounce';
 import { useAuth } from 'utils/contexts/AuthProvider';
 import { useNavigate } from 'utils/hooks/useNavigate';
 import { paths } from 'utils/paths';
@@ -27,6 +29,11 @@ const ProjectsPage = () => {
       handleSearchChange
     }
   } = useProjectList();
+
+  const apiUtils = api.useUtils();
+  const prefetch = useDebouncedCallback((id: string) => {
+    apiUtils.projects.get.prefetch(id);
+  }, 50);
 
   return (
     <PageLayout
@@ -65,6 +72,8 @@ const ProjectsPage = () => {
           { id: 'isInvoiced', label: 'Invoiced', width: '1rem' },
           { id: 'actions', width: '1rem' }
         ]}
+        onRowEnter={prefetch}
+        onRowLeave={prefetch.cancel}
         rows={data?.projects.map((job) => ({
           id: job.id,
           jobNumber: (

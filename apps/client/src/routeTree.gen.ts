@@ -37,6 +37,9 @@ const DashboardDashboardScheduleLazyImport = createFileRoute(
 const DashboardDashboardReportsLazyImport = createFileRoute(
   '/_dashboard/dashboard/reports',
 )()
+const DashboardDashboardCutSheetLazyImport = createFileRoute(
+  '/_dashboard/dashboard/cut-sheet',
+)()
 const DashboardDashboardProjectsIndexLazyImport = createFileRoute(
   '/_dashboard/dashboard/projects/',
 )()
@@ -131,6 +134,15 @@ const DashboardDashboardReportsLazyRoute =
     getParentRoute: () => DashboardLazyRoute,
   } as any).lazy(() =>
     import('./routes/_dashboard/dashboard/reports.lazy').then((d) => d.Route),
+  )
+
+const DashboardDashboardCutSheetLazyRoute =
+  DashboardDashboardCutSheetLazyImport.update({
+    id: '/dashboard/cut-sheet',
+    path: '/dashboard/cut-sheet',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/_dashboard/dashboard/cut-sheet.lazy').then((d) => d.Route),
   )
 
 const DashboardDashboardProjectsIndexLazyRoute =
@@ -267,6 +279,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LandingIndexLazyImport
       parentRoute: typeof LandingLazyImport
     }
+    '/_dashboard/dashboard/cut-sheet': {
+      id: '/_dashboard/dashboard/cut-sheet'
+      path: '/dashboard/cut-sheet'
+      fullPath: '/dashboard/cut-sheet'
+      preLoaderRoute: typeof DashboardDashboardCutSheetLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
     '/_dashboard/dashboard/reports': {
       id: '/_dashboard/dashboard/reports'
       path: '/dashboard/reports'
@@ -357,6 +376,7 @@ declare module '@tanstack/react-router' {
 // Create and export the route tree
 
 interface DashboardLazyRouteChildren {
+  DashboardDashboardCutSheetLazyRoute: typeof DashboardDashboardCutSheetLazyRoute
   DashboardDashboardReportsLazyRoute: typeof DashboardDashboardReportsLazyRoute
   DashboardDashboardScheduleLazyRoute: typeof DashboardDashboardScheduleLazyRoute
   DashboardDashboardTimesheetLazyRoute: typeof DashboardDashboardTimesheetLazyRoute
@@ -372,6 +392,7 @@ interface DashboardLazyRouteChildren {
 }
 
 const DashboardLazyRouteChildren: DashboardLazyRouteChildren = {
+  DashboardDashboardCutSheetLazyRoute: DashboardDashboardCutSheetLazyRoute,
   DashboardDashboardReportsLazyRoute: DashboardDashboardReportsLazyRoute,
   DashboardDashboardScheduleLazyRoute: DashboardDashboardScheduleLazyRoute,
   DashboardDashboardTimesheetLazyRoute: DashboardDashboardTimesheetLazyRoute,
@@ -421,6 +442,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof LandingContactLazyRoute
   '/services': typeof LandingServicesLazyRoute
   '/': typeof LandingIndexLazyRoute
+  '/dashboard/cut-sheet': typeof DashboardDashboardCutSheetLazyRoute
   '/dashboard/reports': typeof DashboardDashboardReportsLazyRoute
   '/dashboard/schedule': typeof DashboardDashboardScheduleLazyRoute
   '/dashboard/timesheet': typeof DashboardDashboardTimesheetLazyRoute
@@ -441,6 +463,7 @@ export interface FileRoutesByTo {
   '/contact': typeof LandingContactLazyRoute
   '/services': typeof LandingServicesLazyRoute
   '/': typeof LandingIndexLazyRoute
+  '/dashboard/cut-sheet': typeof DashboardDashboardCutSheetLazyRoute
   '/dashboard/reports': typeof DashboardDashboardReportsLazyRoute
   '/dashboard/schedule': typeof DashboardDashboardScheduleLazyRoute
   '/dashboard/timesheet': typeof DashboardDashboardTimesheetLazyRoute
@@ -463,6 +486,7 @@ export interface FileRoutesById {
   '/_landing/contact': typeof LandingContactLazyRoute
   '/_landing/services': typeof LandingServicesLazyRoute
   '/_landing/': typeof LandingIndexLazyRoute
+  '/_dashboard/dashboard/cut-sheet': typeof DashboardDashboardCutSheetLazyRoute
   '/_dashboard/dashboard/reports': typeof DashboardDashboardReportsLazyRoute
   '/_dashboard/dashboard/schedule': typeof DashboardDashboardScheduleLazyRoute
   '/_dashboard/dashboard/timesheet': typeof DashboardDashboardTimesheetLazyRoute
@@ -485,6 +509,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/services'
     | '/'
+    | '/dashboard/cut-sheet'
     | '/dashboard/reports'
     | '/dashboard/schedule'
     | '/dashboard/timesheet'
@@ -504,6 +529,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/services'
     | '/'
+    | '/dashboard/cut-sheet'
     | '/dashboard/reports'
     | '/dashboard/schedule'
     | '/dashboard/timesheet'
@@ -524,6 +550,7 @@ export interface FileRouteTypes {
     | '/_landing/contact'
     | '/_landing/services'
     | '/_landing/'
+    | '/_dashboard/dashboard/cut-sheet'
     | '/_dashboard/dashboard/reports'
     | '/_dashboard/dashboard/schedule'
     | '/_dashboard/dashboard/timesheet'
@@ -566,6 +593,7 @@ export const routeTree = rootRoute
     "/_dashboard": {
       "filePath": "_dashboard.lazy.tsx",
       "children": [
+        "/_dashboard/dashboard/cut-sheet",
         "/_dashboard/dashboard/reports",
         "/_dashboard/dashboard/schedule",
         "/_dashboard/dashboard/timesheet",
@@ -604,6 +632,10 @@ export const routeTree = rootRoute
     "/_landing/": {
       "filePath": "_landing/index.lazy.tsx",
       "parent": "/_landing"
+    },
+    "/_dashboard/dashboard/cut-sheet": {
+      "filePath": "_dashboard/dashboard/cut-sheet.lazy.tsx",
+      "parent": "/_dashboard"
     },
     "/_dashboard/dashboard/reports": {
       "filePath": "_dashboard/dashboard/reports.lazy.tsx",

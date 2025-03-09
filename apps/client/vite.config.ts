@@ -35,7 +35,12 @@ export default defineConfig({
   },
 
   plugins: [
-    million.vite({ auto: true }),
+    million.vite({
+      auto: true,
+      filter: {
+        exclude: ['**/CutSheet/svg.tsx']
+      }
+    }),
     react(),
     viteTsconfigPaths(),
     svgrPlugin(),

@@ -1,14 +1,16 @@
 import { projectSchema } from '@dreams-built/shared/src/schemas';
+import { Skeleton, Stack } from '@mui/material';
 import { createLazyFileRoute } from '@tanstack/react-router';
 import { useProject, useUpdateProjectMutation } from 'api/projects';
 import { ProjectFormFields } from 'features/Projects/FormLayout';
-import { FormLayout } from 'layouts/FormLayout';
+import { FormBody, FormLayout } from 'layouts/FormLayout';
+import { Suspense } from 'react';
 import { useCustomForm } from 'utils/hooks/useForm';
 import { useNavigate } from 'utils/hooks/useNavigate';
 import { paths } from 'utils/paths';
 import { useProjectParams } from './edit.$projectId';
 
-const RouteComponent = () => {
+const EditProjectForm = () => {
   const { projectId } = useProjectParams();
   const project = useProject(projectId);
 
@@ -30,8 +32,7 @@ const RouteComponent = () => {
   });
 
   return (
-    <FormLayout
-      title="Edit Project"
+    <FormBody
       onSubmit={methods.handleSubmit((data) => {
         update.mutate(
           { ...data, projectId },
@@ -44,9 +45,25 @@ const RouteComponent = () => {
       })}
     >
       <ProjectFormFields methods={methods} />
-    </FormLayout>
+    </FormBody>
   );
 };
+
+const RouteComponent = () => (
+  <FormLayout title="Edit Project">
+    <Suspense
+      fallback={
+        <Stack spacing={2} sx={{ width: '100%' }}>
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} variant="rectangular" height={40} width="100%" />
+          ))}
+        </Stack>
+      }
+    >
+      <EditProjectForm />
+    </Suspense>
+  </FormLayout>
+);
 
 export const Route = createLazyFileRoute(
   '/_dashboard/dashboard/projects/edit/$projectId'
