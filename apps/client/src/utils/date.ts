@@ -1,4 +1,3 @@
-// TODO move this to a date util file
 import { DateTime } from 'luxon';
 
 export const getOrdinal = (number: number) => {
