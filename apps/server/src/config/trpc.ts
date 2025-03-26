@@ -124,7 +124,7 @@ const createAuthorizeMiddleware = ({
       });
     }
 
-    const optionalUser = getOptionalUser(authId);
+    const optionalUser = await getOptionalUser(authId);
 
     if (!optionalUser) {
       await upsertUser({

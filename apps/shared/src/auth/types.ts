@@ -8,7 +8,9 @@ const AuthzSchema = z.enum([
   'timesheet:view:self',
   'timesheet:view:all',
   'jobs:read',
-  'jobs:edit'
+  'jobs:edit',
+  'schedule:read',
+  'schedule:edit'
 ]);
 
 const RoleSchema = z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE', 'USER']);

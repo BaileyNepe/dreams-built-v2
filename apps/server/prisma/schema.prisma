@@ -16,53 +16,62 @@ model Client {
     color     String    @default("")
     createdAt DateTime  @default(now()) @map("created_at")
     updatedAt DateTime  @updatedAt @map("updated_at")
-    Project   Project[]
+    project   Project[]
 
     @@map("client")
 }
 
 model Project {
-    id         String      @id @default(cuid())
-    updatedAt  DateTime    @updatedAt @map("updated_at")
-    createdAt  DateTime    @default(now()) @map("created_at")
-    deleted    Boolean     @default(false)
-    address    String      @default("")
-    area       Float       @default(0)
-    city       String      @default("")
-    color      String      @default("")
-    endClient  String      @map("end_client")
-    isInvoiced Boolean     @default(false) @map("is_invoiced")
-    jobNumber  Int         @unique @map("job_number")
-    clientId   String      @map("client_id")
-    client     Client      @relation(fields: [clientId], references: [id])
-    DueDate    DueDate[]
-    TimeEntry  TimeEntry[]
+    id         String   @id @default(cuid())
+    updatedAt  DateTime @updatedAt @map("updated_at")
+    createdAt  DateTime @default(now()) @map("created_at")
+    deleted    Boolean  @default(false)
+    address    String   @default("")
+    area       Float    @default(0)
+    city       String   @default("")
+    color      String   @default("")
+    endClient  String   @default("") @map("end_client")
+    isInvoiced Boolean  @default(false) @map("is_invoiced")
+    jobNumber  Int      @unique @map("job_number")
+    clientId   String   @map("client_id")
+    client     Client   @relation(fields: [clientId], references: [id])
+
+    timeEntry       TimeEntry[]
+    projectSchedule ProjectSchedule[]
 
     @@map("project")
 }
 
 model ProjectPart {
-    id          String    @id @default(cuid())
-    name        String    @default("")
-    description String    @default("")
-    order       Int
-    DueDate     DueDate[]
+    id        String   @id @default(cuid())
+    name      String   @default("")
+    order     Int      @default(0)
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+    deleted   Boolean  @default(false)
 
-    @@map("project_part")
+    projectSchedule ProjectSchedule[]
+
+    @@map("project_parts")
 }
 
-model DueDate {
-    id            String      @id @default(cuid())
-    date          DateTime
-    projectId     String      @map("project_id")
-    project       Project     @relation(fields: [projectId], references: [id])
-    range         DateTime[]
-    projectPartId String      @map("project_part_id")
-    projectPart   ProjectPart @relation(fields: [projectPartId], references: [id])
-    createdAt     DateTime    @default(now()) @map("created_at")
-    updatedAt     DateTime    @updatedAt @map("updated_at")
+model ProjectSchedule {
+    id            String @id @default(cuid())
+    projectId     String @map("project_id")
+    projectPartId String @map("project_part_id")
 
-    @@map("due_date")
+    startDate DateTime @map("start_date")
+    endDate   DateTime @map("end_date")
+    notes     String   @default("")
+    deleted   Boolean  @default(false)
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    projectPart ProjectPart @relation(fields: [projectPartId], references: [id])
+    project     Project     @relation(fields: [projectId], references: [id])
+
+    @@map("project_schedule")
 }
 
 model User {
@@ -78,8 +87,8 @@ model User {
     hourlyRate Float       @default(0) @map("hourly_rate")
     authId     String      @unique @map("auth_id")
     role       Role        @default(USER)
-    TimeEntry  TimeEntry[]
-    Note       Note[]
+    timeEntry  TimeEntry[]
+    note       Note[]
 
     @@map("user")
 }

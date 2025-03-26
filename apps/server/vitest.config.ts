@@ -44,7 +44,7 @@ const integrationEnv = {};
 
 const unitEnv = {
   DATABASE_URL: 'postgresql://test_user:password@test_db:5432/lms',
-  EXPRESS_PORT: 5001
+  EXPRESS_PORT: 5002
 };
 
 export default defineConfig({

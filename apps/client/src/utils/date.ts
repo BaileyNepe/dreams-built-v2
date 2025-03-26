@@ -5,28 +5,34 @@ export const getOrdinal = (number: number) => {
   return superScript[(number - 20) % 10] ?? superScript[number] ?? superScript[0] ?? '';
 };
 
-export const generateWeeks = (
-  startWeekInit: DateTime,
-  weekEndInit: DateTime,
-  // If the number is negative the weeks will be generated in the future
-  numberOfPeriods = 4
+type DateFormats =
+  | 'yyyy-MM-dd'
+  | 'd'
+  | 'EEEE'
+  | 'LLLL'
+  | 'HH:mm'
+  | 'HH:mm:ss'
+  | 'dd/MM/yyyy';
+
+export const formatDate = (date: DateTime, format: DateFormats = 'yyyy-MM-dd') =>
+  date.toFormat(format);
+
+export const getDate = (date?: string | Date, fromFormat: DateFormats = 'yyyy-MM-dd') => {
+  if (date instanceof Date) {
+    return DateTime.fromJSDate(date);
+  }
+  return date ? DateTime.fromFormat(date, fromFormat) : DateTime.now();
+};
+
+export const getEndOfWeek = (date?: string, fromFormat: DateFormats = 'yyyy-MM-dd') =>
+  getDate(date, fromFormat).endOf('week');
+
+export const generateWeekArray = (
+  weekStart: string,
+  fromFormat: DateFormats = 'yyyy-MM-dd'
 ) =>
-  Array.from({ length: numberOfPeriods }, (_, i) => ({
-    weekStart: startWeekInit.minus({ days: i * 7 }).toFormat('dd/MM/yyyy'),
-    weekEnd: weekEndInit.minus({ days: i * 7 }).toFormat('dd/MM/yyyy')
-  }));
-
-export const formatDate = (date: DateTime) => date.toFormat('dd/MM/yyyy');
-
-export const getDate = (date?: string) =>
-  date ? DateTime.fromFormat(date, 'dd/MM/yyyy') : DateTime.now().toFormat('dd/MM/yyyy');
-
-export const getLuxonDate = (date?: string) =>
-  date ? DateTime.fromFormat(date, 'dd/MM/yyyy') : DateTime.now();
-
-export const generateWeekArray = (weekStart: string) =>
   Array.from({ length: 7 }, (_, i) => {
-    const dateFormat = DateTime.fromFormat(weekStart, 'dd/MM/yyyy').plus({
+    const dateFormat = DateTime.fromFormat(weekStart, fromFormat).plus({
       days: i
     });
     const date = dateFormat.toFormat('d');
@@ -42,9 +48,11 @@ export const generateWeekArray = (weekStart: string) =>
     };
   });
 
-export const getWeekStart = (date?: string) => {
-  const weekStart = date ? DateTime.fromFormat(date, 'dd/MM/yyyy') : DateTime.now();
-  return weekStart.startOf('week').toFormat('dd/MM/yyyy');
+export const getWeekStart = (date?: string, format: DateFormats = 'yyyy-MM-dd') => {
+  const dt = date ? DateTime.fromFormat(date, format) : DateTime.now();
+  // Calculate Monday as the start of the week.
+  const diff = dt.weekday - 1; // Monday is 1
+  return dt.minus({ days: diff }).toFormat(format);
 };
 
 export const calculateTimeDifference = (startTime?: string, endTime?: string) => {
@@ -78,4 +86,36 @@ export const calculateTimeDifference = (startTime?: string, endTime?: string) =>
     time: timeString,
     totalMinutes: diffInMinutes
   };
+};
+
+export const isWithinRange = (
+  date: DateTime,
+  min?: DateTime,
+  max?: DateTime
+): boolean => {
+  if (min && date < min) return false;
+  if (max && date > max) return false;
+  return true;
+};
+
+export const isMatchingDate = ({ date1, date2 }: { date1: DateTime; date2: DateTime }) =>
+  date1.toFormat('yyyy-MM-dd') === date2.toFormat('yyyy-MM-dd');
+
+export const isMatchingDates = (date: DateTime, dates: DateTime[] | string[]) => {
+  if (dates.length) {
+    return dates
+      .map((d) => (typeof d === 'string' ? DateTime.fromFormat(d, 'yyyy-MM-dd') : d))
+      .some((d) => isMatchingDate({ date1: date, date2: d }));
+  }
+
+  return false;
+};
+
+export const getWeeklyDatePercentage = (date: DateTime) => {
+  const startOfWeek = date.startOf('week');
+
+  const totalRange = date.endOf('week').toMillis() - startOfWeek.toMillis();
+  const offset = date.toMillis() - startOfWeek.toMillis();
+  const pct = (offset / totalRange) * 100;
+  return Math.max(0, Math.min(pct, 100));
 };

@@ -12,7 +12,10 @@ export const authz = {
   timesheet_view_all: 'timesheet:view:all',
 
   jobs_read: 'jobs:read',
-  jobs_edit: 'jobs:edit'
+  jobs_edit: 'jobs:edit',
+
+  schedule_read: 'schedule:read',
+  schedule_edit: 'schedule:edit'
 } as const;
 
 const rolesPermissions: Permission = [
@@ -58,6 +61,16 @@ const jobsPermissions: Permission = [
   {
     id: authz.jobs_edit,
     name: 'Jobs Edit',
+    roles: ['MANAGER']
+  },
+  {
+    id: authz.schedule_read,
+    name: 'Schedule Read',
+    roles: ['EMPLOYEE', 'MANAGER']
+  },
+  {
+    id: authz.schedule_edit,
+    name: 'Schedule Edit',
     roles: ['MANAGER']
   }
 ];
