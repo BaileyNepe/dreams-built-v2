@@ -1,0 +1,128 @@
+import { useScheduleQuery } from 'api/schedule';
+import { type DateTime } from 'luxon';
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  type FC,
+  type ReactNode
+} from 'react';
+import { formatDate, getDate, isMatchingDates } from 'utils/date';
+
+const useSchedule = () => {
+  const [selectedDate] = useState(getDate());
+  const startOfWeek = useMemo(() => selectedDate.startOf('week'), [selectedDate]);
+  const endOfWeek = useMemo(() => selectedDate.endOf('week'), [selectedDate]);
+
+  const scheduleData = useScheduleQuery(formatDate(startOfWeek), formatDate(endOfWeek));
+
+  // Convert raw blocked days to DateTime objects
+  const blockedDays = useMemo(
+    () => scheduleData.blockedDays.map((d) => getDate(d.date)),
+    [scheduleData]
+  );
+
+  // Process schedule data: assign lanes and compute segments per task
+  const jobPartsWithSegments = useMemo(
+    () =>
+      scheduleData.schedule.map((jp) => {
+        // Convert raw tasks
+        const tasks = jp.projectSchedule.map((t) => ({
+          ...t,
+          start: getDate(t.startDate),
+          end: getDate(t.endDate)
+        }));
+
+        // Inline lane assignment: sort tasks and assign lanes without a separate helper
+        const sortedTasks = tasks
+          .slice()
+          .sort((a, b) => a.start.toMillis() - b.start.toMillis());
+        const laneEndTimes: DateTime[] = [];
+        const tasksWithLanes = sortedTasks.map((task) => {
+          let laneIndex = 0;
+          while (
+            laneIndex < laneEndTimes.length &&
+            task.start.toMillis() <= laneEndTimes[laneIndex].toMillis()
+          ) {
+            laneIndex++;
+          }
+          if (laneIndex >= laneEndTimes.length) {
+            laneEndTimes.push(task.end);
+          } else {
+            laneEndTimes[laneIndex] = task.end;
+          }
+          return { ...task, lane: laneIndex };
+        });
+
+        // Compute segments for each task, skipping blocked days
+        const tasksWithSegments = tasksWithLanes.map((task) => {
+          const segments: { segmentStart: DateTime; segmentEnd: DateTime }[] = [];
+          const effectiveStart = task.start > startOfWeek ? task.start : startOfWeek;
+          const effectiveEnd = task.end < endOfWeek ? task.end : endOfWeek;
+          let currentSegmentStart: DateTime | null = null;
+          let iterDate = effectiveStart.startOf('day');
+
+          while (iterDate <= effectiveEnd) {
+            const currentIter = iterDate;
+            if (!isMatchingDates(currentIter, blockedDays)) {
+              if (!currentSegmentStart) currentSegmentStart = currentIter;
+            } else if (currentSegmentStart) {
+              segments.push({
+                segmentStart: currentSegmentStart,
+                segmentEnd: currentIter.minus({ days: 1 }).endOf('day')
+              });
+              currentSegmentStart = null;
+            }
+            iterDate = iterDate.plus({ days: 1 }).startOf('day');
+          }
+          if (currentSegmentStart) {
+            segments.push({
+              segmentStart: currentSegmentStart,
+              segmentEnd: effectiveEnd
+            });
+          }
+          return { ...task, segments };
+        });
+
+        return { ...jp, tasks: tasksWithSegments };
+      }),
+    [scheduleData, startOfWeek, endOfWeek, blockedDays]
+  );
+
+  // Compute an array of dates to display for the week
+  const datesToShow = useMemo(() => {
+    const dates: DateTime[] = [];
+    let current = startOfWeek;
+    while (current <= endOfWeek) {
+      dates.push(current);
+      current = current.plus({ days: 1 });
+    }
+    return dates;
+  }, [startOfWeek, endOfWeek]);
+
+  return {
+    blockedDays,
+    jobPartsWithSegments,
+    datesToShow,
+    startOfWeek,
+    endOfWeek
+  };
+};
+
+export type ScheduleContextType = ReturnType<typeof useSchedule>;
+
+const ScheduleContext = createContext<ScheduleContextType | undefined>(undefined);
+
+export const ScheduleProvider: FC<{ children: ReactNode }> = ({ children }) => {
+  const schedule = useSchedule();
+  return <ScheduleContext.Provider value={schedule}>{children}</ScheduleContext.Provider>;
+};
+
+export const useScheduler = (): ScheduleContextType => {
+  const context = useContext(ScheduleContext);
+  if (!context) {
+    throw new Error('useScheduler must be used within a ScheduleProvider');
+  }
+  return context;
+};

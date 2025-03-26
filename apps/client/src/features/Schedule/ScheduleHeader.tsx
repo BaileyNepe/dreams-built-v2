@@ -1,8 +1,8 @@
 import { Box } from '@mui/material';
-import { type DateTime } from 'luxon';
 import { type FC } from 'react';
 import styled from 'styled-components';
-import { formatDate } from 'utils/date';
+import { formatDate, isMatchingDates } from 'utils/date';
+import { useScheduler } from './useSchedule';
 
 const DayCell = styled(Box)<{ $isBlocked?: boolean }>`
   background-color: ${({ $isBlocked, theme }) =>
@@ -18,17 +18,19 @@ const HeaderGrid = styled(Box)`
   grid-template-columns: 200px repeat(7, 1fr);
 `;
 
-const blockedDays: string[] = ['2025-03-13', '2025-03-15'];
+/* Component */
 
-export const ScheduleHeader: FC<{
-  datesToShow: DateTime[];
-}> = ({ datesToShow }) => (
-  <HeaderGrid>
-    <Box padding="0.5rem">Job Part</Box>
-    {datesToShow.map((day, i) => (
-      <DayCell key={i} $isBlocked={blockedDays.includes(formatDate(day, 'yyyy-MM-dd'))}>
-        {formatDate(day, 'd')}
-      </DayCell>
-    ))}
-  </HeaderGrid>
-);
+export const ScheduleHeader: FC = () => {
+  const { datesToShow, blockedDays } = useScheduler();
+
+  return (
+    <HeaderGrid>
+      <Box padding="0.5rem">Job Part</Box>
+      {datesToShow.map((day, i) => (
+        <DayCell key={i} $isBlocked={isMatchingDates(day, blockedDays)}>
+          {formatDate(day, 'd')}
+        </DayCell>
+      ))}
+    </HeaderGrid>
+  );
+};

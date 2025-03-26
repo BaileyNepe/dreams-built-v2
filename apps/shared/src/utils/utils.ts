@@ -40,12 +40,4 @@ export const sentenceCase = (string: string) => startCase(camelCase(string));
 
 export const wordCase = (string: string) => snakeCase(string).replace(/_/g, ' ');
 
-export const filterAndJoin = (
-  parts: (string | undefined | null)[],
-  separator: string = ' '
-) =>
-  parts
-    .filter((part) => part !== undefined && part !== null && part !== '') // Filter out undefined, null, or empty strings
-    .join(separator); // Join with the provided separator, default is a space
-
 export const generateCuid = () => createId();

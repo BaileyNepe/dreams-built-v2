@@ -14,11 +14,22 @@ model Client {
     id        String    @id @default(cuid())
     name      String    @default("")
     color     String    @default("")
-    createdAt DateTime  @default(now()) @map("created_at")
-    updatedAt DateTime  @updatedAt @map("updated_at")
+    createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+    updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
     project   Project[]
 
     @@map("client")
+}
+
+model BlockedDate {
+    id        String   @id @default(cuid())
+    date      String   @unique @default("")
+    details   String   @default("")
+    createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+    updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+    deleted   Boolean  @default(false)
+
+    @@map("blocked_date")
 }
 
 model Project {

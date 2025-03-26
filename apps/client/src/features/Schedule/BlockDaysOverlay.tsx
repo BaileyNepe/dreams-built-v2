@@ -1,8 +1,8 @@
 import { Box } from '@mui/material';
-import { type DateTime } from 'luxon';
 import { type FC } from 'react';
 import styled from 'styled-components';
 import { isMatchingDates } from 'utils/date';
+import { useScheduler } from './useSchedule';
 
 const UnderlayGrid = styled(Box)`
   bottom: 0;
@@ -20,14 +20,14 @@ const UnderlayCell = styled(Box)<{ $isBlocked?: boolean }>`
     $isBlocked ? theme.palette.grey[300] : 'inherit'};
 `;
 
-const blockedDays: string[] = ['2025-03-13', '2025-03-15'];
+export const BlockDaysOverlay: FC = () => {
+  const { blockedDays, datesToShow } = useScheduler();
 
-export const BlockDaysOverlay: FC<{
-  datesToShow: DateTime[];
-}> = ({ datesToShow }) => (
-  <UnderlayGrid>
-    {datesToShow.map((day, idx) => (
-      <UnderlayCell key={idx} $isBlocked={isMatchingDates(day, blockedDays)} />
-    ))}
-  </UnderlayGrid>
-);
+  return (
+    <UnderlayGrid>
+      {datesToShow.map((day, idx) => (
+        <UnderlayCell key={idx} $isBlocked={isMatchingDates(day, blockedDays)} />
+      ))}
+    </UnderlayGrid>
+  );
+};

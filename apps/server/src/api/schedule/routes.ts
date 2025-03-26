@@ -1,8 +1,32 @@
 import { protectedProcedure, trpc } from '@config/trpc';
 import { authz } from '@dreams-built/shared/src/auth/permissions';
+import { dateRegex } from '@dreams-built/shared/src/schemas';
 import { z } from 'zod';
 
 export const scheduleRouter = trpc.router({
+  blockDay: protectedProcedure([authz.schedule_edit])
+    .input(
+      z.object({
+        date: z.string().regex(dateRegex),
+        details: z.string().optional(),
+        deleted: z.boolean().optional()
+      })
+    )
+    .mutation(async ({ ctx, input }) =>
+      ctx.db.blockedDate.upsert({
+        where: {
+          date: input.date
+        },
+        create: {
+          date: input.date,
+          details: input.details
+        },
+        update: {
+          details: input.details,
+          deleted: input.deleted ?? false
+        }
+      })
+    ),
   projectParts: protectedProcedure([authz.schedule_read]).query(async ({ ctx }) =>
     ctx.db.projectPart.findMany({
       select: {
@@ -17,12 +41,12 @@ export const scheduleRouter = trpc.router({
   get: protectedProcedure([authz.schedule_read])
     .input(
       z.object({
-        startRange: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-        endRange: z.string().regex(/^\d{4}-\d{2}-\d{2}$/)
+        startRange: z.string().regex(dateRegex),
+        endRange: z.string().regex(dateRegex)
       })
     )
-    .query(async ({ ctx, input }) =>
-      ctx.db.projectPart.findMany({
+    .query(async ({ ctx, input }) => {
+      const schedule = await ctx.db.projectPart.findMany({
         select: {
           id: true,
           name: true,
@@ -55,13 +79,32 @@ export const scheduleRouter = trpc.router({
         orderBy: {
           order: 'asc'
         }
-      })
-    ),
+      });
+
+      const blockedDays = await ctx.db.blockedDate.findMany({
+        select: {
+          date: true,
+          details: true
+        },
+        where: {
+          date: {
+            gte: input.startRange,
+            lte: input.endRange
+          },
+          deleted: false
+        }
+      });
+
+      return {
+        schedule,
+        blockedDays
+      };
+    }),
   add: protectedProcedure([authz.schedule_edit])
     .input(
       z.object({
-        startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-        endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        startDate: z.string().regex(dateRegex),
+        endDate: z.string().regex(dateRegex),
         projectPartId: z.string(),
         projectId: z.string(),
         notes: z.string().optional()
@@ -82,8 +125,8 @@ export const scheduleRouter = trpc.router({
     .input(
       z.object({
         id: z.string(),
-        startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-        endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        startDate: z.string().regex(dateRegex),
+        endDate: z.string().regex(dateRegex),
         projectPartId: z.string(),
         projectId: z.string(),
         notes: z.string().optional()
