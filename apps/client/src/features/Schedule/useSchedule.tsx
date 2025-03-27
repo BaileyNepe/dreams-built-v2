@@ -8,10 +8,10 @@ import {
   type FC,
   type ReactNode
 } from 'react';
-import { formatDate, getDate, isMatchingDates } from 'utils/date';
+import { formatDate, generateWeekArray, getDate, isMatchingDates } from 'utils/date';
 
 const useSchedule = () => {
-  const [selectedDate] = useState(getDate());
+  const [selectedDate, setSelectedDate] = useState(getDate());
   const startOfWeek = useMemo(() => selectedDate.startOf('week'), [selectedDate]);
   const endOfWeek = useMemo(() => selectedDate.endOf('week'), [selectedDate]);
 
@@ -23,19 +23,15 @@ const useSchedule = () => {
     [scheduleData]
   );
 
-  // Process schedule data: assign lanes and compute segments per task
   const jobPartsWithSegments = useMemo(
     () =>
       scheduleData.schedule.map((jp) => {
-        // Convert raw tasks
-        const tasks = jp.projectSchedule.map((t) => ({
-          ...t,
-          start: getDate(t.startDate),
-          end: getDate(t.endDate)
-        }));
-
-        // Inline lane assignment: sort tasks and assign lanes without a separate helper
-        const sortedTasks = tasks
+        const sortedTasks = jp.projectSchedule
+          .map((t) => ({
+            ...t,
+            start: getDate(t.startDate),
+            end: getDate(t.endDate)
+          }))
           .slice()
           .sort((a, b) => a.start.toMillis() - b.start.toMillis());
         const laneEndTimes: DateTime[] = [];
@@ -91,17 +87,18 @@ const useSchedule = () => {
   );
 
   // Compute an array of dates to display for the week
-  const datesToShow = useMemo(() => {
-    const dates: DateTime[] = [];
-    let current = startOfWeek;
-    while (current <= endOfWeek) {
-      dates.push(current);
-      current = current.plus({ days: 1 });
-    }
-    return dates;
-  }, [startOfWeek, endOfWeek]);
+  const datesToShow = useMemo(
+    () => generateWeekArray(formatDate(startOfWeek)).map((d) => d.dateFormat),
+    [startOfWeek]
+  );
+
+  const changeDate = (date: string) => {
+    setSelectedDate(getDate(date));
+  };
 
   return {
+    changeDate,
+    selectedDate,
     blockedDays,
     jobPartsWithSegments,
     datesToShow,

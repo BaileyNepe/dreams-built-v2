@@ -1,9 +1,9 @@
 import { Box } from '@mui/material';
+import { BasicDatePicker } from 'components/DatePicker';
 import React, { type FC } from 'react';
 import styled from 'styled-components';
-import { BlockDaysOverlay } from './BlockDaysOverlay';
+import { InteractiveScheduleRow } from './InteractiveRow';
 import { ScheduleHeader } from './ScheduleHeader';
-import { ScheduleRow } from './ScheduleRow';
 import { useScheduler } from './useSchedule';
 
 /* Styles */
@@ -19,19 +19,14 @@ const JobPartCell = styled(Box)`
   padding: 0.5rem;
 `;
 
-const ScheduleRowContainer = styled(Box)<{ $minHeight: string }>`
-  border-bottom: 1px solid ${({ theme }) => theme.palette.grey[300]};
-  min-height: ${({ $minHeight: minHeight }) => minHeight};
-  position: relative;
-`;
-
 /* Component */
 
 export const Schedule: FC = () => {
-  const { jobPartsWithSegments } = useScheduler();
+  const { jobPartsWithSegments, selectedDate, changeDate } = useScheduler();
 
   return (
     <Container>
+      <BasicDatePicker value={selectedDate} onChange={changeDate} />
       <ScheduleHeader />
 
       <Box display="grid" gridTemplateColumns="200px 1fr">
@@ -41,10 +36,7 @@ export const Schedule: FC = () => {
           return (
             <React.Fragment key={jp.id}>
               <JobPartCell height={`${rowHeight}px`}>{jp.name}</JobPartCell>
-              <ScheduleRowContainer $minHeight={`${rowHeight}px`}>
-                <BlockDaysOverlay />
-                <ScheduleRow tasks={jp.tasks} />
-              </ScheduleRowContainer>
+              <InteractiveScheduleRow jp={jp} rowHeight={rowHeight} />
             </React.Fragment>
           );
         })}

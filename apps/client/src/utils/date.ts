@@ -41,6 +41,7 @@ export const generateWeekArray = (
     const ordinal = getOrdinal(parseInt(date));
 
     return {
+      dateFormat,
       day,
       date,
       ordinal,

@@ -18,8 +18,8 @@ const staleTime = 1000 * 60 * 10; // 5 minutes
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 3,
-      retryDelay: 1000,
+      retry: 2,
+      retryDelay: 100,
       refetchOnWindowFocus: true,
       refetchOnMount: true,
       refetchOnReconnect: true,

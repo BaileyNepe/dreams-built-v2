@@ -19,7 +19,11 @@ export const BasicDatePicker: FC<{
       return;
     }
 
-    if (minDate && maxDate && isWithinRange(val, minDate, maxDate)) {
+    if (minDate && maxDate) {
+      if (isWithinRange(val, minDate, maxDate)) {
+        onChange(formatDate(val));
+      }
+    } else {
       onChange(formatDate(val));
     }
   };

@@ -1,34 +1,10 @@
-import { Box } from '@mui/material';
 import { type DateTime } from 'luxon';
-import { type FC } from 'react';
-import styled from 'styled-components';
+import { useState, type FC } from 'react';
 import { getContrastingColor } from 'utils/color';
 import { getWeeklyDatePercentage } from 'utils/date';
+import { EditScheduleModal } from './ScheduleModal';
+import { TaskBar } from './styles';
 import { type ScheduleContextType } from './useSchedule';
-
-const TaskBar = styled(Box)<{
-  $top: string;
-  $left: string;
-  $width: string;
-  $backgroundColor: string;
-  $color: string;
-}>`
-  background-color: ${({ $backgroundColor }) => $backgroundColor};
-  border: 1px solid #888;
-  border-radius: 4px;
-  color: ${({ $color }) => $color};
-  font-size: 0.8rem;
-  font-weight: bold;
-  height: 24px;
-  left: ${({ $left: left }) => left};
-  overflow: hidden;
-  padding: 2px;
-  position: absolute;
-  text-overflow: ellipsis;
-  top: ${({ $top: top }) => top};
-  white-space: nowrap;
-  width: ${({ $width: width }) => width};
-`;
 
 const getBarPosition = (barStart: DateTime, barEnd: DateTime) => {
   const leftPct = getWeeklyDatePercentage(barStart);
@@ -38,26 +14,49 @@ const getBarPosition = (barStart: DateTime, barEnd: DateTime) => {
 
 export const ScheduleRow: FC<{
   tasks: ScheduleContextType['jobPartsWithSegments'][0]['tasks'];
-}> = ({ tasks }) => (
-  <>
-    {tasks.map((task) =>
-      task.segments.map((seg, idx) => {
-        const { left, width } = getBarPosition(seg.segmentStart, seg.segmentEnd);
-        const top = `${8 + task.lane * 30}px`;
-        return (
-          <TaskBar
-            key={`${task.id}-${idx}`}
-            $top={top}
-            $left={left}
-            $width={width}
-            $backgroundColor={task.project.color}
-            $color={getContrastingColor(task.project.color)}
-            title={task.project.address}
-          >
-            {task.project.address}
-          </TaskBar>
-        );
-      })
-    )}
-  </>
-);
+  onTaskModalChange: (open: boolean) => void;
+}> = ({ tasks, onTaskModalChange }) => {
+  const [selectedTask, setSelectedTask] = useState<any>(null);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+
+  return (
+    <>
+      {tasks.map((task) =>
+        task.segments.map((seg, idx) => {
+          const { left, width } = getBarPosition(seg.segmentStart, seg.segmentEnd);
+          const top = `${8 + task.lane * 30}px`;
+          return (
+            <TaskBar
+              key={`${task.id}-${idx}`}
+              $top={top}
+              $left={left}
+              $width={width}
+              $backgroundColor={task.project.color}
+              $color={getContrastingColor(task.project.color)}
+              title={task.project.address}
+              onMouseDown={(e) => e.stopPropagation()} // Prevent propagation on mousedown
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedTask(task);
+                setIsTaskModalOpen(true);
+                onTaskModalChange(true); // notify parent that a task modal is open
+              }}
+            >
+              {task.project.address}
+            </TaskBar>
+          );
+        })
+      )}
+      {isTaskModalOpen && selectedTask && (
+        <EditScheduleModal
+          open={isTaskModalOpen}
+          data={selectedTask}
+          onClose={() => {
+            setIsTaskModalOpen(false);
+            onTaskModalChange(false); // notify parent that the task modal is closed
+          }}
+        />
+      )}
+    </>
+  );
+};
