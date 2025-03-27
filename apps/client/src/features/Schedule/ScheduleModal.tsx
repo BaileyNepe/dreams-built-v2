@@ -3,6 +3,7 @@ import { type FC } from 'react';
 import { Button } from '@mui/material';
 import BasicModal from 'components/Modal';
 import { type DateTime } from 'luxon';
+import { type Task } from './useSchedule';
 
 export const RangeSelectionModal: FC<{
   range: { start: DateTime; end: DateTime } | null;
@@ -20,12 +21,7 @@ export const RangeSelectionModal: FC<{
 export const EditScheduleModal: FC<{
   open: boolean;
   onClose: () => void;
-  data: {
-    start: DateTime;
-    end: DateTime;
-    id: string;
-    projectId: string;
-  };
+  data: Task;
 }> = ({ open, onClose, data }) => (
   <BasicModal open={open} onClose={onClose} title="Edit Schedule">
     <form>

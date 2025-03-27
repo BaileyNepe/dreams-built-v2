@@ -1,4 +1,5 @@
 import { Box, Checkbox } from '@mui/material';
+import { useBlockMutation } from 'api/schedule';
 import { type DateTime } from 'luxon';
 import { type FC } from 'react';
 import styled from 'styled-components';
@@ -17,22 +18,38 @@ const HeaderGrid = styled(Box)`
   grid-template-columns: 200px repeat(7, 1fr);
 `;
 
+const DateContainer = styled(Box)`
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+`;
+
 const DayCellContainer: FC<{
   day: DateTime;
   isBlocked: boolean;
-}> = ({ day, isBlocked }) => (
-  <Box position="relative" padding="0.5rem" textAlign="center">
-    <Checkbox
-      size="small"
-      checked={isBlocked}
-      onChange={(e) => {
-        console.log(e.target.checked);
-      }}
-      style={{ position: 'absolute', top: 0, right: 0 }}
-    />
-    {formatDate(day, 'd')}
-  </Box>
-);
+}> = ({ day, isBlocked }) => {
+  const { hasPermissionToEdit } = useScheduler();
+  const mutation = useBlockMutation();
+
+  return (
+    <DateContainer>
+      {formatDate(day, 'd MMM')}
+      {hasPermissionToEdit && (
+        <Checkbox
+          size="small"
+          checked={isBlocked}
+          onChange={(e) => {
+            mutation.mutate({
+              date: formatDate(day),
+              deleted: !e.target.checked
+            });
+          }}
+        />
+      )}
+    </DateContainer>
+  );
+};
 
 /* Component */
 

@@ -12,7 +12,8 @@ type DateFormats =
   | 'LLLL'
   | 'HH:mm'
   | 'HH:mm:ss'
-  | 'dd/MM/yyyy';
+  | 'dd/MM/yyyy'
+  | 'd MMM';
 
 export const formatDate = (date: DateTime, format: DateFormats = 'yyyy-MM-dd') =>
   date.toFormat(format);

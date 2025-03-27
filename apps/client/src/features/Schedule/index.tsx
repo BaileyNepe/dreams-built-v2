@@ -32,7 +32,7 @@ export const Schedule: FC = () => {
       <Box display="grid" gridTemplateColumns="200px 1fr">
         {jobPartsWithSegments.map((jp) => {
           const maxLane = Math.max(...jp.tasks.map((t) => t.lane), 0);
-          const rowHeight = (maxLane + 1) * 30 + 20;
+          const rowHeight = (maxLane + 1) * 30 + 30;
           return (
             <React.Fragment key={jp.id}>
               <JobPartCell height={`${rowHeight}px`}>{jp.name}</JobPartCell>

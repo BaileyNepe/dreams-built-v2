@@ -1,3 +1,4 @@
+import { authz } from '@dreams-built/shared/src/auth/permissions';
 import { useScheduleQuery } from 'api/schedule';
 import { type DateTime } from 'luxon';
 import {
@@ -8,12 +9,17 @@ import {
   type FC,
   type ReactNode
 } from 'react';
+import { useAuth } from 'utils/contexts/AuthProvider';
 import { formatDate, generateWeekArray, getDate, isMatchingDates } from 'utils/date';
 
 const useSchedule = () => {
   const [selectedDate, setSelectedDate] = useState(getDate());
   const startOfWeek = useMemo(() => selectedDate.startOf('week'), [selectedDate]);
   const endOfWeek = useMemo(() => selectedDate.endOf('week'), [selectedDate]);
+
+  const hasPermissionToEdit = useAuth().user.permissions.some(
+    (p) => p === authz.schedule_edit
+  );
 
   const scheduleData = useScheduleQuery(formatDate(startOfWeek), formatDate(endOfWeek));
 
@@ -98,6 +104,7 @@ const useSchedule = () => {
 
   return {
     changeDate,
+    hasPermissionToEdit,
     selectedDate,
     blockedDays,
     jobPartsWithSegments,
@@ -107,9 +114,11 @@ const useSchedule = () => {
   };
 };
 
-export type ScheduleContextType = ReturnType<typeof useSchedule>;
+type ScheduleContextType = ReturnType<typeof useSchedule>;
 
 const ScheduleContext = createContext<ScheduleContextType | undefined>(undefined);
+
+export type Task = ScheduleContextType['jobPartsWithSegments'][0]['tasks'][number];
 
 export const ScheduleProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const schedule = useSchedule();

@@ -4,7 +4,7 @@ import { getContrastingColor } from 'utils/color';
 import { getWeeklyDatePercentage } from 'utils/date';
 import { EditScheduleModal } from './ScheduleModal';
 import { TaskBar } from './styles';
-import { type ScheduleContextType } from './useSchedule';
+import { type Task } from './useSchedule';
 
 const getBarPosition = (barStart: DateTime, barEnd: DateTime) => {
   const leftPct = getWeeklyDatePercentage(barStart);
@@ -13,11 +13,10 @@ const getBarPosition = (barStart: DateTime, barEnd: DateTime) => {
 };
 
 export const ScheduleRow: FC<{
-  tasks: ScheduleContextType['jobPartsWithSegments'][0]['tasks'];
+  tasks: Task[];
   onTaskModalChange: (open: boolean) => void;
 }> = ({ tasks, onTaskModalChange }) => {
-  const [selectedTask, setSelectedTask] = useState<any>(null);
-  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   return (
     <>
@@ -38,7 +37,6 @@ export const ScheduleRow: FC<{
               onClick={(e) => {
                 e.stopPropagation();
                 setSelectedTask(task);
-                setIsTaskModalOpen(true);
                 onTaskModalChange(true); // notify parent that a task modal is open
               }}
             >
@@ -47,12 +45,12 @@ export const ScheduleRow: FC<{
           );
         })
       )}
-      {isTaskModalOpen && selectedTask && (
+      {selectedTask && (
         <EditScheduleModal
-          open={isTaskModalOpen}
+          open={!!selectedTask}
           data={selectedTask}
           onClose={() => {
-            setIsTaskModalOpen(false);
+            setSelectedTask(null);
             onTaskModalChange(false); // notify parent that the task modal is closed
           }}
         />
