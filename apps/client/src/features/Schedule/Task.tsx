@@ -1,5 +1,6 @@
 import { type DateTime } from 'luxon';
 import { useState, type FC } from 'react';
+import styled from 'styled-components';
 import { getContrastingColor } from 'utils/color';
 import { getWeeklyDatePercentage } from 'utils/date';
 import { EditScheduleModal } from './components/ScheduleModal';
@@ -11,6 +12,13 @@ const getBarPosition = (barStart: DateTime, barEnd: DateTime) => {
   const rightPct = getWeeklyDatePercentage(barEnd.endOf('day'));
   return { left: `${leftPct}%`, width: `${Math.max(0, rightPct - leftPct)}%` };
 };
+
+const Notes = styled.span`
+  display: block;
+  font-size: 0.6rem;
+  font-style: italic;
+  margin-top: 0.1rem;
+`;
 
 export const ScheduleTask: FC<{
   tasks: Task[];
@@ -39,7 +47,7 @@ export const ScheduleTask: FC<{
               }}
             >
               {task.project.jobNumber} - {task.project.address}
-              {task.notes && <div style={{ marginTop: '0.25rem' }}>{task.notes}</div>}
+              {task.notes && <Notes>{task.notes}</Notes>}
             </TaskBar>
           );
         })

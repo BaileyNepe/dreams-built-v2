@@ -12,60 +12,6 @@ import {
 import { useAuth } from 'utils/contexts/AuthProvider';
 import { formatDate, generateWeekArray, getDate, isMatchingDates } from 'utils/date';
 
-type Segment = {
-  segmentStart: DateTime;
-  segmentEnd: DateTime;
-};
-
-type SegmentWithLane = Segment & {
-  // Numeric representation for lane assignment:
-  // start: the column (day index relative to startOfWeek)
-  // span: number of days it covers (always at least 1)
-  start: number;
-  span: number;
-  lane: number;
-};
-
-const getSegmentLanes = (segments: Segment[], weekStart: DateTime): SegmentWithLane[] => {
-  // Convert each segment into its numeric form (relative to weekStart)
-  const segmentsNumeric: SegmentWithLane[] = segments.map((segment) => {
-    // Compute the column index (0-based) for the segmentStart.
-    // Using Math.floor in case there are fractional values.
-    const start = Math.floor(segment.segmentStart.diff(weekStart, 'days').days);
-    // The span is the number of days covered; add 1 since the start day counts.
-    const span =
-      Math.floor(segment.segmentEnd.diff(segment.segmentStart, 'days').days) + 1;
-    return { ...segment, start, span, lane: 0 };
-  });
-
-  // Sort segments by their starting column.
-  segmentsNumeric.sort((a, b) => a.start - b.start);
-
-  // lanes array holds, for each lane, the next free column (i.e. the end column of the last segment assigned)
-  const laneEnds: number[] = [];
-
-  // Assign lanes using a greedy algorithm.
-  for (const seg of segmentsNumeric) {
-    let assigned = false;
-    for (let i = 0; i < laneEnds.length; i++) {
-      // If the segment's start is at or after the lane's free column, it fits in this lane.
-      if (seg.start >= laneEnds[i]) {
-        seg.lane = i;
-        laneEnds[i] = seg.start + seg.span; // update the lane's end
-        assigned = true;
-        break;
-      }
-    }
-    // If no existing lane fits, add a new lane.
-    if (!assigned) {
-      seg.lane = laneEnds.length;
-      laneEnds.push(seg.start + seg.span);
-    }
-  }
-
-  return segmentsNumeric;
-};
-
 const useSchedule = () => {
   const [selectedDate, setSelectedDate] = useState(getDate());
   const startOfWeek = useMemo(() => selectedDate.startOf('week'), [selectedDate]);
@@ -115,7 +61,7 @@ const useSchedule = () => {
 
         // Compute segments for each task, skipping blocked days.
         const tasksWithSegments = tasksWithLanes.map((task) => {
-          const segments: Segment[] = [];
+          const segments: { segmentStart: DateTime; segmentEnd: DateTime }[] = [];
           const effectiveStart = task.start > startOfWeek ? task.start : startOfWeek;
           const effectiveEnd = task.end < endOfWeek ? task.end : endOfWeek;
           let currentSegmentStart: DateTime | null = null;
@@ -141,10 +87,10 @@ const useSchedule = () => {
             });
           }
 
-          // Now apply lane assignment to the segments.
-          // Each segment’s "start" becomes its column (day) relative to the week and "span" is its width in days.
-          const segmentsWithLanes = getSegmentLanes(segments, startOfWeek);
-          return { ...task, segments: segmentsWithLanes };
+          return {
+            ...task,
+            segments
+          };
         });
 
         return { ...jp, tasks: tasksWithSegments };
