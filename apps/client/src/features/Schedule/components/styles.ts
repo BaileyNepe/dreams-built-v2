@@ -16,11 +16,12 @@ export const TaskBar = styled(Box)<{
   color: ${({ $color, theme }) => $color || theme.palette.grey[600]};
   font-size: 0.7rem;
   font-weight: bold;
-  margin-left: ${({ $left }) => $left};
-  overflow: ${({ $dynamicHeight }) =>
-    $dynamicHeight ? 'visible' : 'hidden'}; /* remove absolute vertical positioning */
+  left: ${({ $left }) => $left};
+  overflow: ${({ $dynamicHeight }) => ($dynamicHeight ? 'visible' : 'hidden')};
   padding: 0.25rem 0.5rem;
-  position: relative;
+  /* Use relative positioning when dynamic height is needed */
+  position: ${({ $dynamicHeight }) => ($dynamicHeight ? 'relative' : 'absolute')};
+  top: 0;
   white-space: ${({ $dynamicHeight }) => ($dynamicHeight ? 'normal' : 'nowrap')};
   width: ${({ $width }) => $width};
 `;

@@ -25,7 +25,7 @@ export const ScheduleTask: FC<{
           const { left, width } = getBarPosition(seg.segmentStart, seg.segmentEnd);
           return (
             <TaskBar
-              key={`${task.project.jobNumber}-${idx}`}
+              key={`${task.id}-${idx}`}
               $left={left}
               $width={width}
               $backgroundColor={task.project.color}

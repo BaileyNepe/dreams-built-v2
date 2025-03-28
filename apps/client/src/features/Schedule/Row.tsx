@@ -9,7 +9,6 @@ import { TaskBar } from './components/styles';
 import { type ProjectPart, useScheduler } from './components/useSchedule';
 import { ScheduleTask } from './Task';
 
-/* Container for each schedule row with extra bottom padding for dragging */
 const ScheduleRowContainer = styled(Box)`
   border-bottom: 1px solid ${({ theme }) => theme.palette.grey[300]};
   cursor: pointer;
@@ -19,10 +18,9 @@ const ScheduleRowContainer = styled(Box)`
   user-select: none;
 `;
 
-/* Container for each lane; note that we no longer reserve space for missing lanes */
 const LaneContainer = styled(Box)`
-  /* Let its height be determined by its content (one task or more) */
-  margin-bottom: 0.25rem;
+  margin-bottom: ${taskBarSpacing};
+  min-height: 1.7rem;
   position: relative;
 `;
 
@@ -31,6 +29,7 @@ const DragSkeletonBar = styled(TaskBar)`
   bottom: ${taskBarSpacing};
   height: ${taskBarHeight};
   position: absolute;
+  top: auto;
 `;
 
 /* Helper: convert a percentage (0-100) to a DateTime between start and end */
@@ -129,11 +128,7 @@ export const InteractiveScheduleRow = ({
     {} as Record<number, typeof projectParts.tasks>
   );
 
-  // Create an array of lane groups by sorting the lane keys.
-  // This “re-indexes” the lanes so that only lanes with tasks are rendered.
-  const laneNumbers = Object.keys(tasksByLaneObj)
-    .map(Number)
-    .sort((a, b) => a - b);
+  const laneNumbers = Object.keys(tasksByLaneObj).map(Number);
 
   return (
     <ScheduleRowContainer
