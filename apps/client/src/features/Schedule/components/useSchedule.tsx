@@ -108,8 +108,19 @@ const useSchedule = () => {
     setSelectedDate(getDate(date));
   };
 
+  const getNextWeek = () => {
+    const nextWeek = startOfWeek.plus({ weeks: 1 });
+    setSelectedDate(nextWeek);
+  };
+  const getPreviousWeek = () => {
+    const previousWeek = startOfWeek.minus({ weeks: 1 });
+    setSelectedDate(previousWeek);
+  };
+
   return {
     changeDate,
+    getNextWeek,
+    getPreviousWeek,
     hasPermissionToEdit,
     selectedDate,
     blockedDays,

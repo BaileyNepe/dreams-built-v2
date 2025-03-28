@@ -10,7 +10,12 @@ import { type Task } from './components/useSchedule';
 const getBarPosition = (barStart: DateTime, barEnd: DateTime) => {
   const leftPct = getWeeklyDatePercentage(barStart);
   const rightPct = getWeeklyDatePercentage(barEnd.endOf('day'));
-  return { left: `${leftPct}%`, width: `${Math.max(0, rightPct - leftPct)}%` };
+  return {
+    // Adjust left by adding half the spacing
+    left: `calc(${leftPct}% + 0.2rem)`,
+    // Reduce width by 0.2rem
+    width: `calc(${Math.max(0, rightPct - leftPct)}% - 0.2rem)`
+  };
 };
 
 const Notes = styled.span`
