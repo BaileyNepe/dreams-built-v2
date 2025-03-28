@@ -107,6 +107,7 @@ export const EditScheduleModal: FC<{
       startDate: formatDate(data.startDate),
       endDate: formatDate(data.endDate),
       notes: data.notes,
+      color: data.project.color,
       deleted: false
     }
   });
@@ -125,7 +126,8 @@ export const EditScheduleModal: FC<{
               id: data.id,
               deleted: true,
               startDate: formatDate(data.startDate),
-              endDate: formatDate(data.endDate)
+              endDate: formatDate(data.endDate),
+              color: data.project.color
             },
             {
               onSuccess: () => {
@@ -153,7 +155,8 @@ export const EditScheduleModal: FC<{
           <TextFieldRHF type="date" name="startDate" label="Start" {...methods} />
           <TextFieldRHF type="date" name="endDate" label="End" {...methods} />
         </DateContainer>
-        <TextFieldRHF name="notes" label="Notes" {...methods} multiline minRows={4} />
+        <TextFieldRHF type="color" name="color" label="Project Colour" {...methods} />
+        <TextFieldRHF name="notes" {...methods} multiline minRows={4} />
       </FormBody>
     </BasicModal>
   );

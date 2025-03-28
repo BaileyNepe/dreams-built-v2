@@ -53,6 +53,7 @@ export const updateScheduleSchema = rawDateRangeSchema
     z.object({
       id: z.string().cuid2('ID is required'),
       deleted: z.boolean(),
+      color: z.string().regex(colorRegex, 'Color must be a valid hex color'),
       notes: z.string().optional()
     })
   )
@@ -61,8 +62,8 @@ export const updateScheduleSchema = rawDateRangeSchema
 export const createScheduleSchema = rawDateRangeSchema
   .merge(
     z.object({
-      projectPartId: z.string(),
-      projectId: z.string(),
+      projectPartId: z.string().cuid2('Project part is required'),
+      projectId: z.string().cuid2('Project is required'),
       notes: z.string().optional()
     })
   )

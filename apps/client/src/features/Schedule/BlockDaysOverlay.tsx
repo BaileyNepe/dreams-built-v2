@@ -16,8 +16,8 @@ const UnderlayGrid = styled(Box)`
 `;
 
 const UnderlayCell = styled(Box)<{ $isBlocked?: boolean }>`
-  background-color: ${({ $isBlocked, theme }) =>
-    $isBlocked ? theme.palette.grey[300] : 'inherit'};
+  background-color: ${({ theme }) => theme.palette.grey[300]};
+  opacity: ${({ $isBlocked }) => ($isBlocked ? 0.5 : 0)};
 `;
 
 export const BlockDaysOverlay: FC = () => {

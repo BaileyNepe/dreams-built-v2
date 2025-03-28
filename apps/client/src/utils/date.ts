@@ -6,14 +6,15 @@ export const getOrdinal = (number: number) => {
 };
 
 type DateFormats =
-  | 'yyyy-MM-dd'
-  | 'd'
-  | 'EEEE'
-  | 'LLLL'
-  | 'HH:mm'
-  | 'HH:mm:ss'
-  | 'dd/MM/yyyy'
-  | 'd MMM';
+  | 'yyyy-MM-dd' // e.g. 2023-01-01
+  | 'd' // e.g. 1
+  | 'EEEE' // e.g. Monday
+  | 'LLLL' // e.g. 1, Monday, January
+  | 'HH:mm' // e.g. 13:00
+  | 'HH:mm:ss' // e.g. 13:00:00
+  | 'dd/MM/yyyy' // e.g. 01/01/2023
+  | 'd MMM' // e.g. 1 Jan
+  | 'ccc d LLL'; // e.g. Mon 1 Jan
 
 export const formatDate = (date: DateTime | Date, format: DateFormats = 'yyyy-MM-dd') =>
   date instanceof Date

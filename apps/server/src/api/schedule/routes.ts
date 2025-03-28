@@ -134,7 +134,12 @@ export const scheduleRouter = trpc.router({
           startDate: input.startDate,
           endDate: input.endDate,
           deleted: input.deleted,
-          notes: input.notes
+          notes: input.notes,
+          project: {
+            update: {
+              color: input.color
+            }
+          }
         }
       })
     )

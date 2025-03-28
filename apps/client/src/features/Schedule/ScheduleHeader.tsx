@@ -34,7 +34,7 @@ const DayCellContainer: FC<{
 
   return (
     <DateContainer>
-      {formatDate(day, 'd MMM')}
+      {formatDate(day, 'ccc d LLL')}
       {hasPermissionToEdit && (
         <Checkbox
           size="small"
