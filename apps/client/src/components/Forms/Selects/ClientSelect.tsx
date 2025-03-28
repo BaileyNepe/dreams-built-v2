@@ -1,11 +1,9 @@
-import { Autocomplete, TextField } from '@mui/material';
 import { useClientsList } from 'api/clients';
 
-import { sentenceCase } from '@dreams-built/shared/src/utils/utils';
-
-import { type Control, Controller } from 'react-hook-form';
+import { type Control } from 'react-hook-form';
 import { type ControlInputProps } from '../types';
-import { getObjectValue } from '../utils';
+
+import { GenericSelectRHF } from './SelectRHF';
 
 export const ClientSelectRHF = <TFieldValues extends Record<string, unknown>>(
   props: ControlInputProps<TFieldValues> & {
@@ -13,49 +11,15 @@ export const ClientSelectRHF = <TFieldValues extends Record<string, unknown>>(
     className?: string;
   }
 ) => {
-  const {
-    name: fieldName,
-    control,
-    formState: { errors },
-    validationRules,
-    label,
-    ...rest
-  } = props;
-
   const { clients } = useClientsList();
 
-  const error = getObjectValue(errors, fieldName) as { message?: string } | undefined;
-
   return (
-    <Controller
-      {...rest}
-      name={fieldName}
-      control={control}
-      rules={validationRules}
-      render={({ field }) => (
-        <Autocomplete
-          {...field}
-          value={clients.find((client) => client.id === field.value)}
-          onChange={(_, value) => {
-            field.onChange(value?.id ?? null);
-          }}
-          sx={{
-            minWidth: 200
-          }}
-          options={clients}
-          getOptionLabel={(option) => `${option.name}`}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              error={!!error}
-              helperText={error ? error.message : ''}
-              placeholder="Select User..."
-              label={label ?? sentenceCase(fieldName)}
-            />
-          )}
-          slotProps={{ listbox: { style: { maxHeight: 200, overflow: 'auto' } } }}
-        />
-      )}
+    <GenericSelectRHF
+      {...props}
+      options={clients ?? []}
+      getOptionLabel={(option) => `${option.name}`}
+      getOptionValue={(option) => option.id}
+      placeholder="Select Client..."
     />
   );
 };

@@ -1,6 +1,10 @@
 import { protectedProcedure, trpc } from '@config/trpc';
 import { authz } from '@dreams-built/shared/src/auth/permissions';
-import { dateRegex } from '@dreams-built/shared/src/schemas';
+import {
+  createScheduleSchema,
+  dateRegex,
+  updateScheduleSchema
+} from '@dreams-built/shared/src/schemas';
 import { z } from 'zod';
 
 export const scheduleRouter = trpc.router({
@@ -53,6 +57,7 @@ export const scheduleRouter = trpc.router({
           projectSchedule: {
             select: {
               id: true,
+              notes: true,
               startDate: true,
               endDate: true,
               project: {
@@ -101,15 +106,7 @@ export const scheduleRouter = trpc.router({
       };
     }),
   add: protectedProcedure([authz.schedule_edit])
-    .input(
-      z.object({
-        startDate: z.string().regex(dateRegex),
-        endDate: z.string().regex(dateRegex),
-        projectPartId: z.string(),
-        projectId: z.string(),
-        notes: z.string().optional()
-      })
-    )
+    .input(createScheduleSchema)
     .mutation(async ({ ctx, input }) =>
       ctx.db.projectSchedule.create({
         data: {
@@ -122,16 +119,7 @@ export const scheduleRouter = trpc.router({
       })
     ),
   update: protectedProcedure([authz.schedule_edit])
-    .input(
-      z.object({
-        id: z.string(),
-        startDate: z.string().regex(dateRegex),
-        endDate: z.string().regex(dateRegex),
-        projectPartId: z.string(),
-        projectId: z.string(),
-        notes: z.string().optional()
-      })
-    )
+    .input(updateScheduleSchema)
     .mutation(async ({ ctx, input }) =>
       ctx.db.projectSchedule.update({
         where: {
@@ -140,25 +128,8 @@ export const scheduleRouter = trpc.router({
         data: {
           startDate: input.startDate,
           endDate: input.endDate,
-          projectPartId: input.projectPartId,
-          projectId: input.projectId,
+          deleted: input.deleted,
           notes: input.notes
-        }
-      })
-    ),
-  delete: protectedProcedure([authz.schedule_edit])
-    .input(
-      z.object({
-        id: z.string()
-      })
-    )
-    .mutation(async ({ ctx, input }) =>
-      ctx.db.projectSchedule.update({
-        data: {
-          deleted: true
-        },
-        where: {
-          id: input.id
         }
       })
     )

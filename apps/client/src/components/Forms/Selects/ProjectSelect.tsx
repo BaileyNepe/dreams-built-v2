@@ -2,6 +2,9 @@
 import { Autocomplete, TextField } from '@mui/material';
 import { useProjectsLargeList } from 'api/projects';
 import { memo, type FC } from 'react';
+import { type Control } from 'react-hook-form';
+import { type ControlInputProps } from '../types';
+import { GenericSelectRHF } from './SelectRHF';
 
 export const ProjectSelect: FC<{
   value?: string;
@@ -38,3 +41,23 @@ export const ProjectSelect: FC<{
     />
   );
 });
+
+export const ProjectSelectRHF = <TFieldValues extends Record<string, unknown>>(
+  props: ControlInputProps<TFieldValues> & {
+    control: Control<TFieldValues>;
+    className?: string;
+  }
+) => {
+  const { data: projects, isLoading } = useProjectsLargeList();
+
+  return (
+    <GenericSelectRHF
+      {...props}
+      loading={isLoading}
+      options={projects?.projects ?? []}
+      getOptionLabel={(option) => `${option.jobNumber} - ${option.address}`}
+      getOptionValue={(option) => option.id}
+      placeholder="Select Project..."
+    />
+  );
+};

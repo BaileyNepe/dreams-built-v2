@@ -1,4 +1,5 @@
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutline';
 import { Typography } from '@mui/material';
 import { useRouter } from '@tanstack/react-router';
 import { Button } from 'components/Button';
@@ -40,24 +41,30 @@ const HeaderContainer = styled.div`
 `;
 
 const ButtonContainer = styled.div`
-  button {
-    width: 100%;
-  }
+  display: grid;
+  gap: 1rem;
+
   @media (min-width: 640px) {
-    button {
-      width: auto;
-    }
+    display: flex;
+    justify-content: space-between;
   }
 `;
 
 export const FormBody: FC<{
   children: React.ReactNode;
+  isSubmitting: boolean;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
-}> = ({ children, onSubmit }) => (
+  onDelete?: () => void;
+}> = ({ children, onSubmit, onDelete, isSubmitting }) => (
   <Form onSubmit={onSubmit}>
     <div>{children}</div>
     <ButtonContainer>
-      <SubmitButton isLoading={false} />
+      <SubmitButton isLoading={isSubmitting} />
+      {!!onDelete && (
+        <Button color="error" startIcon={<DeleteOutlineIcon />} onClick={onDelete}>
+          Delete
+        </Button>
+      )}
     </ButtonContainer>
   </Form>
 );
@@ -65,8 +72,9 @@ export const FormBody: FC<{
 export const FormLayout: FC<{
   title: string;
   children: React.ReactNode;
+  isSubmitting?: boolean;
   onSubmit?: (event: React.FormEvent<HTMLFormElement>) => void;
-}> = ({ title, onSubmit, children }) => {
+}> = ({ title, onSubmit, children, isSubmitting = false }) => {
   const router = useRouter();
 
   return (
@@ -90,7 +98,13 @@ export const FormLayout: FC<{
         >
           {title}
         </Typography>
-        {onSubmit ? <FormBody onSubmit={onSubmit}>{children}</FormBody> : children}
+        {onSubmit ? (
+          <FormBody onSubmit={onSubmit} isSubmitting={isSubmitting}>
+            {children}
+          </FormBody>
+        ) : (
+          children
+        )}
       </FormContainer>
     </Container>
   );

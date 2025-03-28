@@ -33,6 +33,7 @@ const EditProjectForm = () => {
 
   return (
     <FormBody
+      isSubmitting={methods.formState.isSubmitting || update.isPending}
       onSubmit={methods.handleSubmit((data) => {
         update.mutate(
           { ...data, projectId },

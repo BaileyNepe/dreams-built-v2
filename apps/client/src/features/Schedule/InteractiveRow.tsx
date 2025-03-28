@@ -129,7 +129,11 @@ export const InteractiveScheduleRow = ({
         {/* Pass the callback to update the task modal open state */}
         <ScheduleRow tasks={jp.tasks} onTaskModalChange={setIsTaskModalOpen} />
       </div>
-      <RangeSelectionModal range={range} onClose={() => setRange(null)} />
+      <RangeSelectionModal
+        range={range}
+        onClose={() => setRange(null)}
+        projectPartId={jp.id}
+      />
     </ScheduleRowContainer>
   );
 };

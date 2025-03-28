@@ -15,8 +15,10 @@ type DateFormats =
   | 'dd/MM/yyyy'
   | 'd MMM';
 
-export const formatDate = (date: DateTime, format: DateFormats = 'yyyy-MM-dd') =>
-  date.toFormat(format);
+export const formatDate = (date: DateTime | Date, format: DateFormats = 'yyyy-MM-dd') =>
+  date instanceof Date
+    ? DateTime.fromJSDate(date).toFormat(format)
+    : date.toFormat(format);
 
 export const getDate = (date?: string | Date, fromFormat: DateFormats = 'yyyy-MM-dd') => {
   if (date instanceof Date) {
