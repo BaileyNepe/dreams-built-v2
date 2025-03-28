@@ -2,31 +2,25 @@ import { Box } from '@mui/material';
 import styled from 'styled-components';
 
 export const TaskBar = styled(Box)<{
-  $top?: string;
-  $bottom?: string;
   $left: string;
   $width: string;
   $backgroundColor?: string;
   $color?: string;
+  $dynamicHeight?: boolean;
 }>`
-  // if there is not background color then add a dashed border
-  border: ${({ $backgroundColor, theme }) =>
-    !$backgroundColor ? `1px dashed ${theme.palette.grey[500]}` : 'none'};
-
   background-color: ${({ $backgroundColor, theme }) =>
     $backgroundColor || theme.palette.grey[300]};
+  border: ${({ $backgroundColor, theme }) =>
+    !$backgroundColor ? `1px dashed ${theme.palette.grey[500]}` : 'none'};
   border-radius: ${({ theme }) => theme.shape.borderRadius}px;
   color: ${({ $color, theme }) => $color || theme.palette.grey[600]};
   font-size: 0.7rem;
   font-weight: bold;
-  left: ${({ $left }) => $left};
-  min-height: 20px;
-  overflow: hidden;
+  margin-left: ${({ $left }) => $left};
+  overflow: ${({ $dynamicHeight }) =>
+    $dynamicHeight ? 'visible' : 'hidden'}; /* remove absolute vertical positioning */
   padding: 0.25rem 0.5rem;
-  position: absolute;
-  text-overflow: ellipsis;
-  top: ${({ $top }) => $top};
-  white-space: nowrap;
+  position: relative;
+  white-space: ${({ $dynamicHeight }) => ($dynamicHeight ? 'normal' : 'nowrap')};
   width: ${({ $width }) => $width};
-  ${({ $bottom }) => ($bottom ? `bottom: ${$bottom};` : '')}
 `;

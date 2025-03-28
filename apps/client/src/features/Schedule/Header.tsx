@@ -4,6 +4,7 @@ import { type DateTime } from 'luxon';
 import { type FC } from 'react';
 import styled from 'styled-components';
 import { formatDate, isMatchingDates } from 'utils/date';
+import { projectPartWidth } from './components/constants';
 import { useScheduler } from './components/useSchedule';
 
 const DayCell = styled(Box)`
@@ -15,7 +16,7 @@ const HeaderGrid = styled(Box)`
   border-bottom: 1px solid ${({ theme }) => theme.palette.grey[300]};
   display: grid;
   font-weight: bold;
-  grid-template-columns: 200px repeat(7, 1fr);
+  grid-template-columns: ${projectPartWidth} repeat(7, 1fr);
 `;
 
 const DateContainer = styled(Box)`
@@ -39,19 +40,17 @@ const DayCellContainer: FC<{
         <Checkbox
           size="small"
           checked={isBlocked}
-          onChange={(e) => {
+          onChange={(e) =>
             mutation.mutate({
               date: formatDate(day),
               deleted: !e.target.checked
-            });
-          }}
+            })
+          }
         />
       )}
     </DateContainer>
   );
 };
-
-/* Component */
 
 export const ScheduleHeader: FC = () => {
   const { datesToShow, blockedDays } = useScheduler();

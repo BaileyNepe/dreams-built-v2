@@ -29,7 +29,7 @@ const useSchedule = () => {
     [scheduleData]
   );
 
-  const jobPartsWithSegments = useMemo(
+  const projectPartsWithSegments = useMemo(
     () =>
       scheduleData.schedule.map((jp) => {
         const sortedTasks = jp.projectSchedule
@@ -107,7 +107,7 @@ const useSchedule = () => {
     hasPermissionToEdit,
     selectedDate,
     blockedDays,
-    jobPartsWithSegments,
+    projectPartsWithSegments,
     datesToShow,
     startOfWeek,
     endOfWeek
@@ -118,7 +118,8 @@ type ScheduleContextType = ReturnType<typeof useSchedule>;
 
 const ScheduleContext = createContext<ScheduleContextType | undefined>(undefined);
 
-export type Task = ScheduleContextType['jobPartsWithSegments'][0]['tasks'][number];
+export type ProjectPart = ScheduleContextType['projectPartsWithSegments'][number];
+export type Task = ScheduleContextType['projectPartsWithSegments'][0]['tasks'][number];
 
 export const ScheduleProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const schedule = useSchedule();

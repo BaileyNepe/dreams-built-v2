@@ -3,19 +3,34 @@ import { type DateTime } from 'luxon';
 import { useRef, useState } from 'react';
 import styled from 'styled-components';
 import { BlockDaysOverlay } from './components/BlockDaysOverlay';
+import { taskBarHeight, taskBarSpacing } from './components/constants';
 import { RangeSelectionModal } from './components/ScheduleModal';
 import { TaskBar } from './components/styles';
-import { useScheduler } from './components/useSchedule';
+import { type ProjectPart, useScheduler } from './components/useSchedule';
 import { ScheduleTask } from './Task';
 
-/* Container for each schedule row */
-const ScheduleRowContainer = styled(Box)<{ $minHeight: string }>`
+/* Container for each schedule row with extra bottom padding for dragging */
+const ScheduleRowContainer = styled(Box)`
   border-bottom: 1px solid ${({ theme }) => theme.palette.grey[300]};
-
   cursor: pointer;
-  min-height: ${({ $minHeight }) => $minHeight};
+  padding-bottom: calc(${taskBarHeight} + ${taskBarSpacing});
+  padding-top: ${taskBarSpacing};
   position: relative;
   user-select: none;
+`;
+
+/* Container for each lane; note that we no longer reserve space for missing lanes */
+const LaneContainer = styled(Box)`
+  /* Let its height be determined by its content (one task or more) */
+  margin-bottom: 0.25rem;
+  position: relative;
+`;
+
+/* A helper to position the drag skeleton overlay at the bottom */
+const DragSkeletonBar = styled(TaskBar)`
+  bottom: ${taskBarSpacing};
+  height: ${taskBarHeight};
+  position: absolute;
 `;
 
 /* Helper: convert a percentage (0-100) to a DateTime between start and end */
@@ -26,23 +41,18 @@ const getDateFromPercentage = (percentage: number, start: DateTime, end: DateTim
 };
 
 export const InteractiveScheduleRow = ({
-  jp,
-  rowHeight
+  projectParts
 }: {
-  jp: ReturnType<typeof useScheduler>['jobPartsWithSegments'][number];
-  rowHeight: number;
+  projectParts: ProjectPart;
 }) => {
   const { startOfWeek, endOfWeek, datesToShow } = useScheduler();
   const [dragStart, setDragStart] = useState<number | null>(null);
   const [dragEnd, setDragEnd] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // State for range selection modal in this container
   const [range, setRange] = useState<{ start: DateTime; end: DateTime } | null>(null);
-  // Lift up task modal open state from the child ScheduleRow
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
-  // Determine if any modal is open
   const modalOpen = range !== null || isTaskModalOpen;
 
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -80,7 +90,8 @@ export const InteractiveScheduleRow = ({
     setDragEnd(null);
   };
 
-  // (Optional) render a skeleton for visual feedback while dragging.
+  // Render the skeleton overlay for drag–to–create new task.
+  // It is aligned with the schedule columns and positioned at the bottom.
   let skeleton = null;
   if (dragStart !== null && dragEnd !== null && containerRef.current) {
     const containerWidth = containerRef.current.getBoundingClientRect().width;
@@ -105,14 +116,28 @@ export const InteractiveScheduleRow = ({
       const cellWidthPercent = 100 / datesToShow.length;
       const leftPct = `${firstIndex * cellWidthPercent}%`;
       const widthPct = `${(adjustedLastIndex - firstIndex + 1) * cellWidthPercent}%`;
-      skeleton = <TaskBar $bottom="8px" $left={leftPct} $width={widthPct} />;
+      skeleton = <DragSkeletonBar $left={leftPct} $width={widthPct} />;
     }
   }
+
+  // Group tasks by lane based on their original lane value
+  const tasksByLaneObj = projectParts.tasks.reduce(
+    (acc, task) => {
+      (acc[task.lane] = acc[task.lane] || []).push(task);
+      return acc;
+    },
+    {} as Record<number, typeof projectParts.tasks>
+  );
+
+  // Create an array of lane groups by sorting the lane keys.
+  // This “re-indexes” the lanes so that only lanes with tasks are rendered.
+  const laneNumbers = Object.keys(tasksByLaneObj)
+    .map(Number)
+    .sort((a, b) => a - b);
 
   return (
     <ScheduleRowContainer
       ref={containerRef}
-      $minHeight={`${rowHeight}px`}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
@@ -120,13 +145,18 @@ export const InteractiveScheduleRow = ({
     >
       {skeleton}
       <BlockDaysOverlay />
-
-      <ScheduleTask tasks={jp.tasks} onTaskModalChange={setIsTaskModalOpen} />
-
+      {laneNumbers.map((lane) => (
+        <LaneContainer key={lane}>
+          <ScheduleTask
+            tasks={tasksByLaneObj[lane]}
+            onTaskModalChange={setIsTaskModalOpen}
+          />
+        </LaneContainer>
+      ))}
       <RangeSelectionModal
         range={range}
         onClose={() => setRange(null)}
-        projectPartId={jp.id}
+        projectPartId={projectParts.id}
       />
     </ScheduleRowContainer>
   );

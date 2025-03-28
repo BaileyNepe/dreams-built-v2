@@ -1,4 +1,3 @@
-import { Tooltip } from '@mui/material';
 import { type DateTime } from 'luxon';
 import { useState, type FC } from 'react';
 import { getContrastingColor } from 'utils/color';
@@ -24,30 +23,24 @@ export const ScheduleTask: FC<{
       {tasks.map((task) =>
         task.segments.map((seg, idx) => {
           const { left, width } = getBarPosition(seg.segmentStart, seg.segmentEnd);
-
-          const top = `${8 + task.lane * 30}px`;
           return (
-            <Tooltip
-              key={`${task.id}-${idx}`}
-              title={`${task.project.jobNumber} - ${task.project.address} (${task.project.client.name})${task.notes ? `. Notes: ${task.notes}` : ''}`.trim()}
+            <TaskBar
+              key={`${task.project.jobNumber}-${idx}`}
+              $left={left}
+              $width={width}
+              $backgroundColor={task.project.color}
+              $color={getContrastingColor(task.project.color)}
+              $dynamicHeight={!!task.notes}
+              onMouseDown={(e) => e.stopPropagation()}
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedTask(task);
+                onTaskModalChange(true);
+              }}
             >
-              <TaskBar
-                $top={top}
-                $left={left}
-                $width={width}
-                $backgroundColor={task.project.color}
-                $color={getContrastingColor(task.project.color)}
-                title={task.project.address}
-                onMouseDown={(e) => e.stopPropagation()} // Prevent propagation on mousedown
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setSelectedTask(task);
-                  onTaskModalChange(true); // notify parent that a task modal is open
-                }}
-              >
-                {task.project.jobNumber} - {task.project.address}
-              </TaskBar>
-            </Tooltip>
+              {task.project.jobNumber} - {task.project.address}
+              {task.notes && <div style={{ marginTop: '0.25rem' }}>{task.notes}</div>}
+            </TaskBar>
           );
         })
       )}
@@ -57,7 +50,7 @@ export const ScheduleTask: FC<{
           data={selectedTask}
           onClose={() => {
             setSelectedTask(null);
-            onTaskModalChange(false); // notify parent that the task modal is closed
+            onTaskModalChange(false);
           }}
         />
       )}
