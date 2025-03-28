@@ -3,17 +3,17 @@ import { type DateTime } from 'luxon';
 import { useState, type FC } from 'react';
 import { getContrastingColor } from 'utils/color';
 import { getWeeklyDatePercentage } from 'utils/date';
-import { EditScheduleModal } from './ScheduleModal';
-import { TaskBar } from './styles';
-import { type Task } from './useSchedule';
+import { EditScheduleModal } from './components/ScheduleModal';
+import { TaskBar } from './components/styles';
+import { type Task } from './components/useSchedule';
 
 const getBarPosition = (barStart: DateTime, barEnd: DateTime) => {
   const leftPct = getWeeklyDatePercentage(barStart);
-  const rightPct = getWeeklyDatePercentage(barEnd);
+  const rightPct = getWeeklyDatePercentage(barEnd.endOf('day'));
   return { left: `${leftPct}%`, width: `${Math.max(0, rightPct - leftPct)}%` };
 };
 
-export const ScheduleRow: FC<{
+export const ScheduleTask: FC<{
   tasks: Task[];
   onTaskModalChange: (open: boolean) => void;
 }> = ({ tasks, onTaskModalChange }) => {
@@ -24,6 +24,7 @@ export const ScheduleRow: FC<{
       {tasks.map((task) =>
         task.segments.map((seg, idx) => {
           const { left, width } = getBarPosition(seg.segmentStart, seg.segmentEnd);
+
           const top = `${8 + task.lane * 30}px`;
           return (
             <Tooltip

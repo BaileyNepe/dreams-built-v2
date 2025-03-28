@@ -4,7 +4,7 @@ import { type DateTime } from 'luxon';
 import { type FC } from 'react';
 import styled from 'styled-components';
 import { formatDate, isMatchingDates } from 'utils/date';
-import { useScheduler } from './useSchedule';
+import { useScheduler } from './components/useSchedule';
 
 const DayCell = styled(Box)`
   padding: 0.5rem;

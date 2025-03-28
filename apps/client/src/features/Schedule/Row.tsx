@@ -2,17 +2,16 @@ import { Box } from '@mui/material';
 import { type DateTime } from 'luxon';
 import { useRef, useState } from 'react';
 import styled from 'styled-components';
-import { BlockDaysOverlay } from './BlockDaysOverlay';
-import { RangeSelectionModal } from './ScheduleModal';
-import { ScheduleRow } from './ScheduleRow';
-import { TaskBar } from './styles';
-import { useScheduler } from './useSchedule';
-
-const NEW_TASK_HEIGHT = 30; // Vertical offset for the new task row
+import { BlockDaysOverlay } from './components/BlockDaysOverlay';
+import { RangeSelectionModal } from './components/ScheduleModal';
+import { TaskBar } from './components/styles';
+import { useScheduler } from './components/useSchedule';
+import { ScheduleTask } from './Task';
 
 /* Container for each schedule row */
 const ScheduleRowContainer = styled(Box)<{ $minHeight: string }>`
   border-bottom: 1px solid ${({ theme }) => theme.palette.grey[300]};
+
   cursor: pointer;
   min-height: ${({ $minHeight }) => $minHeight};
   position: relative;
@@ -106,13 +105,9 @@ export const InteractiveScheduleRow = ({
       const cellWidthPercent = 100 / datesToShow.length;
       const leftPct = `${firstIndex * cellWidthPercent}%`;
       const widthPct = `${(adjustedLastIndex - firstIndex + 1) * cellWidthPercent}%`;
-      skeleton = <TaskBar $top="8px" $left={leftPct} $width={widthPct} />;
+      skeleton = <TaskBar $bottom="8px" $left={leftPct} $width={widthPct} />;
     }
   }
-
-  // Shift tasks downward to make room if dragging is active.
-  const tasksWrapperStyle =
-    dragStart !== null ? { transform: `translateY(${NEW_TASK_HEIGHT}px)` } : {};
 
   return (
     <ScheduleRowContainer
@@ -125,10 +120,9 @@ export const InteractiveScheduleRow = ({
     >
       {skeleton}
       <BlockDaysOverlay />
-      <div style={tasksWrapperStyle}>
-        {/* Pass the callback to update the task modal open state */}
-        <ScheduleRow tasks={jp.tasks} onTaskModalChange={setIsTaskModalOpen} />
-      </div>
+
+      <ScheduleTask tasks={jp.tasks} onTaskModalChange={setIsTaskModalOpen} />
+
       <RangeSelectionModal
         range={range}
         onClose={() => setRange(null)}

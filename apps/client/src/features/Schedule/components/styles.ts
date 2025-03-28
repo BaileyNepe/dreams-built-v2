@@ -2,7 +2,8 @@ import { Box } from '@mui/material';
 import styled from 'styled-components';
 
 export const TaskBar = styled(Box)<{
-  $top: string;
+  $top?: string;
+  $bottom?: string;
   $left: string;
   $width: string;
   $backgroundColor?: string;
@@ -27,4 +28,5 @@ export const TaskBar = styled(Box)<{
   top: ${({ $top }) => $top};
   white-space: nowrap;
   width: ${({ $width }) => $width};
+  ${({ $bottom }) => ($bottom ? `bottom: ${$bottom};` : '')}
 `;

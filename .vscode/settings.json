@@ -29,5 +29,5 @@
   "files.readonlyInclude": {
     "**/routeTree.gen.ts": true
   },
-  "cSpell.words": ["datasource", "Millis"]
+  "cSpell.words": ["Colour", "datasource", "Millis"]
 }

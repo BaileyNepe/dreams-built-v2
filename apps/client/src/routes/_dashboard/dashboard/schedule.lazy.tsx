@@ -1,6 +1,6 @@
 import { createLazyFileRoute } from '@tanstack/react-router';
 import { Schedule } from 'features/Schedule';
-import { ScheduleProvider } from 'features/Schedule/useSchedule';
+import { ScheduleProvider } from 'features/Schedule/components/useSchedule';
 
 const Page = () => (
   <ScheduleProvider>
