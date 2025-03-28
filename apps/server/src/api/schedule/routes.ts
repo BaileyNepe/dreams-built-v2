@@ -63,6 +63,11 @@ export const scheduleRouter = trpc.router({
               project: {
                 select: {
                   id: true,
+                  client: {
+                    select: {
+                      name: true
+                    }
+                  },
                   jobNumber: true,
                   color: true,
                   address: true,

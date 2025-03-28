@@ -1,3 +1,4 @@
+import { Tooltip } from '@mui/material';
 import { type DateTime } from 'luxon';
 import { useState, type FC } from 'react';
 import { getContrastingColor } from 'utils/color';
@@ -25,23 +26,27 @@ export const ScheduleRow: FC<{
           const { left, width } = getBarPosition(seg.segmentStart, seg.segmentEnd);
           const top = `${8 + task.lane * 30}px`;
           return (
-            <TaskBar
+            <Tooltip
               key={`${task.id}-${idx}`}
-              $top={top}
-              $left={left}
-              $width={width}
-              $backgroundColor={task.project.color}
-              $color={getContrastingColor(task.project.color)}
-              title={task.project.address}
-              onMouseDown={(e) => e.stopPropagation()} // Prevent propagation on mousedown
-              onClick={(e) => {
-                e.stopPropagation();
-                setSelectedTask(task);
-                onTaskModalChange(true); // notify parent that a task modal is open
-              }}
+              title={`${task.project.jobNumber} - ${task.project.address} (${task.project.client.name})${task.notes ? `. Notes: ${task.notes}` : ''}`.trim()}
             >
-              {task.project.address}
-            </TaskBar>
+              <TaskBar
+                $top={top}
+                $left={left}
+                $width={width}
+                $backgroundColor={task.project.color}
+                $color={getContrastingColor(task.project.color)}
+                title={task.project.address}
+                onMouseDown={(e) => e.stopPropagation()} // Prevent propagation on mousedown
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedTask(task);
+                  onTaskModalChange(true); // notify parent that a task modal is open
+                }}
+              >
+                {task.project.jobNumber} - {task.project.address}
+              </TaskBar>
+            </Tooltip>
           );
         })
       )}
