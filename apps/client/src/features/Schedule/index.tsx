@@ -12,6 +12,8 @@ import { useScheduler } from './components/useSchedule';
 /* Styles */
 
 const Container = styled(Box)`
+  display: grid;
+  gap: 1rem;
   padding: 1rem;
 `;
 
@@ -32,6 +34,8 @@ const DateSelectors = styled.div`
   align-items: center;
   display: flex;
   gap: 0.2rem;
+  justify-content: center;
+
   .MuiStack-root {
     padding: 0;
   }
@@ -59,16 +63,19 @@ export const Schedule: FC = () => {
           <ChevronRightIcon />
         </IconButton>
       </DateSelectors>
-      <ScheduleHeader />
 
-      <Grid>
-        {jobPartsWithSegments.map((jp) => (
-          <React.Fragment key={jp.id}>
-            <JobPartCell>{jp.name}</JobPartCell>
-            <InteractiveScheduleRow projectParts={jp} />
-          </React.Fragment>
-        ))}
-      </Grid>
+      <div>
+        <ScheduleHeader />
+
+        <Grid>
+          {jobPartsWithSegments.map((jp) => (
+            <React.Fragment key={jp.id}>
+              <JobPartCell>{jp.name}</JobPartCell>
+              <InteractiveScheduleRow projectParts={jp} />
+            </React.Fragment>
+          ))}
+        </Grid>
+      </div>
     </Container>
   );
 };

@@ -31,13 +31,13 @@ const useSchedule = () => {
 
   // Convert raw blocked days to DateTime objects
   const blockedDays = useMemo(
-    () => scheduleData.blockedDays.map((d) => getDate(d.date)),
+    () => scheduleData?.blockedDays.map((d) => getDate(d.date)) ?? [],
     [scheduleData]
   );
 
   const projectPartsWithSegments = useMemo(
     () =>
-      scheduleData.schedule.map((jp) => {
+      scheduleData?.schedule.map((jp) => {
         // First, sort tasks by their start time.
         const sortedTasks = jp.projectSchedule
           .map((t) => ({
@@ -100,7 +100,7 @@ const useSchedule = () => {
         });
 
         return { ...jp, tasks: tasksWithSegments };
-      }),
+      }) ?? [],
     [scheduleData, startOfWeek, endOfWeek, blockedDays]
   );
 

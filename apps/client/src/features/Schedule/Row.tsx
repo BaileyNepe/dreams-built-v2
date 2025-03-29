@@ -44,7 +44,7 @@ export const InteractiveScheduleRow = ({
 }: {
   projectParts: ProjectPart;
 }) => {
-  const { startOfWeek, endOfWeek, datesToShow } = useScheduler();
+  const { startOfWeek, endOfWeek, datesToShow, hasPermissionToEdit } = useScheduler();
   const [dragStart, setDragStart] = useState<number | null>(null);
   const [dragEnd, setDragEnd] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -133,10 +133,10 @@ export const InteractiveScheduleRow = ({
   return (
     <ScheduleRowContainer
       ref={containerRef}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseLeave}
+      onMouseDown={hasPermissionToEdit ? handleMouseDown : undefined}
+      onMouseMove={hasPermissionToEdit ? handleMouseMove : undefined}
+      onMouseUp={hasPermissionToEdit ? handleMouseUp : undefined}
+      onMouseLeave={hasPermissionToEdit ? handleMouseLeave : undefined}
     >
       {skeleton}
       <BlockDaysOverlay />

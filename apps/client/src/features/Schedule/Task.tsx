@@ -27,7 +27,7 @@ export const ScheduleTask: FC<{
   tasks: Task[];
   onTaskModalChange: (open: boolean) => void;
 }> = ({ tasks, onTaskModalChange }) => {
-  const { isSmallScreen } = useScheduler();
+  const { isSmallScreen, hasPermissionToEdit } = useScheduler();
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   return (
@@ -46,6 +46,7 @@ export const ScheduleTask: FC<{
               onMouseDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
+                if (!hasPermissionToEdit) return;
                 setSelectedTask(task);
                 onTaskModalChange(true);
               }}
