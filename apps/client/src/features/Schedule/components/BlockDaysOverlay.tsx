@@ -4,10 +4,11 @@ import styled from 'styled-components';
 import { isMatchingDates } from 'utils/date';
 import { useScheduler } from './useSchedule';
 
-const UnderlayGrid = styled(Box)`
+const UnderlayGrid = styled(Box)<{ $isSmallScreen: boolean }>`
   bottom: 0;
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: ${({ $isSmallScreen }) =>
+    $isSmallScreen ? `1fr` : `repeat(7, 1fr)`};
   height: 100%;
   left: 0;
   position: absolute;
@@ -21,10 +22,10 @@ const UnderlayCell = styled(Box)<{ $isBlocked?: boolean }>`
 `;
 
 export const BlockDaysOverlay: FC = () => {
-  const { blockedDays, datesToShow } = useScheduler();
+  const { blockedDays, datesToShow, isSmallScreen } = useScheduler();
 
   return (
-    <UnderlayGrid>
+    <UnderlayGrid $isSmallScreen={isSmallScreen}>
       {datesToShow.map((day, idx) => (
         <UnderlayCell key={idx} $isBlocked={isMatchingDates(day, blockedDays)} />
       ))}

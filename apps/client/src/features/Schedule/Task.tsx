@@ -5,15 +5,13 @@ import { getContrastingColor } from 'utils/color';
 import { getWeeklyDatePercentage } from 'utils/date';
 import { EditScheduleModal } from './components/ScheduleModal';
 import { TaskBar } from './components/styles';
-import { type Task } from './components/useSchedule';
+import { useScheduler, type Task } from './components/useSchedule';
 
 const getBarPosition = (barStart: DateTime, barEnd: DateTime) => {
   const leftPct = getWeeklyDatePercentage(barStart);
   const rightPct = getWeeklyDatePercentage(barEnd.endOf('day'));
   return {
-    // Adjust left by adding half the spacing
     left: `calc(${leftPct}% + 0.2rem)`,
-    // Reduce width by 0.2rem
     width: `calc(${Math.max(0, rightPct - leftPct)}% - 0.2rem)`
   };
 };
@@ -29,6 +27,7 @@ export const ScheduleTask: FC<{
   tasks: Task[];
   onTaskModalChange: (open: boolean) => void;
 }> = ({ tasks, onTaskModalChange }) => {
+  const { isSmallScreen } = useScheduler();
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   return (
@@ -39,8 +38,8 @@ export const ScheduleTask: FC<{
           return (
             <TaskBar
               key={`${task.id}-${idx}`}
-              $left={left}
-              $width={width}
+              $left={isSmallScreen ? undefined : left}
+              $width={isSmallScreen ? '100%' : width}
               $backgroundColor={task.project.color}
               $color={getContrastingColor(task.project.color)}
               $dynamicHeight={!!task.notes}

@@ -12,11 +12,12 @@ const DayCell = styled(Box)`
   text-align: center;
 `;
 
-const HeaderGrid = styled(Box)`
+const HeaderGrid = styled(Box)<{ $isSmallScreen: boolean }>`
   border-bottom: 1px solid ${({ theme }) => theme.palette.grey[300]};
   display: grid;
   font-weight: bold;
-  grid-template-columns: ${projectPartWidth} repeat(7, 1fr);
+  grid-template-columns: ${({ $isSmallScreen }) =>
+    $isSmallScreen ? `${projectPartWidth} 1fr` : `${projectPartWidth} repeat(7, 1fr)`};
 `;
 
 const DateContainer = styled(Box)`
@@ -53,11 +54,11 @@ const DayCellContainer: FC<{
 };
 
 export const ScheduleHeader: FC = () => {
-  const { datesToShow, blockedDays } = useScheduler();
+  const { datesToShow, blockedDays, isSmallScreen } = useScheduler();
 
   return (
-    <HeaderGrid>
-      <Box padding="0.5rem">Job Part</Box>
+    <HeaderGrid $isSmallScreen={isSmallScreen}>
+      <Box padding="0.5rem"></Box>
       {datesToShow.map((day, i) => (
         <DayCell key={i}>
           <DayCellContainer

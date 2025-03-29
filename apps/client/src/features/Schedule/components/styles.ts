@@ -2,7 +2,7 @@ import { Box } from '@mui/material';
 import styled from 'styled-components';
 
 export const TaskBar = styled(Box)<{
-  $left: string;
+  $left?: string;
   $width: string;
   $backgroundColor?: string;
   $color?: string;

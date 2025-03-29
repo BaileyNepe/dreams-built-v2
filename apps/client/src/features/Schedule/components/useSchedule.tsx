@@ -11,11 +11,17 @@ import {
 } from 'react';
 import { useAuth } from 'utils/contexts/AuthProvider';
 import { formatDate, generateWeekArray, getDate, isMatchingDates } from 'utils/date';
+import { useResponsive } from 'utils/hooks/useResponsive';
 
 const useSchedule = () => {
+  const isSmallScreen = useResponsive('down', 'md');
   const [selectedDate, setSelectedDate] = useState(getDate());
-  const startOfWeek = useMemo(() => selectedDate.startOf('week'), [selectedDate]);
-  const endOfWeek = useMemo(() => selectedDate.endOf('week'), [selectedDate]);
+  const viewType = isSmallScreen ? 'day' : 'week';
+  const startOfWeek = useMemo(
+    () => selectedDate.startOf(viewType),
+    [selectedDate, viewType]
+  );
+  const endOfWeek = useMemo(() => selectedDate.endOf(viewType), [selectedDate, viewType]);
 
   const hasPermissionToEdit = useAuth().user.permissions.some(
     (p) => p === authz.schedule_edit
@@ -100,8 +106,11 @@ const useSchedule = () => {
 
   // Compute an array of dates to display for the week.
   const datesToShow = useMemo(
-    () => generateWeekArray(formatDate(startOfWeek)).map((d) => d.dateFormat),
-    [startOfWeek]
+    () =>
+      viewType === 'day'
+        ? [startOfWeek]
+        : generateWeekArray(formatDate(startOfWeek)).map((d) => d.dateFormat),
+    [startOfWeek, viewType]
   );
 
   const changeDate = (date: string) => {
@@ -109,15 +118,18 @@ const useSchedule = () => {
   };
 
   const getNextWeek = () => {
-    const nextWeek = startOfWeek.plus({ weeks: 1 });
+    const nextWeek = startOfWeek.plus(viewType === 'day' ? { days: 1 } : { weeks: 1 });
     setSelectedDate(nextWeek);
   };
   const getPreviousWeek = () => {
-    const previousWeek = startOfWeek.minus({ weeks: 1 });
+    const previousWeek = startOfWeek.minus(
+      viewType === 'day' ? { days: 1 } : { weeks: 1 }
+    );
     setSelectedDate(previousWeek);
   };
 
   return {
+    isSmallScreen,
     changeDate,
     getNextWeek,
     getPreviousWeek,
