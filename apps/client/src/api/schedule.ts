@@ -1,8 +1,6 @@
 import { notify } from 'libs/Notify';
 import { api } from './trpc';
 
-export const useProjectParts = () => api.schedule.projectParts.useSuspenseQuery()[0];
-
 export const useScheduleQuery = (startRange: string, endRange: string) =>
   api.schedule.get.useQuery({ startRange, endRange }).data;
 

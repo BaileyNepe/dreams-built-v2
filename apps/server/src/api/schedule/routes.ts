@@ -31,17 +31,6 @@ export const scheduleRouter = trpc.router({
         }
       })
     ),
-  projectParts: protectedProcedure([authz.schedule_read]).query(async ({ ctx }) =>
-    ctx.db.projectPart.findMany({
-      select: {
-        id: true,
-        name: true
-      },
-      orderBy: {
-        order: 'asc'
-      }
-    })
-  ),
   get: protectedProcedure([authz.schedule_read])
     .input(
       z.object({

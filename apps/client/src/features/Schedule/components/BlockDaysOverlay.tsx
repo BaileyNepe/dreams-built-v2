@@ -17,8 +17,14 @@ const UnderlayGrid = styled(Box)<{ $isSmallScreen: boolean }>`
 `;
 
 const UnderlayCell = styled(Box)<{ $isBlocked?: boolean }>`
+  align-items: center;
   background-color: ${({ theme }) => theme.palette.grey[300]};
+
+  display: flex;
+
+  justify-content: center;
   opacity: ${({ $isBlocked }) => ($isBlocked ? 0.5 : 0)};
+  text-align: center;
 `;
 
 export const BlockDaysOverlay: FC = () => {
@@ -27,7 +33,15 @@ export const BlockDaysOverlay: FC = () => {
   return (
     <UnderlayGrid $isSmallScreen={isSmallScreen}>
       {datesToShow.map((day, idx) => (
-        <UnderlayCell key={idx} $isBlocked={isMatchingDates(day, blockedDays)} />
+        <UnderlayCell
+          key={idx}
+          $isBlocked={isMatchingDates(
+            day,
+            blockedDays.map((d) => d.date)
+          )}
+        >
+          {blockedDays.find((d) => day.day === d.date.day)?.details}
+        </UnderlayCell>
       ))}
     </UnderlayGrid>
   );

@@ -54,6 +54,7 @@ export const ProjectSelectRHF = <TFieldValues extends Record<string, unknown>>(
     <GenericSelectRHF
       {...props}
       loading={isLoading}
+      label="Project"
       options={projects?.projects ?? []}
       getOptionLabel={(option) => `${option.jobNumber} - ${option.address}`}
       getOptionValue={(option) => option.id}

@@ -8,12 +8,12 @@ const StyledRouterLink = styled((props: React.ComponentProps<typeof Link>) => (
 ))`
   color: ${({ theme }) => theme.palette.primary.main};
   font-weight: 500;
-  text-decoration: 'none';
+  text-decoration: none;
   transition: all 0.1s ease-in-out;
 
   &:hover {
     color: ${({ theme }) => theme.palette.primary.dark};
-    text-decoration: 'none';
+    text-decoration: none;
   }
 `;
 

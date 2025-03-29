@@ -58,7 +58,11 @@ export const Schedule: FC = () => {
         <IconButton onClick={getPreviousWeek}>
           <ChevronLeftIcon />
         </IconButton>
-        <BasicDatePicker value={selectedDate} onChange={changeDate} />
+        <BasicDatePicker
+          value={selectedDate}
+          defaultValue={selectedDate}
+          onChange={changeDate}
+        />
         <IconButton onClick={getNextWeek}>
           <ChevronRightIcon />
         </IconButton>

@@ -31,7 +31,11 @@ const useSchedule = () => {
 
   // Convert raw blocked days to DateTime objects
   const blockedDays = useMemo(
-    () => scheduleData?.blockedDays.map((d) => getDate(d.date)) ?? [],
+    () =>
+      scheduleData?.blockedDays.map((d) => ({
+        date: getDate(d.date),
+        details: d.details
+      })) ?? [],
     [scheduleData]
   );
 
@@ -75,7 +79,12 @@ const useSchedule = () => {
 
           while (iterDate <= effectiveEnd) {
             const currentIter = iterDate;
-            if (!isMatchingDates(currentIter, blockedDays)) {
+            if (
+              !isMatchingDates(
+                currentIter,
+                blockedDays.map((bd) => bd.date)
+              )
+            ) {
               if (!currentSegmentStart) currentSegmentStart = currentIter;
             } else if (currentSegmentStart) {
               segments.push({

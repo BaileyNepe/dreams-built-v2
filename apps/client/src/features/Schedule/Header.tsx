@@ -63,7 +63,7 @@ export const ScheduleHeader: FC = () => {
         <DayCell key={i}>
           <DayCellContainer
             day={day}
-            isBlocked={blockedDays.some((bd) => isMatchingDates(bd, [day]))}
+            isBlocked={blockedDays.some((bd) => isMatchingDates(bd.date, [day]))}
           />
         </DayCell>
       ))}

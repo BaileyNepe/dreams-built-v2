@@ -23,6 +23,11 @@ const rolesPermissions: Permission = [
     id: authz.roles_view_all,
     name: 'Roles View All',
     roles: ['ADMIN', 'MANAGER']
+  },
+  {
+    id: authz.roles_view_employee,
+    name: 'Roles View Employee',
+    roles: ['ADMIN', 'MANAGER']
   }
 ];
 

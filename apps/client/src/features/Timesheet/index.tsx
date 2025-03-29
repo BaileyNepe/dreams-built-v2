@@ -75,7 +75,7 @@ export const Timesheet = () => {
         <HeaderContainer>
           <LeftItem>
             <BasicDatePicker
-              value={getDate(weekStart)}
+              defaultValue={getDate(weekStart)}
               onChange={changeDate}
               maxDate={getEndOfWeek()}
               minDate={getDate().minus({ months: 6 })}

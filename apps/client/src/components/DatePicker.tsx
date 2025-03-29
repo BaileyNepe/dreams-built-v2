@@ -8,10 +8,11 @@ import { formatDate, isWithinRange } from 'utils/date';
 
 export const BasicDatePicker: FC<{
   onChange: (value: string) => void;
-  value: DateTime;
+  defaultValue: DateTime;
+  value?: DateTime;
   minDate?: DateTime;
   maxDate?: DateTime;
-}> = ({ value, onChange, minDate, maxDate }) => {
+}> = ({ defaultValue, onChange, minDate, maxDate, value }) => {
   const handleChange = (val: DateTime | null): void => {
     if (!val) {
       // If the user clears the date (or picks something invalid), just propagate an empty string.
@@ -33,7 +34,8 @@ export const BasicDatePicker: FC<{
       <DemoContainer components={['DatePicker']}>
         <DatePicker
           displayWeekNumber
-          defaultValue={value}
+          value={value}
+          defaultValue={defaultValue}
           onChange={handleChange}
           minDate={minDate}
           maxDate={maxDate}

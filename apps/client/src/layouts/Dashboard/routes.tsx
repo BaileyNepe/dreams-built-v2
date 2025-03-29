@@ -1,19 +1,26 @@
 import { authz } from '@dreams-built/shared/src/auth/permissions';
 import { type Authz } from '@dreams-built/shared/src/auth/types';
 import {
+  CalendarIcon,
   FolderIcon,
   GlobeAltIcon,
   ServerIcon,
-  SignalIcon
+  SignalIcon,
+  UsersIcon
 } from '@heroicons/react/20/solid';
+import { type LinkOptions } from '@tanstack/react-router';
+import { type ForwardRefExoticComponent } from 'react';
 import { paths } from 'utils/paths';
 
 export const routes: {
   name: string;
-  to: (typeof paths)[keyof typeof paths];
-  // - FIXME: need to fix the proper type for icon
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  icon: any;
+  to: LinkOptions['to'];
+  icon: ForwardRefExoticComponent<
+    Omit<React.SVGProps<SVGSVGElement>, 'ref'> & {
+      title?: string;
+      titleId?: string;
+    } & React.RefAttributes<SVGSVGElement>
+  >;
   requiredPermission?: Authz;
 }[] = [
   { name: 'Dashboard', to: paths.dashboard, icon: FolderIcon },
@@ -35,14 +42,23 @@ export const routes: {
     icon: ServerIcon,
     requiredPermission: authz.clients_read
   },
-  // TODO: add permissions
-  { name: 'Schedule', to: paths.schedule, icon: GlobeAltIcon },
+
+  {
+    name: 'Schedule',
+    to: paths.schedule,
+    icon: CalendarIcon,
+    requiredPermission: authz.jobs_read
+  },
   {
     name: 'Employees',
     to: paths.employees,
-    icon: ServerIcon,
+    icon: UsersIcon,
     requiredPermission: authz.roles_view_employee
   },
-  // TODO: add permissions
-  { name: 'Reports', to: paths.projectReports, icon: SignalIcon }
+  {
+    name: 'Reports',
+    to: paths.projectReports,
+    icon: SignalIcon,
+    requiredPermission: authz.timesheet_view_all
+  }
 ];
