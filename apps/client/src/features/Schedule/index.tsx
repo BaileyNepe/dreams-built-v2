@@ -1,7 +1,5 @@
-import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { Box, IconButton } from '@mui/material';
-import { BasicDatePicker } from 'components/DatePicker';
+import { Box } from '@mui/material';
+import { DateSelector } from 'components/DateSelector';
 import React, { type FC } from 'react';
 import styled from 'styled-components';
 import { ScheduleHeader } from './Header';
@@ -30,17 +28,6 @@ const Grid = styled.div`
   grid-template-columns: ${projectPartWidth} 1fr;
 `;
 
-const DateSelectors = styled.div`
-  align-items: center;
-  display: flex;
-  gap: 0.2rem;
-  justify-content: center;
-
-  .MuiStack-root {
-    padding: 0;
-  }
-`;
-
 /* Component */
 
 export const Schedule: FC = () => {
@@ -54,20 +41,13 @@ export const Schedule: FC = () => {
 
   return (
     <Container>
-      <DateSelectors>
-        <IconButton onClick={getPreviousWeek}>
-          <ChevronLeftIcon />
-        </IconButton>
-        <BasicDatePicker
-          value={selectedDate}
-          defaultValue={selectedDate}
-          onChange={changeDate}
-        />
-        <IconButton onClick={getNextWeek}>
-          <ChevronRightIcon />
-        </IconButton>
-      </DateSelectors>
-
+      <DateSelector
+        value={selectedDate}
+        defaultValue={selectedDate}
+        onChange={changeDate}
+        getNextPeriod={getNextWeek}
+        getPreviousPeriod={getPreviousWeek}
+      />
       <div>
         <ScheduleHeader />
 

@@ -104,6 +104,7 @@ export const useUpdateProjectMutation = ({ projectId }: { projectId: string }) =
     onSettled: () => {
       utils.projects.list.invalidate();
       utils.projects.get.invalidate(projectId);
+      utils.reports.invalidate();
     }
   });
 };

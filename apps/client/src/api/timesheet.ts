@@ -24,14 +24,13 @@ export const useTimesheetMutation = ({
 
   return api.timesheet.update.useMutation({
     onSuccess: () => {
-      // TODO: clear cache for reports
-
       notify('Timesheet updated', { type: 'success' });
     },
     onError: (error) => {
       notify(error.message, { type: 'error' });
     },
     onSettled: () => {
+      utils.reports.invalidate();
       utils.timesheet.get.invalidate({
         weekStart,
         userId

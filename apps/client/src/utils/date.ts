@@ -124,3 +124,22 @@ export const getWeeklyDatePercentage = (date: DateTime) => {
   const pct = (offset / totalRange) * 100;
   return Math.max(0, Math.min(pct, 100));
 };
+
+const dayOrder = {
+  monday: 1,
+  tuesday: 2,
+  wednesday: 3,
+  thursday: 4,
+  friday: 5,
+  saturday: 6,
+  sunday: 7
+};
+
+export const getDayOrder = (day: string) => {
+  const normalized = day.trim().toLowerCase();
+  const order = dayOrder[normalized as keyof typeof dayOrder];
+  if (order === undefined) {
+    throw new Error(`Invalid day provided: ${day}`);
+  }
+  return order;
+};
