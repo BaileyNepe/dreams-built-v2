@@ -40,7 +40,18 @@ export const useUsersReport = (week: string) => {
   const report = Object.entries(userReportMap).map(([userId, group]) => {
     const userName = group.userDetails?.userName || group.entries[0]?.userName || '';
     const email = group.userDetails?.email || '';
-    return { userId, userName, email, entries: group.entries, notes: group.notes };
+
+    const totalMinutes = group.entries.reduce((acc, entry) => acc + entry.duration, 0);
+
+    return {
+      userId,
+      userName,
+      email,
+      entries: group.entries,
+      notes: group.notes,
+      // show total hours in 2 decimal format
+      totalHours: `${(totalMinutes / 60).toFixed(2)}`
+    };
   });
 
   report.sort((a, b) => a.userName.localeCompare(b.userName));

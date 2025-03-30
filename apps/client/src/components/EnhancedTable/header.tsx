@@ -1,18 +1,12 @@
 // material-ui
 import { sentenceCase } from '@dreams-built/shared/src/utils/utils';
-import {
-  Box,
-  TableCell,
-  TableHead,
-  TableRow,
-  TableSortLabel,
-  Typography
-} from '@mui/material';
+import { Box, TableHead, TableRow, TableSortLabel, Typography } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
 import styled from 'styled-components';
 
 // project imports
 import { type FC } from 'react';
+import { CondensedTableCell } from './Body';
 import { type HeadCell, type Order } from './types';
 
 const Header = styled(Typography)`
@@ -29,7 +23,8 @@ export const EnhancedTableHead: FC<{
   orderBy: string | number;
   rowCount: number;
   headCells: HeadCell[];
-}> = ({ order, orderBy, onRequestSort, headCells }) => {
+  size?: 'x-small';
+}> = ({ order, orderBy, onRequestSort, headCells, size }) => {
   const createSortHandler = (property: string) => (event: React.MouseEvent<unknown>) => {
     onRequestSort(event, property);
   };
@@ -40,8 +35,9 @@ export const EnhancedTableHead: FC<{
         {headCells.map((headCell) => {
           const label = headCell.label ?? sentenceCase(headCell.id);
           return (
-            <TableCell
+            <CondensedTableCell
               key={headCell.id}
+              $size={size}
               width={headCell.width}
               align={headCell.align}
               padding="normal"
@@ -63,7 +59,7 @@ export const EnhancedTableHead: FC<{
               ) : (
                 <Header>{label}</Header>
               )}
-            </TableCell>
+            </CondensedTableCell>
           );
         })}
       </TableRow>

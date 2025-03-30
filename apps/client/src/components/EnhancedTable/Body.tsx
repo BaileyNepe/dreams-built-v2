@@ -2,7 +2,7 @@ import { Skeleton, TableCell, TableRow } from '@mui/material';
 import Loader from 'components/Loader';
 import { MenuPopup } from 'components/MenuPopup';
 import { isValidElement, Suspense, type FC } from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import { Boolean } from './components/Boolean';
 import { type EnhancedData, type HeadCell } from './types';
 
@@ -10,6 +10,19 @@ const isDate = (value: unknown): value is Date => value instanceof Date;
 
 const StyledRow = styled(TableRow)<{ $hasOnClick: boolean }>`
   cursor: ${({ $hasOnClick }) => ($hasOnClick ? 'pointer' : 'default')};
+`;
+
+export const CondensedTableCell = styled(TableCell)<{
+  $size?: 'x-small';
+}>`
+  && {
+    ${({ $size }) =>
+      $size === 'x-small'
+        ? css`
+            padding: 0 0.2rem;
+          `
+        : ''}
+  }
 `;
 
 const Cell: FC<{ data: EnhancedData; rowKey: string }> = ({ rowKey, data }) => {
@@ -46,10 +59,11 @@ export const EnhancedBody: FC<{
   isLoading?: boolean;
   rows: EnhancedData[];
   headCells: HeadCell[];
+  size?: 'x-small';
   onRowClick?: (id: string) => void;
   onRowEnter?: (id: string) => void;
   onRowLeave?: () => void;
-}> = ({ rows, isLoading, headCells, onRowClick, onRowEnter, onRowLeave }) => {
+}> = ({ rows, isLoading, headCells, onRowClick, onRowEnter, onRowLeave, size }) => {
   if (isLoading) {
     return Array.from({ length: 3 }).map((_, index) => (
       <StyledRow key={index} $hasOnClick={!!onRowClick}>
@@ -94,15 +108,16 @@ export const EnhancedBody: FC<{
                   }
 
                   return (
-                    <TableCell
+                    <CondensedTableCell
                       key={`${row.id}_${key}`}
                       component="td"
                       id={labelId}
+                      $size={size}
                       scope="row"
                       align={headCell.align}
                     >
                       <Cell data={row} rowKey={key} />
-                    </TableCell>
+                    </CondensedTableCell>
                   );
                 })}
             </>

@@ -35,11 +35,13 @@ const ProjectsPage = () => {
     apiUtils.projects.get.prefetch(id);
   }, 50);
 
+  const hasEditPermission = useAuth().user.permissions?.includes(authz.jobs_edit);
+
   return (
     <PageLayout
       title="Projects"
       description="List of jobs in the system. Click on a job to view more details. Click on the button to create a new job"
-      to={paths.projectsCreate}
+      to={hasEditPermission ? paths.projectsCreate : undefined}
     >
       <EnhancedTable
         toolbar={{

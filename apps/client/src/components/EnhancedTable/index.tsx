@@ -31,18 +31,18 @@ export const EnhancedTable: FC<{
   toolbar?: ToolbarProps;
   headers: HeadCell[];
   isLoading?: boolean;
-  size?: 'small' | 'medium';
+  size?: 'small' | 'medium' | 'x-small';
   onRowEnter?: (id: string) => void;
   onRowLeave?: () => void;
   onRowClick?: (id: string) => void;
-  pagination: {
+  pagination?: {
     page: number;
     perPage: number;
     handlePageChange: (page: number) => void;
     handlePerPageChange: (perPage: number) => void;
     total?: number;
   };
-  order: {
+  order?: {
     sort: Order;
     sortBy: string;
     // Use any as a generic type is used for a hook that sets the order
@@ -64,54 +64,73 @@ export const EnhancedTable: FC<{
   size = 'small',
   isLoading = false,
   rowsPerPageOptions = [25, 50, 100],
-  pagination: { page, perPage, handlePageChange, handlePerPageChange, total = 0 },
-  order: { sort, sortBy, setOrder },
+  pagination,
+  order,
   toolbar
-}) => (
-  <Layout $hasShadow={hasShadow}>
-    {toolbar && (
-      <>
-        <EnhancedTableToolbar {...toolbar} />
-        <Divider />
-      </>
-    )}
-    <TableWrapper>
-      <TableContainer>
-        <Table size={size}>
-          <EnhancedTableHead
-            order={sort}
-            orderBy={sortBy}
-            onRequestSort={(_, property) => {
-              const isAsc = sortBy === property && sort === 'asc';
-              setOrder({ sort: isAsc ? 'desc' : 'asc', sortBy: property });
-            }}
-            rowCount={rows.length}
-            headCells={headers}
-          />
-          <TableBody>
-            <EnhancedBody
-              isLoading={isLoading}
-              rows={rows}
-              headCells={headers}
-              onRowClick={onRowClick}
-              onRowEnter={onRowEnter}
-              onRowLeave={onRowLeave}
-            />
-          </TableBody>
-        </Table>
-      </TableContainer>
+}) => {
+  const {
+    page = 1,
+    perPage = 25,
+    handlePageChange = () => {},
+    handlePerPageChange = () => {},
+    total = 0
+  } = pagination || {};
+  const { sort, sortBy, setOrder } = order || {
+    sort: 'asc',
+    sortBy: '',
+    setOrder: () => {}
+  };
 
-      <TablePagination
-        rowsPerPageOptions={rowsPerPageOptions}
-        component="div"
-        count={total}
-        rowsPerPage={perPage}
-        page={page - 1}
-        onPageChange={(_, pageNumber) => handlePageChange(pageNumber)}
-        onRowsPerPageChange={(event) =>
-          handlePerPageChange(parseInt(event.target.value, 10))
-        }
-      />
-    </TableWrapper>
-  </Layout>
-);
+  return (
+    <Layout $hasShadow={hasShadow}>
+      {toolbar && (
+        <>
+          <EnhancedTableToolbar {...toolbar} />
+          <Divider />
+        </>
+      )}
+      <TableWrapper>
+        <TableContainer>
+          <Table size={size === 'x-small' ? 'small' : size}>
+            <EnhancedTableHead
+              order={sort}
+              size={size === 'x-small' ? 'x-small' : undefined}
+              orderBy={sortBy}
+              onRequestSort={(_, property) => {
+                const isAsc = sortBy === property && sort === 'asc';
+                setOrder({ sort: isAsc ? 'desc' : 'asc', sortBy: property });
+              }}
+              rowCount={rows.length}
+              headCells={headers}
+            />
+            <TableBody>
+              <EnhancedBody
+                size={size === 'x-small' ? 'x-small' : undefined}
+                isLoading={isLoading}
+                rows={rows}
+                headCells={headers}
+                onRowClick={onRowClick}
+                onRowEnter={onRowEnter}
+                onRowLeave={onRowLeave}
+              />
+            </TableBody>
+          </Table>
+        </TableContainer>
+
+        {pagination && (
+          <TablePagination
+            rowsPerPageOptions={rowsPerPageOptions}
+            component="div"
+            count={total}
+            rowsPerPage={perPage}
+            page={page - 1}
+            onPageChange={(_, pageNumber) => handlePageChange(pageNumber)}
+            onRowsPerPageChange={(event) =>
+              handlePerPageChange(parseInt(event.target.value, 10))
+            }
+          />
+        )}
+      </TableWrapper>
+    </Layout>
+  );
+};
