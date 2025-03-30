@@ -3,7 +3,7 @@ import { Divider, Typography } from '@mui/material';
 import { EnhancedTable } from 'components/EnhancedTable';
 import { Fragment, type FC } from 'react';
 import styled from 'styled-components';
-import { formatDate, getDate, getWeekStart } from 'utils/date';
+import { formatDate, getDate } from 'utils/date';
 import { useUsersReport } from './hooks/useUserReport';
 
 const UserBlock = styled.div`
@@ -28,6 +28,17 @@ const CommentsContainer = styled.div`
   gap: 0.2rem;
 `;
 
+const UserBlockHeader = styled.div`
+  align-items: center;
+
+  h3 {
+    color: ${({ theme }) => theme.palette.grey[600]};
+  }
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+`;
+
 export const TimesheetReport: FC<{ weekStart: string }> = ({ weekStart }) => {
   const { users, usersWithNoEntries } = useUsersReport(weekStart);
   const weekStartDate = getDate(weekStart);
@@ -37,19 +48,14 @@ export const TimesheetReport: FC<{ weekStart: string }> = ({ weekStart }) => {
       {users.map((user) => (
         <Fragment key={user.userId}>
           <UserBlock key={user.userId}>
-            <Typography variant="h3" sx={{ mb: 2 }} color="textDark">
-              {user.userName}
-            </Typography>
-            <div>
-              <Typography
-                variant="caption"
-                color="info"
-                fontStyle="italic"
-                sx={{ mb: 2 }}
-              >
+            <UserBlockHeader>
+              <Typography variant="h3">{user.userName}</Typography>
+              <Typography variant="caption" color="info" fontStyle="italic">
                 {formatDate(weekStartDate, 'dd/MM/yyyy')} -{' '}
                 {formatDate(weekStartDate.plus({ days: 6 }), 'dd/MM/yyyy')}
               </Typography>
+            </UserBlockHeader>
+            <div>
               <EnhancedTable
                 size="x-small"
                 hasShadow={false}
@@ -96,6 +102,7 @@ export const TimesheetReport: FC<{ weekStart: string }> = ({ weekStart }) => {
                       borderRadius: 1,
                       display: 'inline-block',
                       fontStyle: 'italic',
+                      width: 'max-content',
 
                       marginTop: 1,
                       padding: 1
@@ -111,7 +118,11 @@ export const TimesheetReport: FC<{ weekStart: string }> = ({ weekStart }) => {
             <Divider
               sx={{
                 borderColor: (theme) => theme.palette.grey[300],
-                my: 2
+                my: 2,
+                '@media print': {
+                  display: 'none'
+                },
+                breakAfter: 'always'
               }}
             />
           )}

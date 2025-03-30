@@ -18,9 +18,25 @@ const Header = styled.h2`
   color: ${({ theme }) => theme.palette.text.primary};
   font-size: 1.5rem;
   font-weight: 600;
-  margin: 0;
+  /* margin: 0; */
 
   text-align: center;
+`;
+
+const HeaderContainer = styled.div`
+  align-items: center;
+  border-bottom: 1px solid ${({ theme }) => theme.palette.grey[300]};
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+  width: 100%;
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 0;
+    padding-bottom: 2rem;
+  }
 `;
 
 export const Report: FC = () => {
@@ -37,14 +53,16 @@ export const Report: FC = () => {
 
   return (
     <Container>
-      <Header>Timesheet Report</Header>
-      <DateSelector
-        value={currentWeek}
-        defaultValue={currentWeek}
-        onChange={handleDateChange}
-        getNextPeriod={getNextWeek}
-        getPreviousPeriod={getPreviousWeek}
-      />
+      <HeaderContainer>
+        <Header>Timesheet Report</Header>
+        <DateSelector
+          value={currentWeek}
+          defaultValue={currentWeek}
+          onChange={handleDateChange}
+          getNextPeriod={getNextWeek}
+          getPreviousPeriod={getPreviousWeek}
+        />
+      </HeaderContainer>
 
       <Suspense
         fallback={Array(2).fill(

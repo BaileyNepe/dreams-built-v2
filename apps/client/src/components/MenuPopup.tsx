@@ -41,7 +41,7 @@ const ListItem = styled.li`
   width: 100%;
   button {
     justify-content: flex-start;
-    margin: 0.1rem 0.2rem;
+    margin: 0.1rem 0.5rem;
     width: 100%;
   }
 `;

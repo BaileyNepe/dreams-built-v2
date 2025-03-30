@@ -64,7 +64,6 @@ export const ClientsPage: FC = () => {
           { id: 'name', width: '100%' },
           ...(hasEditPermissions ? [{ id: 'actions' }] : [])
         ]}
-        size="medium"
         onRowEnter={prefetch}
         onRowLeave={prefetch.cancel}
         rows={clients.data?.clients.map((client) => ({
