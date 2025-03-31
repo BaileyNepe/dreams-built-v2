@@ -3,7 +3,7 @@ import { useAuthOptionalUser } from 'utils/contexts/AuthProvider';
 import { Button } from './Button';
 
 export const AuthButton: FC = () => {
-  const { isAuthenticated, loginWithPopup, logout, isLoading } = useAuthOptionalUser();
+  const { isAuthenticated, loginWithRedirect, logout, isLoading } = useAuthOptionalUser();
 
   const text = isAuthenticated ? 'Sign Out' : 'Sign In';
 
@@ -16,7 +16,7 @@ export const AuthButton: FC = () => {
         if (isAuthenticated) {
           logout();
         } else {
-          loginWithPopup();
+          loginWithRedirect();
         }
       }}
       disabled={isLoading}
