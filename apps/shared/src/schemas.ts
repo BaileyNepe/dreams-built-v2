@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { RoleSchema } from './auth/types';
 
 const colorRegex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
 const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
@@ -104,4 +105,12 @@ export const projectSchema = z.object({
   color: z.string().regex(colorRegex, 'Color must be a valid hex color'),
   jobNumber: z.coerce.number().int().positive(),
   endClient: z.string()
+});
+
+export const updateUserSchema = z.object({
+  id: z.string(),
+  hourlyRate: z.coerce.number().min(0, 'Hourly rate must be a positive number'),
+  firstName: z.string(),
+  lastName: z.string(),
+  role: RoleSchema
 });

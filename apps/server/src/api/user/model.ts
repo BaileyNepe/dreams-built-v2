@@ -42,7 +42,10 @@ export const upsertUser = async ({
       image
     },
     update: {
-      image
+      image,
+      email,
+      firstName,
+      lastName
     }
   });
 

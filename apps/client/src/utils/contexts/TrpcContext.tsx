@@ -12,8 +12,8 @@ import { type FC, type PropsWithChildren } from 'react';
 import superjson from 'superjson';
 import { useAuthInit } from './AuthProvider';
 
-const cacheTime = 1000 * 60 * 5; // 5 minutes
-const staleTime = 1000 * 60 * 2; // 2 minutes
+const cacheTime = 1000 * 60 * 90; // 90 minutes
+const staleTime = 1000 * 60 * 5; // 5 minutes
 
 export const queryClient = new QueryClient({
   defaultOptions: {

@@ -1,4 +1,5 @@
 import { authz } from '@dreams-built/shared/src/auth/permissions';
+import { notify } from 'libs/Notify';
 import { useAuth } from 'utils/contexts/AuthProvider';
 import { api } from './trpc';
 
@@ -44,6 +45,22 @@ export const useUsers = (
         return data;
       }
       return data.filter((u) => u.role !== 'USER');
+    }
+  });
+};
+
+export const useUser = (id: string) => api.users.get.useSuspenseQuery(id)[0];
+
+export const useUpdateUserMutation = (id: string) => {
+  const apiUtils = api.useUtils();
+
+  return api.users.update.useMutation({
+    onSuccess: () => {
+      notify('User updated successfully', { type: 'success' });
+    },
+    onSettled: () => {
+      apiUtils.users.get.invalidate(id);
+      apiUtils.users.list.invalidate();
     }
   });
 };

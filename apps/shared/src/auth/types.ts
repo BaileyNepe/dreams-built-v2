@@ -5,6 +5,7 @@ const AuthzSchema = z.enum([
   'clients:edit',
   'users:view:all',
   'users:view:employee',
+  'users:update:user',
   'timesheet:view:self',
   'timesheet:view:all',
   'jobs:read',
@@ -13,7 +14,7 @@ const AuthzSchema = z.enum([
   'schedule:edit'
 ]);
 
-const RoleSchema = z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE', 'USER']);
+export const RoleSchema = z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE', 'USER']);
 
 export const RolesSchema = z.array(
   z.object({

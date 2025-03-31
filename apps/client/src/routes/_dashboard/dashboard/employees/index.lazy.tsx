@@ -29,12 +29,12 @@ const getColor = (role: Role) => {
 const Tag = styled.div<{ $color: ReturnType<typeof getColor> }>`
   background-color: ${({ theme, $color }) => theme.palette[$color].lightest};
   border: 1px solid ${({ theme, $color }) => theme.palette[$color].main};
-  border-radius: ${({ theme }) => theme.shape.borderRadius}px;
+  border-radius: ${({ theme }) => theme.shape.borderRadius * 2}px;
   color: ${({ theme, $color }) => theme.palette[$color].main};
   font-size: 0.6rem;
   font-weight: 500;
   font-weight: bold;
-  padding: 0.2rem 0.5rem;
+  padding: 0 0.5rem;
   text-transform: capitalize;
   width: max-content;
 `;
@@ -98,7 +98,10 @@ const Page: FC = () => {
                 icon: <EditRoundedIcon />,
                 label: 'Edit',
                 onClick: () =>
-                  navigate({ to: paths.employeeEdit, params: { employeeId: user.id } })
+                  navigate({
+                    to: paths.employeeEdit,
+                    params: { employeeId: user.id }
+                  })
               }
             ]
           })) ?? []

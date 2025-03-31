@@ -1,6 +1,8 @@
 import { cache } from '@config/cache';
 import { protectedProcedure, trpc } from '@config/trpc';
+import { authz } from '@dreams-built/shared/src/auth/permissions';
 import { getViewableUsers } from '@dreams-built/shared/src/auth/roles';
+import { updateUserSchema } from '@dreams-built/shared/src/schemas';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 import { updateActiveTime, upsertUser } from './model';
@@ -15,6 +17,7 @@ export const userRouter = trpc.router({
         firstName: true,
         image: true,
         lastName: true,
+        authId: true,
         hourlyRate: true,
         lastActive: true,
         role: true
@@ -26,6 +29,78 @@ export const userRouter = trpc.router({
 
     return getViewableUsers(new Set(ctx.user.permissions), users);
   }),
+  get: protectedProcedure([authz.roles_view_employee])
+    .input(z.string())
+    .query(async ({ ctx, input }) => {
+      const user = await ctx.db.user.findUniqueOrThrow({
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          image: true,
+          lastName: true,
+          authId: true,
+          hourlyRate: true,
+          lastActive: true,
+          role: true
+        },
+        where: {
+          id: input,
+          deleted: false
+        }
+      });
+
+      if (getViewableUsers(new Set(ctx.user.permissions), [user]).length === 0) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You do not have permission to view this user'
+        });
+      }
+
+      return user;
+    }),
+  update: protectedProcedure([authz.roles_update_user])
+    .input(updateUserSchema)
+    .mutation(async ({ ctx, input: { id, hourlyRate, firstName, lastName, role } }) => {
+      const user = await ctx.db.user.findUniqueOrThrow({
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          image: true,
+          lastName: true,
+          authId: true,
+          hourlyRate: true,
+          lastActive: true,
+          role: true
+        },
+        where: {
+          id,
+          deleted: false
+        }
+      });
+
+      if (getViewableUsers(new Set(ctx.user.permissions), [user]).length === 0) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'You do not have permission to update this user'
+        });
+      }
+
+      await ctx.db.user.update({
+        where: {
+          id
+        },
+        data: {
+          hourlyRate,
+          firstName,
+          lastName,
+          role
+        }
+      });
+
+      return user;
+    }),
   profile: protectedProcedure()
     .input(
       z.object({
@@ -39,7 +114,7 @@ export const userRouter = trpc.router({
       const { user } = ctx;
 
       const isNewEmail = !user.email && !!input.email;
-      const isNewImage = !user.image && !!input.image;
+      const isNewImage = (!user.image && !!input.image) || user.image !== input.image;
       const isNewFirstName = !user.firstName && !!input.firstName;
       const isNewLastName = !user.lastName && !!input.lastName;
 

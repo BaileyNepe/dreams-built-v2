@@ -5,6 +5,8 @@ export const authz = {
   roles_view_all: 'users:view:all',
   roles_view_employee: 'users:view:employee',
 
+  roles_update_user: 'users:update:user',
+
   clients_read: 'clients:read',
   clients_edit: 'clients:edit',
 
@@ -27,6 +29,11 @@ const rolesPermissions: Permission = [
   {
     id: authz.roles_view_employee,
     name: 'Roles View Employee',
+    roles: ['ADMIN', 'MANAGER']
+  },
+  {
+    id: authz.roles_update_user,
+    name: 'Roles Update User',
     roles: ['ADMIN', 'MANAGER']
   }
 ];
