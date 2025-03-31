@@ -1,8 +1,9 @@
-import { Skeleton } from '@mui/material';
+import { Skeleton, Tab, Tabs } from '@mui/material';
 import { DateSelector } from 'components/DateSelector';
 import { Suspense, useState, type FC } from 'react';
 import styled from 'styled-components';
 import { formatDate, getDate, getWeekStart } from 'utils/date';
+import { ProjectReport } from './ProjectReport'; // Make sure this component exists
 import { TimesheetReport } from './TimesheetReport';
 
 const Container = styled.div`
@@ -14,47 +15,63 @@ const Container = styled.div`
   padding: 2rem;
 `;
 
-const Header = styled.h2`
-  color: ${({ theme }) => theme.palette.text.primary};
-  font-size: 1.5rem;
-  font-weight: 600;
-  /* margin: 0; */
-
-  text-align: center;
-`;
-
 const HeaderContainer = styled.div`
   align-items: center;
-  border-bottom: 1px solid ${({ theme }) => theme.palette.grey[300]};
   display: flex;
+  flex-direction: column;
   gap: 1rem;
-  justify-content: space-between;
   margin-bottom: 1rem;
-  padding: 0 1rem;
+  padding-bottom: 2rem;
   width: 100%;
-  @media (max-width: 600px) {
-    flex-direction: column;
-    gap: 0;
-    padding-bottom: 2rem;
+
+  @media (min-width: 600px) {
+    flex-direction: row;
+    justify-content: space-between;
+    padding-bottom: 0;
+    width: 100%;
   }
 `;
 
 export const Report: FC = () => {
+  // State for the week selection
   const [currentWeek, setCurrentWeek] = useState(getDate(getWeekStart()));
+  // State for selecting the active report type
+  const [selectedReport, setSelectedReport] = useState<'timesheet' | 'project'>(
+    'timesheet'
+  );
+
   const getNextWeek = () => {
     setCurrentWeek((prev) => prev.plus({ weeks: 1 }));
   };
+
   const getPreviousWeek = () => {
     setCurrentWeek((prev) => prev.minus({ weeks: 1 }));
   };
+
   const handleDateChange = (date: string) => {
     setCurrentWeek(getDate(getWeekStart(date)));
+  };
+
+  const handleReportChange = (
+    _: React.SyntheticEvent,
+    newValue: 'timesheet' | 'project'
+  ) => {
+    setSelectedReport(newValue);
   };
 
   return (
     <Container>
       <HeaderContainer>
-        <Header>Timesheet Report</Header>
+        <Tabs
+          value={selectedReport}
+          onChange={handleReportChange}
+          textColor="primary"
+          indicatorColor="primary"
+          centered
+        >
+          <Tab label="Timesheet Report" value="timesheet" />
+          <Tab label="Project Report" value="project" />
+        </Tabs>
         <DateSelector
           value={currentWeek}
           defaultValue={currentWeek}
@@ -69,7 +86,11 @@ export const Report: FC = () => {
           <Skeleton variant="rectangular" height={300} sx={{ m: 1, borderRadius: 1 }} />
         )}
       >
-        <TimesheetReport weekStart={formatDate(currentWeek)} />
+        {selectedReport === 'timesheet' ? (
+          <TimesheetReport weekStart={formatDate(currentWeek)} />
+        ) : (
+          <ProjectReport weekStart={formatDate(currentWeek)} />
+        )}
       </Suspense>
     </Container>
   );

@@ -38,3 +38,20 @@ export const useTimesheetMutation = ({
     }
   });
 };
+
+export const useUpdateTimesheetEntryMutation = () => {
+  const utils = api.useUtils();
+
+  return api.timesheet.updateById.useMutation({
+    onSuccess: () => {
+      notify('Timesheet entry updated', { type: 'success' });
+    },
+    onError: (error) => {
+      notify(error.message, { type: 'error' });
+    },
+    onSettled: () => {
+      utils.reports.invalidate();
+      utils.timesheet.get.invalidate();
+    }
+  });
+};

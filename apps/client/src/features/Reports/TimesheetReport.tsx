@@ -1,111 +1,132 @@
+// TimesheetReport.tsx
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import { Divider, Typography } from '@mui/material';
+import { Button, Divider, Typography } from '@mui/material';
 import { EnhancedTable } from 'components/EnhancedTable';
-import { Fragment, type FC } from 'react';
-import styled from 'styled-components';
+import { Fragment, useState, type FC } from 'react';
+import styled, { useTheme } from 'styled-components';
 import { formatDate, getDate } from 'utils/date';
-import { useUsersReport } from './hooks/useUserReport';
+import { EditTimesheetEntryModal } from './components/EditTimesheetModal';
+import { MissingEntriesModal } from './components/MissingEntriesModal';
+import { useUsersReport, type Entry } from './hooks/useUserReport';
+import { ReportBlock, TotalRow } from './styles';
 
-const UserBlock = styled.div`
-  padding: 1rem;
-`;
-
-const TotalHours = styled.div`
-  border-radius: ${({ theme }) => theme.shape.borderRadius}px;
-  color: ${({ theme }) => theme.palette.success.main};
-  display: flex;
-  font-weight: bold;
-  justify-self: flex-end;
-  margin-top: 1rem;
-  outline: 1px solid ${({ theme }) => theme.palette.success.main};
-  padding: 0.5rem;
-
-  width: max-content;
-`;
-
-const CommentsContainer = styled.div`
+export const CommentsContainer = styled.div`
   display: grid;
   gap: 0.2rem;
-`;
-
-const UserBlockHeader = styled.div`
-  align-items: center;
-
-  h3 {
-    color: ${({ theme }) => theme.palette.grey[600]};
-  }
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
+  width: max-content;
 `;
 
 export const TimesheetReport: FC<{ weekStart: string }> = ({ weekStart }) => {
   const { users, usersWithNoEntries } = useUsersReport(weekStart);
   const weekStartDate = getDate(weekStart);
+  const theme = useTheme();
+
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
+
+  const [missingModalOpen, setMissingModalOpen] = useState(false);
 
   return (
     <>
+      {/* Quick Summary at the Top */}
+      {users.length > 0 && (
+        <>
+          <ReportBlock>
+            {usersWithNoEntries.length > 0 && (
+              <Button
+                variant="outlined"
+                sx={{ mb: 2 }}
+                onClick={() => setMissingModalOpen(true)}
+              >
+                Show Users with No Entries ({usersWithNoEntries.length})
+              </Button>
+            )}
+            <Typography variant="h6" sx={{ mb: 1 }}>
+              Timesheet Summary
+            </Typography>
+            {users.map((user) => (
+              <Typography key={user.userId} variant="body2">
+                <strong>{user.userName}</strong>: {user.totalHours} hrs{' '}
+                <span
+                  style={{
+                    fontSize: '0.8rem',
+                    color: theme.palette.warning.main,
+                    fontStyle: 'italic'
+                  }}
+                >
+                  {user.notes.length > 0 && `(${user.notes.length} notes)`}
+                </span>
+              </Typography>
+            ))}
+          </ReportBlock>
+          <Divider
+            sx={{
+              borderColor: (theme) => theme.palette.grey[300],
+              my: 2
+            }}
+          />
+        </>
+      )}
+
       {users.map((user) => (
         <Fragment key={user.userId}>
-          <UserBlock key={user.userId}>
-            <UserBlockHeader>
-              <Typography variant="h3">{user.userName}</Typography>
-              <Typography variant="caption" color="info" fontStyle="italic">
-                {formatDate(weekStartDate, 'dd/MM/yyyy')} -{' '}
-                {formatDate(weekStartDate.plus({ days: 6 }), 'dd/MM/yyyy')}
+          <ReportBlock>
+            <Typography variant="h5">{user.userName}</Typography>
+            <Typography variant="caption" sx={{ mb: 1, display: 'block' }}>
+              {formatDate(weekStartDate, 'dd/MM/yyyy')} -{' '}
+              {formatDate(weekStartDate.plus({ days: 6 }), 'dd/MM/yyyy')}
+            </Typography>
+
+            <EnhancedTable
+              size="x-small"
+              hasShadow={false}
+              headers={[
+                { id: 'day', align: 'center' },
+                { id: 'startTime', align: 'center' },
+                { id: 'endTime', align: 'center' },
+                { id: 'job', width: '50%' },
+                { id: 'totalTime', align: 'center' },
+                { id: 'actions', align: 'center', width: '10%' }
+              ]}
+              rows={user.entries.map((entry) => ({
+                id: entry.id,
+                day: entry.day,
+                startTime: entry.startTime,
+                endTime: entry.endTime,
+                job: `${entry.jobNumber} - ${entry.projectAddress} (${entry.clientName})`,
+                totalTime: `${(entry.duration / 60).toFixed(2)}`,
+                actions: [
+                  {
+                    icon: <EditRoundedIcon />,
+                    onClick: () => {
+                      setSelectedEntry(entry);
+                      setEditModalOpen(true);
+                    },
+                    label: 'Edit'
+                  }
+                ]
+              }))}
+            />
+
+            <TotalRow>
+              <Typography variant="body2">
+                <strong>Total:</strong> {user.totalHours} hrs
               </Typography>
-            </UserBlockHeader>
-            <div>
-              <EnhancedTable
-                size="x-small"
-                hasShadow={false}
-                headers={[
-                  { id: 'day', align: 'center' },
-                  { id: 'startTime', align: 'center' },
-                  { id: 'endTime', align: 'center' },
-                  { id: 'job', width: '50%' },
-                  { id: 'totalTime', align: 'center' },
-                  { id: 'actions', align: 'center', width: '10%' }
-                ]}
-                rows={user.entries.map((entry) => ({
-                  id: entry.id,
-                  day: entry.day,
-                  startTime: entry.startTime,
-                  endTime: entry.endTime,
-                  job: `${entry.jobNumber} - ${entry.projectAddress}`,
-                  totalTime: `${(entry.duration / 60).toFixed(2)}`,
-                  actions: [
-                    {
-                      icon: <EditRoundedIcon />,
-                      onClick: () => {
-                        console.log('Edit entry', entry.id);
-                      },
-                      label: 'Edit'
-                    }
-                  ]
-                }))}
-              />
-              <TotalHours>Total: {user.totalHours}</TotalHours>
-            </div>
+            </TotalRow>
             {user.notes.length > 0 && (
               <CommentsContainer>
-                <Typography variant="caption" color="textDark" fontWeight="bold">
-                  Comments:
-                </Typography>
                 {user.notes.map((note) => (
                   <Typography
                     key={note.id}
                     variant="caption"
-                    color="textDark"
+                    color="textSecondary"
                     sx={{
                       backgroundColor: (theme) => theme.palette.grey[200],
                       borderRadius: 1,
                       display: 'inline-block',
                       fontStyle: 'italic',
-                      width: 'max-content',
-
-                      marginTop: 1,
-                      padding: 1
+                      mt: 1,
+                      p: 1
                     }}
                   >
                     <strong>{note.day}</strong> - {note.message}
@@ -113,33 +134,35 @@ export const TimesheetReport: FC<{ weekStart: string }> = ({ weekStart }) => {
                 ))}
               </CommentsContainer>
             )}
-          </UserBlock>
-          {user.userId !== users[users.length - 1]?.userId && (
-            <Divider
-              sx={{
-                borderColor: (theme) => theme.palette.grey[300],
-                my: 2,
-                '@media print': {
-                  display: 'none'
-                },
-                breakAfter: 'always'
-              }}
-            />
-          )}
+          </ReportBlock>
+          <Divider
+            sx={{
+              borderColor: (theme) => theme.palette.grey[300],
+              my: 2
+            }}
+          />
         </Fragment>
       ))}
 
       {users.length === 0 && (
-        <Typography
-          variant="caption"
-          sx={{
-            textAlign: 'center',
-            mt: 2
-          }}
-        >
+        <Typography variant="caption" sx={{ textAlign: 'center', mt: 2 }}>
           No entries found for this week...
         </Typography>
       )}
+
+      {/* Modals */}
+      {selectedEntry && (
+        <EditTimesheetEntryModal
+          open={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          entry={selectedEntry}
+        />
+      )}
+      <MissingEntriesModal
+        open={missingModalOpen}
+        users={usersWithNoEntries}
+        onClose={() => setMissingModalOpen(false)}
+      />
     </>
   );
 };

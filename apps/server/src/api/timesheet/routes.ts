@@ -1,5 +1,10 @@
 import { protectedProcedure, trpc } from '@config/trpc';
 import { authz } from '@dreams-built/shared/src/auth/permissions';
+import {
+  rawTimeSchema,
+  shortDateString,
+  validateTimeRange
+} from '@dreams-built/shared/src/schemas';
 import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
 
@@ -8,7 +13,7 @@ export const timesheetRouter = trpc.router({
     .input(
       z.object({
         userId: z.string().cuid(),
-        weekStart: z.string()
+        weekStart: shortDateString
       })
     )
     .query(async ({ ctx, input }) => {
@@ -58,20 +63,50 @@ export const timesheetRouter = trpc.router({
         notes
       };
     }),
+  updateById: protectedProcedure([authz.timesheet_view_all, authz.timesheet])
+    .input(
+      z
+        .object({
+          id: z.string().cuid2(),
+          userId: z.string().cuid2(),
+          projectId: z.string().cuid2(),
+          deleted: z.boolean().optional()
+        })
+        .merge(rawTimeSchema)
+        .superRefine(validateTimeRange)
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, userId, ...data } = input;
+
+      await ctx.db.timeEntry.update({
+        where: {
+          id
+        },
+        data: {
+          ...data,
+          deleted: input.deleted ?? false,
+          userId
+        }
+      });
+
+      return true;
+    }),
+
   update: protectedProcedure([authz.timesheet])
     .input(
       z.object({
         userId: z.string().cuid2(),
-        weekStart: z.string(),
+        weekStart: shortDateString,
         entries: z.array(
-          z.object({
-            id: z.string().cuid2(),
-            day: z.string(),
-            duration: z.number(),
-            projectId: z.string().cuid2(),
-            startTime: z.string().regex(/^\d{2}:\d{2}$/),
-            endTime: z.string().regex(/^\d{2}:\d{2}$/)
-          })
+          z
+            .object({
+              id: z.string().cuid2(),
+              day: z.string(),
+
+              projectId: z.string().cuid2()
+            })
+            .merge(rawTimeSchema)
+            .superRefine(validateTimeRange)
         ),
         notes: z.array(
           z.object({

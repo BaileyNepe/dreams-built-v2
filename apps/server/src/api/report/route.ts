@@ -1,13 +1,13 @@
 import { protectedProcedure, trpc } from '@config/trpc';
 import { authz } from '@dreams-built/shared/src/auth/permissions';
-import { dateRegex } from '@dreams-built/shared/src/schemas';
+import { shortDateString } from '@dreams-built/shared/src/schemas';
 import { z } from 'zod';
 
 export const reportsRouter = trpc.router({
   getTimesheets: protectedProcedure([authz.timesheet_view_all])
     .input(
       z.object({
-        week: z.string().regex(dateRegex)
+        week: shortDateString
       })
     )
     .query(async ({ ctx, input }) => {

@@ -58,3 +58,6 @@ export const useUsersReport = (week: string) => {
 
   return { users: report, usersWithNoEntries };
 };
+
+export type Entry = ReturnType<typeof useUsersReport>['users'][number]['entries'][number];
+export type UsersWithNoEntries = ReturnType<typeof useUsersReport>['usersWithNoEntries'];

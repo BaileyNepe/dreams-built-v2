@@ -1,10 +1,10 @@
-import { Skeleton, TableCell, TableRow } from '@mui/material';
+import { IconButton, Skeleton, TableCell, TableRow, Tooltip } from '@mui/material';
 import Loader from 'components/Loader';
 import { MenuPopup } from 'components/MenuPopup';
 import { isValidElement, Suspense, type FC } from 'react';
 import styled, { css } from 'styled-components';
 import { Boolean } from './components/Boolean';
-import { type EnhancedData, type HeadCell } from './types';
+import { type Action, type EnhancedData, type HeadCell } from './types';
 
 const isDate = (value: unknown): value is Date => value instanceof Date;
 
@@ -37,6 +37,25 @@ const Cell: FC<{ data: EnhancedData; rowKey: string }> = ({ rowKey, data }) => {
   }
 
   if (rowKey === 'actions') {
+    // if array of actions is only one element, render it directly
+    if (Array.isArray(value) && value.length === 1) {
+      const action = value[0] as Action;
+
+      return (
+        <Tooltip title={action.label}>
+          <IconButton
+            size="small"
+            onClick={(event) => {
+              event.stopPropagation();
+              action.onClick?.();
+            }}
+          >
+            {action.icon}
+          </IconButton>
+        </Tooltip>
+      );
+    }
+
     return (
       <Suspense fallback={<Loader />}>
         <MenuPopup actions={data[rowKey]} />
