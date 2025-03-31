@@ -1,8 +1,9 @@
 import { cache } from '@config/cache';
 import { protectedProcedure, trpc } from '@config/trpc';
 import { getViewableUsers } from '@dreams-built/shared/src/auth/roles';
+import { TRPCError } from '@trpc/server';
 import { z } from 'zod';
-import { upsertUser } from './model';
+import { updateActiveTime, upsertUser } from './model';
 import { getUser } from './service';
 
 export const userRouter = trpc.router({
@@ -14,7 +15,12 @@ export const userRouter = trpc.router({
         firstName: true,
         image: true,
         lastName: true,
+        hourlyRate: true,
+        lastActive: true,
         role: true
+      },
+      where: {
+        deleted: false
       }
     });
 
@@ -34,21 +40,45 @@ export const userRouter = trpc.router({
 
       const isNewEmail = !user.email && !!input.email;
       const isNewImage = !user.image && !!input.image;
-      const isNewName =
-        (!user.firstName && !!input.firstName) || (!user.lastName && !!input.lastName);
+      const isNewFirstName = !user.firstName && !!input.firstName;
+      const isNewLastName = !user.lastName && !!input.lastName;
 
-      if (isNewEmail || isNewImage || isNewName) {
+      if (isNewEmail || isNewImage || isNewFirstName || isNewLastName) {
         await upsertUser({
           authId: user.authId,
           email: isNewEmail ? (input.email ?? '') : user.email,
-          firstName: isNewName ? (input.firstName ?? '') : user.firstName,
-          lastName: isNewName ? (input.lastName ?? '') : user.lastName,
+          firstName: isNewFirstName ? (input.firstName ?? '') : user.firstName,
+          lastName: isNewLastName ? (input.lastName ?? '') : user.lastName,
           image: isNewImage ? (input.image ?? '') : user.image
         });
         await cache().user.delete(user.authId);
 
-        return getUser(user.authId);
+        const updatedUser = await getUser(user.authId);
+
+        if (updatedUser.deleted) {
+          throw new TRPCError({
+            code: 'FORBIDDEN',
+            message: 'User is deleted'
+          });
+        }
+
+        updateActiveTime({
+          authId: user.authId
+        });
+
+        return updatedUser;
       }
+
+      if (user.deleted) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'User is deleted'
+        });
+      }
+
+      updateActiveTime({
+        authId: user.authId
+      });
 
       return user;
     })

@@ -45,3 +45,13 @@ export const upsertUser = async ({
       image
     }
   });
+
+export const updateActiveTime = async ({ authId }: { authId: string }) =>
+  prisma.user.update({
+    where: {
+      authId
+    },
+    data: {
+      lastActive: new Date()
+    }
+  });

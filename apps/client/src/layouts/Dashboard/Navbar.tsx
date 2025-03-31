@@ -65,7 +65,9 @@ const ButtonText = styled.span`
   text-transform: capitalize;
 `;
 
-export const NavBar: FC = () => {
+export const NavBar: FC<{
+  onClose: () => void;
+}> = ({ onClose }) => {
   const { pathname } = useLocation();
   const { user } = useAuth();
 
@@ -87,7 +89,7 @@ export const NavBar: FC = () => {
             const active = pathname === item.to;
             return (
               <RouterLink key={item.name} to={item.to}>
-                <Button $isActive={active}>
+                <Button $isActive={active} onClick={onClose}>
                   <ListItemIcon>
                     <item.icon />
                   </ListItemIcon>

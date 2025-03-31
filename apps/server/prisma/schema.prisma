@@ -98,6 +98,7 @@ model User {
     hourlyRate Float       @default(0) @map("hourly_rate")
     authId     String      @unique @map("auth_id")
     role       Role        @default(USER)
+    lastActive DateTime    @default(now()) @map("last_active") @db.Timestamptz(3)
     timeEntry  TimeEntry[]
     note       Note[]
 

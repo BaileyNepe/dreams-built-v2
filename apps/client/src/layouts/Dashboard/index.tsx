@@ -74,7 +74,7 @@ export const Dashboard: FC = () => {
           }
         }}
       >
-        <NavBar />
+        <NavBar onClose={handleDrawerToggle} />
       </Drawer>
 
       {/* Header */}
