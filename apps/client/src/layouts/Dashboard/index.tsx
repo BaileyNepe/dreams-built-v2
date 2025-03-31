@@ -28,7 +28,7 @@ const Container = styled.div`
 `;
 
 export const Dashboard: FC = () => {
-  const { isAuthenticated, isLoading, loginWithRedirect } = useAuthOptionalUser();
+  const { isAuthenticated, isLoading, user, loginWithRedirect } = useAuthOptionalUser();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('xl'));
@@ -45,7 +45,7 @@ export const Dashboard: FC = () => {
     return <Loader />;
   }
 
-  if (isLoading || !isAuthenticated) {
+  if (isLoading || !isAuthenticated || !user) {
     return (
       <Main>
         <Loader />
@@ -82,7 +82,9 @@ export const Dashboard: FC = () => {
 
       {/* Main Content */}
       <Main>
-        <Suspense>{isAuthenticated && !isLoading ? <Outlet /> : <Loader />}</Suspense>
+        <Suspense fallback={<Loader />}>
+          {isAuthenticated && !isLoading ? <Outlet /> : <Loader />}
+        </Suspense>
       </Main>
     </Container>
   );

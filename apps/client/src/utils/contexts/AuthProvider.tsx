@@ -40,7 +40,7 @@ export const useAuthOptionalUser = () => {
 
   return {
     ...auth,
-    user,
+    user: user ?? undefined,
     isAuthenticated: auth.isAuthenticated && login.data?.id,
     isLoading: (login.isLoading && auth.isAuthenticated) || auth.isLoading,
     isError: auth.error || login.isError,
@@ -50,7 +50,7 @@ export const useAuthOptionalUser = () => {
 
 export const useAuth = () => {
   const auth = useAuthOptionalUser();
-  if (auth.user !== null) {
+  if (auth.user) {
     return {
       ...auth,
       user: auth.user

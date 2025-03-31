@@ -1,4 +1,5 @@
 import { authz } from '@dreams-built/shared/src/auth/permissions';
+import { keepPreviousData } from '@tanstack/react-query';
 import { notify } from 'libs/Notify';
 import { useAuth } from 'utils/contexts/AuthProvider';
 import { api } from './trpc';
@@ -24,7 +25,8 @@ export const useProfileQuery = ({
       image
     },
     {
-      enabled
+      enabled,
+      placeholderData: keepPreviousData
     }
   );
 
