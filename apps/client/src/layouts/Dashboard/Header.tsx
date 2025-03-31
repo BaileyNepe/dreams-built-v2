@@ -5,11 +5,11 @@ import IconButton from '@mui/material/IconButton';
 import { useTheme } from '@mui/material/styles';
 import Toolbar from '@mui/material/Toolbar';
 import useMediaQuery from '@mui/material/useMediaQuery';
-import { AuthButton } from 'components/AuthButton';
 
 import { type FC } from 'react';
 import { styled } from 'styled-components';
 import { HEADER_HEIGHT } from './constants';
+import { UserProfile } from './UserProfile';
 
 const StyledAppBar = styled(AppBar)`
   height: ${HEADER_HEIGHT};
@@ -35,7 +35,7 @@ export const Header: FC<{
           </IconButton>
         )}
         <Box flex={1} display="flex" justifyContent="flex-end">
-          <AuthButton />
+          <UserProfile />
         </Box>
       </Toolbar>
     </StyledAppBar>

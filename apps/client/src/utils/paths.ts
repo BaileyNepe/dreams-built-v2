@@ -20,5 +20,7 @@ export const paths = {
 
   schedule: '/dashboard/schedule',
 
-  timesheet: '/dashboard/timesheet'
+  timesheet: '/dashboard/timesheet',
+
+  logout: '/logout'
 } as const;

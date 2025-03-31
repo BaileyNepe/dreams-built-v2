@@ -1,6 +1,7 @@
 import { authz } from '@dreams-built/shared/src/auth/permissions';
 import { type Authz } from '@dreams-built/shared/src/auth/types';
 import {
+  ArrowRightStartOnRectangleIcon,
   CalendarIcon,
   FolderIcon,
   GlobeAltIcon,
@@ -60,5 +61,10 @@ export const routes: {
     to: paths.projectReports,
     icon: SignalIcon,
     requiredPermission: authz.timesheet_view_all
+  },
+  {
+    name: 'Logout',
+    to: paths.logout,
+    icon: ArrowRightStartOnRectangleIcon
   }
 ];

@@ -13,6 +13,7 @@ import { createFileRoute } from '@tanstack/react-router'
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as LogoutImport } from './routes/logout'
 import { Route as DashboardDashboardClientsIndexImport } from './routes/_dashboard/dashboard/clients/index'
 import { Route as DashboardDashboardProjectsEditProjectIdImport } from './routes/_dashboard/dashboard/projects/edit.$projectId'
 import { Route as DashboardDashboardClientsEditClientIdImport } from './routes/_dashboard/dashboard/clients/edit.$clientId'
@@ -67,6 +68,12 @@ const DashboardLazyRoute = DashboardLazyImport.update({
   id: '/_dashboard',
   getParentRoute: () => rootRoute,
 } as any).lazy(() => import('./routes/_dashboard.lazy').then((d) => d.Route))
+
+const LogoutRoute = LogoutImport.update({
+  id: '/logout',
+  path: '/logout',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const LandingIndexLazyRoute = LandingIndexLazyImport.update({
   id: '/',
@@ -237,6 +244,13 @@ const DashboardDashboardClientsEditClientIdRoute =
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/logout': {
+      id: '/logout'
+      path: '/logout'
+      fullPath: '/logout'
+      preLoaderRoute: typeof LogoutImport
+      parentRoute: typeof rootRoute
+    }
     '/_dashboard': {
       id: '/_dashboard'
       path: ''
@@ -437,6 +451,7 @@ const LandingLazyRouteWithChildren = LandingLazyRoute._addFileChildren(
 )
 
 export interface FileRoutesByFullPath {
+  '/logout': typeof LogoutRoute
   '': typeof LandingLazyRouteWithChildren
   '/about': typeof LandingAboutLazyRoute
   '/contact': typeof LandingContactLazyRoute
@@ -458,6 +473,7 @@ export interface FileRoutesByFullPath {
 }
 
 export interface FileRoutesByTo {
+  '/logout': typeof LogoutRoute
   '': typeof DashboardLazyRouteWithChildren
   '/about': typeof LandingAboutLazyRoute
   '/contact': typeof LandingContactLazyRoute
@@ -480,6 +496,7 @@ export interface FileRoutesByTo {
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
+  '/logout': typeof LogoutRoute
   '/_dashboard': typeof DashboardLazyRouteWithChildren
   '/_landing': typeof LandingLazyRouteWithChildren
   '/_landing/about': typeof LandingAboutLazyRoute
@@ -504,6 +521,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/logout'
     | ''
     | '/about'
     | '/contact'
@@ -524,6 +542,7 @@ export interface FileRouteTypes {
     | '/dashboard/projects/edit/$projectId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/logout'
     | ''
     | '/about'
     | '/contact'
@@ -544,6 +563,7 @@ export interface FileRouteTypes {
     | '/dashboard/projects/edit/$projectId'
   id:
     | '__root__'
+    | '/logout'
     | '/_dashboard'
     | '/_landing'
     | '/_landing/about'
@@ -567,11 +587,13 @@ export interface FileRouteTypes {
 }
 
 export interface RootRouteChildren {
+  LogoutRoute: typeof LogoutRoute
   DashboardLazyRoute: typeof DashboardLazyRouteWithChildren
   LandingLazyRoute: typeof LandingLazyRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  LogoutRoute: LogoutRoute,
   DashboardLazyRoute: DashboardLazyRouteWithChildren,
   LandingLazyRoute: LandingLazyRouteWithChildren,
 }
@@ -586,9 +608,13 @@ export const routeTree = rootRoute
     "__root__": {
       "filePath": "__root.tsx",
       "children": [
+        "/logout",
         "/_dashboard",
         "/_landing"
       ]
+    },
+    "/logout": {
+      "filePath": "logout.tsx"
     },
     "/_dashboard": {
       "filePath": "_dashboard.lazy.tsx",

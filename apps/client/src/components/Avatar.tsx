@@ -18,16 +18,22 @@ export const ActiveDot = styled(Box)`
   width: 0.8rem;
 `;
 
-export const UserAvatar: FC<{ image?: string; name?: string; isActive?: boolean }> = ({
-  image,
-  name,
-  isActive = false
-}) => (
+export const UserAvatar: FC<{
+  image?: string;
+  name?: string;
+  isActive?: boolean;
+  textAlign?: 'left' | 'right';
+}> = ({ image, name, isActive = false, textAlign = 'right' }) => (
   <Stack direction="row" alignItems="center" spacing={2}>
+    {textAlign === 'left' && (
+      <Typography variant="body1" fontWeight="bold">
+        {name}
+      </Typography>
+    )}
     <AvatarContainer>
-      <Avatar src={image} alt={name} sx={{ height: '2.2rem', width: '2.2rem' }} />
+      <Avatar src={image} alt={name} sx={{ height: '1.9rem', width: '1.9rem' }} />
       {isActive && <ActiveDot />}
     </AvatarContainer>
-    <Typography variant="body1">{name}</Typography>
+    {textAlign === 'right' && <Typography>{name}</Typography>}
   </Stack>
 );
