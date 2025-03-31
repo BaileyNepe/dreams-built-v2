@@ -61,7 +61,7 @@ export const TimesheetReport: FC<{ weekStart: string }> = ({ weekStart }) => {
           </ReportBlock>
           <Divider
             sx={{
-              borderColor: (theme) => theme.palette.grey[300],
+              borderColor: theme.palette.grey[300],
               my: 2
             }}
           />
@@ -121,7 +121,7 @@ export const TimesheetReport: FC<{ weekStart: string }> = ({ weekStart }) => {
                     variant="caption"
                     color="textSecondary"
                     sx={{
-                      backgroundColor: (theme) => theme.palette.grey[200],
+                      backgroundColor: theme.palette.grey[200],
                       borderRadius: 1,
                       display: 'inline-block',
                       fontStyle: 'italic',
@@ -137,7 +137,7 @@ export const TimesheetReport: FC<{ weekStart: string }> = ({ weekStart }) => {
           </ReportBlock>
           <Divider
             sx={{
-              borderColor: (theme) => theme.palette.grey[300],
+              borderColor: theme.palette.grey[300],
               my: 2
             }}
           />

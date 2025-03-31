@@ -1,8 +1,10 @@
 import { useUpdateTimesheetEntryMutation } from 'api/timesheet';
+import { ProjectSelectRHF } from 'components/Forms/Selects/ProjectSelect';
+import { TextFieldRHF } from 'components/Forms/TextFieldRHF';
 import BasicModal from 'components/Modal';
 import { FormBody } from 'layouts/FormLayout';
-import { notify } from 'libs/Notify';
 import { type FC } from 'react';
+import { calculateTimeDifference } from 'utils/date';
 import { useCustomForm } from 'utils/hooks/useForm';
 import { type Entry } from '../hooks/useUserReport';
 
@@ -30,28 +32,34 @@ export const EditTimesheetEntryModal: FC<{
         onDelete={() => {
           updateMutation.mutate(
             {
-              ...methods.getValues(),
+              ...entry,
               deleted: true
             },
             {
               onSuccess: () => {
-                notify('Deleted', { type: 'success' });
                 onClose();
               }
             }
           );
         }}
         onSubmit={methods.handleSubmit((d) => {
-          updateMutation.mutate(d, {
-            onSuccess: () => {
-              notify('Updated', { type: 'success' });
-              onClose();
+          updateMutation.mutate(
+            {
+              ...d,
+              duration: calculateTimeDifference(d.startTime, d.endTime).totalMinutes,
+              id: entry.id
+            },
+            {
+              onSuccess: () => {
+                onClose();
+              }
             }
-          });
+          );
         })}
       >
-        {/* Form Fields Here */}
-        <div></div>
+        <TextFieldRHF type="time" name="startTime" {...methods} />
+        <TextFieldRHF type="time" name="endTime" {...methods} />
+        <ProjectSelectRHF {...methods} name="projectId" />
       </FormBody>
     </BasicModal>
   );

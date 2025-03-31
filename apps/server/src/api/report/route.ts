@@ -13,7 +13,8 @@ export const reportsRouter = trpc.router({
     .query(async ({ ctx, input }) => {
       const entries = await ctx.db.timeEntry.findMany({
         where: {
-          weekStart: input.week
+          weekStart: input.week,
+          deleted: false
         },
         select: {
           id: true,
