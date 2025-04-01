@@ -1,0 +1,1 @@
+ffmpeg -ss 00:00:01 -i dreamsbuilt.webm -frames:v 2 -q:v 80 poster.webp
