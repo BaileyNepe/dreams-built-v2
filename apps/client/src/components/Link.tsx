@@ -17,11 +17,13 @@ const StyledRouterLink = styled((props: React.ComponentProps<typeof Link>) => (
   }
 `;
 
-export const RouterLink: React.FC<LinkProps & { children: React.ReactNode }> = ({
-  children,
-  ...rest
-}) => (
-  <StyledRouterLink {...(rest as React.ComponentProps<typeof Link>)}>
+export const RouterLink: React.FC<
+  LinkProps & { children: React.ReactNode; onClick?: () => void }
+> = ({ children, ...rest }) => (
+  <StyledRouterLink
+    {...(rest as React.ComponentProps<typeof Link>)}
+    onClick={rest.onClick}
+  >
     {children}
   </StyledRouterLink>
 );

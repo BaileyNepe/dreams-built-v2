@@ -13,6 +13,7 @@ const Layout = styled.div`
 
 const Main = styled.main`
   flex: 1;
+  padding-top: 5.2rem;
 `;
 
 export const LandingLayout: FC = () => {

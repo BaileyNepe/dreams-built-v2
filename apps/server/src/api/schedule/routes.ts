@@ -2,7 +2,7 @@ import { protectedProcedure, trpc } from '@config/trpc';
 import { authz } from '@dreams-built/shared/src/auth/permissions';
 import {
   createScheduleSchema,
-  dateString,
+  shortDateString,
   updateScheduleSchema
 } from '@dreams-built/shared/src/schemas';
 import { z } from 'zod';
@@ -11,7 +11,7 @@ export const scheduleRouter = trpc.router({
   blockDay: protectedProcedure([authz.schedule_edit])
     .input(
       z.object({
-        date: dateString,
+        date: shortDateString,
         details: z.string().optional(),
         deleted: z.boolean().optional()
       })
@@ -34,8 +34,8 @@ export const scheduleRouter = trpc.router({
   get: protectedProcedure([authz.schedule_read])
     .input(
       z.object({
-        startRange: dateString,
-        endRange: dateString
+        startRange: shortDateString,
+        endRange: shortDateString
       })
     )
     .query(async ({ ctx, input }) => {

@@ -1,23 +1,22 @@
 import MenuIcon from '@mui/icons-material/Menu';
-import {
-  AppBar,
-  Box,
-  Container,
-  Drawer,
-  IconButton,
-  Button as MUIButton,
-  Toolbar
-} from '@mui/material';
+import { AppBar, Box, Container, Drawer, IconButton, Toolbar } from '@mui/material';
+import { type LinkProps } from '@tanstack/react-router';
 import { type FC, useState } from 'react';
 import styled from 'styled-components';
+import { paths } from 'utils/paths';
 import { AuthButton } from './AuthButton';
+import { Button } from './Button';
 import { RouterLink } from './Link';
 import { Logo } from './Logo';
 
-const links = [
-  { href: '#features', label: 'Features' },
-  { href: '#testimonials', label: 'Testimonials' },
-  { href: '#pricing', label: 'Pricing' }
+const links: {
+  to: LinkProps['to'];
+  label: string;
+}[] = [
+  { to: '/', label: 'Home' },
+  { to: paths.services, label: 'Services' },
+  { to: paths.about, label: 'About' },
+  { to: paths.contact, label: 'Contact Us' }
 ];
 
 // Styled NavLink using MUI Link
@@ -31,6 +30,31 @@ const NavLink = styled((props: React.ComponentProps<typeof RouterLink>) => (
 
   &:hover {
     text-decoration: none;
+  }
+`;
+
+const ButtonContainer = styled(Box)`
+  display: grid;
+  width: 100%;
+  button {
+    width: 100%;
+  }
+`;
+
+const StyledAppBar = styled(AppBar)`
+  && {
+    background-color: transparent;
+    box-shadow: 0;
+    color: ${({ theme }) => theme.palette.text.primary};
+
+    position: fixed;
+    transition: ${({ theme }) =>
+      theme.transitions.create(['height', 'background-color'], {
+        easing: theme.transitions.easing.easeInOut,
+        duration: theme.transitions.duration.shorter
+      })};
+
+    z-index: 30;
   }
 `;
 
@@ -49,12 +73,15 @@ const MobileNavigation: FC<{ onClose: () => void; open: boolean }> = ({
         gap: 2
       }}
     >
-      {links.map((link) => (
-        <NavLink key={link.href} href={link.href} onClick={onClose}>
-          {link.label}
-        </NavLink>
-      ))}
-      {/* Add AuthButton or other elements as needed here */}
+      <ButtonContainer>
+        {links.map((link) => (
+          <NavLink key={link.to} to={link.to} onClick={onClose}>
+            <Button>{link.label}</Button>
+          </NavLink>
+        ))}
+      </ButtonContainer>
+
+      <AuthButton />
     </Box>
   </Drawer>
 );
@@ -67,7 +94,7 @@ export const Header: FC = () => {
   const handleCloseMobileNav = () => setMobileOpen(false);
 
   return (
-    <AppBar position="static" color="inherit" elevation={0}>
+    <StyledAppBar elevation={0}>
       <Container>
         <Toolbar disableGutters sx={{ py: 2, justifyContent: 'space-between' }}>
           {/* Left Section: Logo + Desktop Nav */}
@@ -77,7 +104,7 @@ export const Header: FC = () => {
             </RouterLink>
             <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2 }}>
               {links.map((link) => (
-                <NavLink key={link.href} to={link.href}>
+                <NavLink key={link.to} to={link.to}>
                   {link.label}
                 </NavLink>
               ))}
@@ -89,12 +116,12 @@ export const Header: FC = () => {
             <Box sx={{ display: { xs: 'none', md: 'block' } }}>
               <AuthButton />
             </Box>
-            <MUIButton variant="contained" color="primary" href="/register">
-              Get started{' '}
-              <Box component="span" sx={{ display: { xs: 'none', lg: 'inline' } }}>
-                today
-              </Box>
-            </MUIButton>
+            <RouterLink to={paths.contact}>
+              <Button variant="contained" color="primary">
+                Contact Us
+              </Button>
+            </RouterLink>
+            {/* Mobile Menu Toggle */}
             <Box sx={{ display: { xs: 'block', md: 'none' } }}>
               <IconButton aria-label="Open navigation" onClick={handleOpenMobileNav}>
                 <MenuIcon />
@@ -104,6 +131,6 @@ export const Header: FC = () => {
         </Toolbar>
       </Container>
       <MobileNavigation open={mobileOpen} onClose={handleCloseMobileNav} />
-    </AppBar>
+    </StyledAppBar>
   );
 };

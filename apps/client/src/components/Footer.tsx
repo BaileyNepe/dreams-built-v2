@@ -20,17 +20,6 @@ const LogoContainer = styled.div`
   justify-content: center;
 `;
 
-const QuickLinksNav = styled.nav`
-  margin-top: 2.5rem; /* mt-10 */
-  text-align: center;
-`;
-
-const QuickLinksList = styled.div`
-  display: flex;
-  gap: 1.5rem;
-  justify-content: center; /* gap-x-6 */
-`;
-
 const BottomSection = styled.div`
   align-items: center;
   border-top: 1px solid rgba(71, 85, 105, 0.1);
@@ -72,13 +61,6 @@ export const Footer: FC = () => (
         <LogoContainer>
           <Logo />
         </LogoContainer>
-        <QuickLinksNav aria-label="quick links">
-          <QuickLinksList>
-            <RouterLink to="#features">Features</RouterLink>
-            <RouterLink to="#testimonials">Testimonials</RouterLink>
-            <RouterLink to="#pricing">Pricing</RouterLink>
-          </QuickLinksList>
-        </QuickLinksNav>
       </ContentWrapper>
       <BottomSection>
         <IconLinkContainer>

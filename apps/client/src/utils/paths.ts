@@ -24,5 +24,7 @@ export const paths = {
 
   logout: '/logout',
 
-  contact: '/contact'
+  contact: '/contact',
+  about: '/about',
+  services: '/services'
 } as const;

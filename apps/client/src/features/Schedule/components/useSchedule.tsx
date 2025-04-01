@@ -17,17 +17,23 @@ const useSchedule = () => {
   const isSmallScreen = useResponsive('down', 'md');
   const [selectedDate, setSelectedDate] = useState(getDate());
   const viewType = isSmallScreen ? 'day' : 'week';
-  const startOfWeek = useMemo(
+  const initialDateOfWeek = useMemo(
     () => selectedDate.startOf(viewType),
     [selectedDate, viewType]
   );
-  const endOfWeek = useMemo(() => selectedDate.endOf(viewType), [selectedDate, viewType]);
+  const endOfCurrentWeek = useMemo(
+    () => selectedDate.endOf(viewType),
+    [selectedDate, viewType]
+  );
 
   const hasPermissionToEdit = useAuth().user.permissions.some(
     (p) => p === authz.schedule_edit
   );
 
-  const scheduleData = useScheduleQuery(formatDate(startOfWeek), formatDate(endOfWeek));
+  const scheduleData = useScheduleQuery(
+    formatDate(initialDateOfWeek),
+    formatDate(endOfCurrentWeek)
+  );
 
   // Convert raw blocked days to DateTime objects
   const blockedDays = useMemo(
@@ -72,8 +78,9 @@ const useSchedule = () => {
         // Compute segments for each task, skipping blocked days.
         const tasksWithSegments = tasksWithLanes.map((task) => {
           const segments: { segmentStart: DateTime; segmentEnd: DateTime }[] = [];
-          const effectiveStart = task.start > startOfWeek ? task.start : startOfWeek;
-          const effectiveEnd = task.end < endOfWeek ? task.end : endOfWeek;
+          const effectiveStart =
+            task.start > initialDateOfWeek ? task.start : initialDateOfWeek;
+          const effectiveEnd = task.end < endOfCurrentWeek ? task.end : endOfCurrentWeek;
           let currentSegmentStart: DateTime | null = null;
           let iterDate = effectiveStart.startOf('day');
 
@@ -110,16 +117,17 @@ const useSchedule = () => {
 
         return { ...jp, tasks: tasksWithSegments };
       }) ?? [],
-    [scheduleData, startOfWeek, endOfWeek, blockedDays]
+    [scheduleData, initialDateOfWeek, endOfCurrentWeek, blockedDays]
   );
 
   // Compute an array of dates to display for the week.
+
   const datesToShow = useMemo(
     () =>
       viewType === 'day'
-        ? [startOfWeek]
-        : generateWeekArray(formatDate(startOfWeek)).map((d) => d.dateFormat),
-    [startOfWeek, viewType]
+        ? [initialDateOfWeek]
+        : generateWeekArray(formatDate(initialDateOfWeek)).map((d) => d.dateFormat),
+    [initialDateOfWeek, viewType]
   );
 
   const changeDate = (date: string) => {
@@ -127,11 +135,13 @@ const useSchedule = () => {
   };
 
   const getNextWeek = () => {
-    const nextWeek = startOfWeek.plus(viewType === 'day' ? { days: 1 } : { weeks: 1 });
+    const nextWeek = initialDateOfWeek.plus(
+      viewType === 'day' ? { days: 1 } : { weeks: 1 }
+    );
     setSelectedDate(nextWeek);
   };
   const getPreviousWeek = () => {
-    const previousWeek = startOfWeek.minus(
+    const previousWeek = initialDateOfWeek.minus(
       viewType === 'day' ? { days: 1 } : { weeks: 1 }
     );
     setSelectedDate(previousWeek);
@@ -147,8 +157,8 @@ const useSchedule = () => {
     blockedDays,
     projectPartsWithSegments,
     datesToShow,
-    startOfWeek,
-    endOfWeek
+    startOfWeek: initialDateOfWeek,
+    endOfWeek: endOfCurrentWeek
   };
 };
 
