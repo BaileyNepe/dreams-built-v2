@@ -12,7 +12,6 @@ const Container = styled.div`
   box-shadow: ${({ theme }) => theme.customShadows.outline};
   display: grid;
   gap: 0.5rem;
-  padding: 2rem;
 `;
 
 const HeaderContainer = styled.div`
@@ -21,7 +20,7 @@ const HeaderContainer = styled.div`
   flex-direction: column;
   gap: 1rem;
   margin-bottom: 1rem;
-  padding-bottom: 2rem;
+  padding: 1rem 0rem 0;
   width: 100%;
 
   @media (min-width: 600px) {
@@ -30,6 +29,10 @@ const HeaderContainer = styled.div`
     padding-bottom: 0;
     width: 100%;
   }
+`;
+
+const ReportContainer = styled.div`
+  overflow: auto;
 `;
 
 export const Report: FC = () => {
@@ -86,11 +89,13 @@ export const Report: FC = () => {
           <Skeleton variant="rectangular" height={300} sx={{ m: 1, borderRadius: 1 }} />
         )}
       >
-        {selectedReport === 'timesheet' ? (
-          <TimesheetReport weekStart={formatDate(currentWeek)} />
-        ) : (
-          <ProjectReport weekStart={formatDate(currentWeek)} />
-        )}
+        <ReportContainer>
+          {selectedReport === 'timesheet' ? (
+            <TimesheetReport weekStart={formatDate(currentWeek)} />
+          ) : (
+            <ProjectReport weekStart={formatDate(currentWeek)} />
+          )}
+        </ReportContainer>
       </Suspense>
     </Container>
   );

@@ -6,6 +6,7 @@ import { Button } from 'components/Button';
 import { SubmitButton } from 'components/SubmitButton';
 import { type FC } from 'react';
 import styled from 'styled-components';
+import { useResponsive } from 'utils/hooks/useResponsive';
 
 const FormContainer = styled.div`
   background-color: ${({ theme }) => theme.palette.background.paper};
@@ -28,9 +29,9 @@ const Form = styled.form`
 const Container = styled.div`
   display: grid;
   gap: 1rem;
-  padding: 1rem;
+  padding-bottom: 1rem;
   @media (min-width: 640px) {
-    padding: 1rem 1.5rem;
+    padding: 0rem 1.5rem 1.5rem;
   }
 `;
 const HeaderContainer = styled.div`
@@ -76,18 +77,21 @@ export const FormLayout: FC<{
   onSubmit?: (event: React.FormEvent<HTMLFormElement>) => void;
 }> = ({ title, onSubmit, children, isSubmitting = false }) => {
   const router = useRouter();
+  const isLargeScreen = useResponsive('up', 'sm');
 
   return (
     <Container>
-      <HeaderContainer>
-        <Button
-          variant="text"
-          startIcon={<ChevronLeftIcon />}
-          onClick={() => router.history.back()}
-        >
-          Back
-        </Button>
-      </HeaderContainer>
+      {isLargeScreen && (
+        <HeaderContainer>
+          <Button
+            variant="text"
+            startIcon={<ChevronLeftIcon />}
+            onClick={() => router.history.back()}
+          >
+            Back
+          </Button>
+        </HeaderContainer>
+      )}
       <FormContainer>
         <Typography
           variant="h3"

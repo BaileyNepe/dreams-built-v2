@@ -13,7 +13,6 @@ import { ReportBlock, TotalRow } from './styles';
 export const CommentsContainer = styled.div`
   display: grid;
   gap: 0.2rem;
-  width: max-content;
 `;
 
 export const TimesheetReport: FC<{ weekStart: string }> = ({ weekStart }) => {
@@ -123,6 +122,7 @@ export const TimesheetReport: FC<{ weekStart: string }> = ({ weekStart }) => {
                     sx={{
                       backgroundColor: theme.palette.grey[200],
                       borderRadius: 1,
+
                       display: 'inline-block',
                       fontStyle: 'italic',
                       mt: 1,

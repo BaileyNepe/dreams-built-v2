@@ -24,6 +24,7 @@ const Layout = styled.div<{ $hasShadow: boolean }>`
 const TableWrapper = styled.div`
   -webkit-overflow-scrolling: touch;
   overflow-x: auto;
+  white-space: nowrap;
   width: 100%;
 `;
 

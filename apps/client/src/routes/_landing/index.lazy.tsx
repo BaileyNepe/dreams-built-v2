@@ -10,7 +10,7 @@ const VideoBackground = styled.video`
   left: 0;
   max-height: 50rem;
   object-fit: cover;
-  position: fixed;
+  /* position: fixed; */
   top: 0;
   width: 100%;
   z-index: -1;
@@ -27,23 +27,32 @@ const PosterImage = styled.img`
   z-index: -1;
 `;
 
+const Section = styled.section`
+  display: flex;
+  flex-direction: column;
+  height: 80rem;
+`;
+
 const HomePage: FC = () => {
   const isMobile = useResponsive('down', 'sm');
   if (isMobile) {
     return <PosterImage src={posterImage} alt="Background poster" />;
   }
   return (
-    <VideoBackground
-      src={video}
-      poster={posterImage}
-      preload="auto"
-      autoPlay
-      loop
-      muted
-      playsInline
-    >
-      Your browser does not support the video tag.
-    </VideoBackground>
+    <>
+      <VideoBackground
+        src={video}
+        poster={posterImage}
+        preload="auto"
+        autoPlay
+        loop
+        muted
+        playsInline
+      >
+        Your browser does not support the video tag.
+      </VideoBackground>
+      <Section />
+    </>
   );
 };
 

@@ -21,9 +21,6 @@ const Container = styled.div`
     padding: 1rem;
     border: 1px solid ${({ theme }) => theme.palette.grey[300]};
     border-radius: ${({ theme }) => theme.shape.borderRadius}px;
-    button {
-      margin-top: 1rem;
-    }
   }
 `;
 
@@ -85,6 +82,9 @@ export const Entry: FC<{ entryId: string }> = ({ entryId }) => {
         onClick={() => deleteEntry(entry.id)}
         variant={isDesktop ? 'text' : 'outlined'}
         startIcon={isDesktop ? undefined : <DeleteOutlineRoundedIcon />}
+        sx={{
+          marginTop: isDesktop ? 0 : '1rem'
+        }}
       >
         {isDesktop ? <DeleteOutlineRoundedIcon /> : 'Delete'}
       </Button>
