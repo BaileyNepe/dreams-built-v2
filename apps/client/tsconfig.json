@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "types": ["vite/client", "vite-plugin-svgr/client", "vitest/globals"],
+    "allowSyntheticDefaultImports": true,
+    "allowImportingTsExtensions": true,
+
+    "baseUrl": "./src",
+    "module": "ESNext",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "bundler",
+    "noFallthroughCasesInSwitch": true,
+    "outDir": "./dist",
+    "sourceMap": true,
+    "strict": true,
+    "paths": {
+      "*": ["*"]
+    }
+  },
+  "references": [{ "path": "../server" }],
+  "exclude": ["node_modules", "./node_modules/*", "./dist/*"],
+  "include": ["src/**/**/*", "*.config.ts", "src", "src/routes", "vite.config.ts"]
+}

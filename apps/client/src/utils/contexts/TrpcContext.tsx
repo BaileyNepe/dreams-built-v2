@@ -1,0 +1,66 @@
+/* eslint-disable no-console */
+import {
+  keepPreviousData,
+  QueryClient,
+  QueryClientProvider
+} from '@tanstack/react-query';
+import { httpBatchLink } from '@trpc/client';
+import { api } from 'api/trpc';
+import { env } from 'config/env';
+import { notify } from 'libs/Notify';
+import { type FC, type PropsWithChildren } from 'react';
+import superjson from 'superjson';
+import { useAuthInit } from './AuthProvider';
+
+const cacheTime = 1000 * 60 * 90; // 90 minutes
+const staleTime = 1000 * 60 * 5; // 5 minutes
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      retryDelay: 100,
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+      refetchOnReconnect: true,
+      gcTime: cacheTime,
+      placeholderData: keepPreviousData,
+      staleTime
+    },
+    mutations: {
+      retry: false,
+      onError: (error) => {
+        notify(error.message, { type: 'error' });
+      }
+    }
+  }
+});
+
+export const TRPCContext: FC<PropsWithChildren> = ({ children }) => {
+  const { getAccessToken } = useAuthInit();
+
+  return (
+    <api.Provider
+      client={api.createClient({
+        links: [
+          httpBatchLink({
+            transformer: superjson,
+            url: `${env.serverUrl}/trpc/v1`,
+            fetch(url, options) {
+              return fetch(url, {
+                ...options,
+                credentials: 'include'
+              });
+            },
+            async headers() {
+              return { authorization: `Bearer ${await getAccessToken()}` };
+            }
+          })
+        ]
+      })}
+      queryClient={queryClient}
+    >
+      <QueryClientProvider client={queryClient}>{<>{children}</>}</QueryClientProvider>
+    </api.Provider>
+  );
+};

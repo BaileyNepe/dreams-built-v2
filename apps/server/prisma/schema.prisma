@@ -1,0 +1,147 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Client {
+    id        String    @id @default(cuid())
+    name      String    @default("")
+    color     String    @default("")
+    createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+    updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+    project   Project[]
+
+    @@map("client")
+}
+
+model BlockedDate {
+    id        String   @id @default(cuid())
+    date      String   @unique @default("")
+    details   String   @default("")
+    createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+    updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(3)
+    deleted   Boolean  @default(false)
+
+    @@map("blocked_date")
+}
+
+model Project {
+    id         String   @id @default(cuid())
+    updatedAt  DateTime @updatedAt @map("updated_at")
+    createdAt  DateTime @default(now()) @map("created_at")
+    deleted    Boolean  @default(false)
+    address    String   @default("")
+    area       Float    @default(0)
+    city       String   @default("")
+    color      String   @default("")
+    endClient  String   @default("") @map("end_client")
+    isInvoiced Boolean  @default(false) @map("is_invoiced")
+    jobNumber  Int      @unique @map("job_number")
+    clientId   String   @map("client_id")
+    client     Client   @relation(fields: [clientId], references: [id])
+
+    timeEntry       TimeEntry[]
+    projectSchedule ProjectSchedule[]
+
+    @@map("project")
+}
+
+model ProjectPart {
+    id        String   @id @default(cuid())
+    name      String   @default("")
+    order     Int      @default(0)
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+    deleted   Boolean  @default(false)
+
+    projectSchedule ProjectSchedule[]
+
+    @@map("project_parts")
+}
+
+model ProjectSchedule {
+    id            String @id @default(cuid())
+    projectId     String @map("project_id")
+    projectPartId String @map("project_part_id")
+
+    startDate DateTime @map("start_date")
+    endDate   DateTime @map("end_date")
+    notes     String   @default("")
+    deleted   Boolean  @default(false)
+
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+
+    projectPart ProjectPart @relation(fields: [projectPartId], references: [id])
+    project     Project     @relation(fields: [projectId], references: [id])
+
+    @@map("project_schedule")
+}
+
+model User {
+    id        String   @id @default(cuid())
+    email     String   @default("")
+    firstName String   @default("") @map("first_name")
+    lastName  String   @default("") @map("last_name")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+    image     String   @default("")
+    deleted   Boolean  @default(false)
+
+    hourlyRate Float       @default(0) @map("hourly_rate")
+    authId     String      @unique @map("auth_id")
+    role       Role        @default(USER)
+    lastActive DateTime    @default(now()) @map("last_active") @db.Timestamptz(3)
+    timeEntry  TimeEntry[]
+    note       Note[]
+
+    @@map("user")
+}
+
+enum Role {
+    ADMIN
+    MANAGER
+    EMPLOYEE
+    USER
+}
+
+model TimeEntry {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+    userId    String   @map("user_id")
+    projectId String   @map("project_id")
+    weekStart String   @default("") @map("week_start")
+
+    duration  Float
+    startTime String @map("start_time")
+    endTime   String @map("end_time")
+    day       String
+
+    deleted Boolean @default(false)
+
+    project Project @relation(fields: [projectId], references: [id])
+    user    User    @relation(fields: [userId], references: [id])
+
+    @@map("time_entry")
+}
+
+model Note {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+    day       String   @default("")
+    message   String   @default("")
+    weekStart String   @default("") @map("week_start")
+    userId    String   @map("user_id")
+    user      User     @relation(fields: [userId], references: [id])
+
+    @@map("note")
+}
