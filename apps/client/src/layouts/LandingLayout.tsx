@@ -1,4 +1,4 @@
-import { Navigate, Outlet } from '@tanstack/react-router';
+import { Navigate, Outlet, useLocation } from '@tanstack/react-router';
 import { Footer } from 'components/Footer';
 import { Header } from 'components/Header';
 import { type FC } from 'react';
@@ -11,13 +11,14 @@ const Layout = styled.div`
   min-height: 100vh;
 `;
 
-const Main = styled.main`
+const Main = styled.main<{ $hasPadding?: boolean }>`
   flex: 1;
-  padding-top: 5.2rem;
+  padding-top: ${({ $hasPadding }) => ($hasPadding ? '5.1rem' : '0')};
 `;
 
 export const LandingLayout: FC = () => {
   const { isAuthenticated, isLoading } = useAuthOptionalUser();
+  const { pathname } = useLocation();
 
   if (!isLoading && isAuthenticated) {
     return <Navigate to="/dashboard" />;
@@ -26,7 +27,7 @@ export const LandingLayout: FC = () => {
   return (
     <Layout>
       <Header />
-      <Main>
+      <Main $hasPadding={pathname !== '/a'}>
         <Outlet />
       </Main>
       <Footer />

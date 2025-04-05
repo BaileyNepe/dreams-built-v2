@@ -1,6 +1,7 @@
 import { createLazyFileRoute } from '@tanstack/react-router';
 import { type FC } from 'react';
 import styled from 'styled-components';
+import { bgBlur } from 'themes/css';
 import { useResponsive } from 'utils/hooks/useResponsive';
 import video from '../../assets/dreamsbuilt.webm';
 import posterImage from '../../assets/poster.webp';
@@ -10,7 +11,6 @@ const VideoBackground = styled.video`
   left: 0;
   max-height: 50rem;
   object-fit: cover;
-  /* position: fixed; */
   top: 0;
   width: 100%;
   z-index: -1;
@@ -33,6 +33,16 @@ const Section = styled.section`
   height: 80rem;
 `;
 
+const Container = styled.div`
+  ${({ theme }) =>
+    bgBlur({
+      color: theme.palette.common.black,
+      overlay: true,
+      blur: 0.001,
+      opacity: 0.1
+    })};
+`;
+
 const HomePage: FC = () => {
   const isMobile = useResponsive('down', 'sm');
   if (isMobile) {
@@ -40,17 +50,19 @@ const HomePage: FC = () => {
   }
   return (
     <>
-      <VideoBackground
-        src={video}
-        poster={posterImage}
-        preload="auto"
-        autoPlay
-        loop
-        muted
-        playsInline
-      >
-        Your browser does not support the video tag.
-      </VideoBackground>
+      <Container>
+        <VideoBackground
+          src={video}
+          poster={posterImage}
+          preload="auto"
+          autoPlay
+          loop
+          muted
+          playsInline
+        >
+          Your browser does not support the video tag.
+        </VideoBackground>
+      </Container>
       <Section />
     </>
   );

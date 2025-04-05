@@ -1,14 +1,12 @@
 import { alpha } from '@mui/system';
 
-type BgGradientProps = {
+export function bgGradient(props?: {
   direction?: string;
   color?: string;
   startColor?: string;
   endColor?: string;
   imgUrl?: string;
-};
-
-export function bgGradient(props?: BgGradientProps) {
+}) {
   const direction = props?.direction || 'to bottom';
   const startColor = props?.startColor;
   const endColor = props?.endColor;
@@ -31,20 +29,19 @@ export function bgGradient(props?: BgGradientProps) {
   };
 }
 
-type BgBlurProps = {
+export function bgBlur(props?: {
   blur?: number;
   opacity?: number;
   color?: string;
   imgUrl?: string;
-};
-
-export function bgBlur(props?: BgBlurProps) {
+  overlay?: boolean;
+}) {
   const color = props?.color || '#000000';
   const blur = props?.blur || 6;
   const opacity = props?.opacity || 0.8;
   const imgUrl = props?.imgUrl;
 
-  if (imgUrl) {
+  if (imgUrl || props?.overlay) {
     return {
       position: 'relative',
       backgroundImage: `url(${imgUrl})`,

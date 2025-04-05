@@ -1,6 +1,6 @@
 
 
-FROM oven/bun:1.1.38-slim as builder
+FROM oven/bun:1.2.3-slim as builder
 WORKDIR /app
 
 COPY ./bun.lockb /app/
@@ -15,7 +15,7 @@ RUN apt update \
     && apt install -y curl
 
 
-ARG NODE_VERSION=22.11
+ARG NODE_VERSION=22.13
 
 RUN curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o n \
     && bash n $NODE_VERSION \
@@ -32,7 +32,7 @@ RUN bun run server:db-generate
 RUN bun run server:build
 
 
-FROM oven/bun:1.1.38-slim
+FROM oven/bun:1.2.3-slim
 
 WORKDIR /app
 
@@ -41,7 +41,6 @@ COPY --from=builder /app/node_modules/.prisma /node_modules/.prisma
 
 # When building the server express-oauth2-jwt-bearer and jose are not correctly built so we need to split them out
 # and copy them over manually
-COPY --from=builder /app/node_modules/ws /node_modules/ws
 COPY --from=builder /app/node_modules/argon2 /node_modules/argon2
 COPY --from=builder /app/node_modules/@phc/format /node_modules/@phc/format 
 COPY --from=builder /app/node_modules/node-gyp-build /node_modules/node-gyp-build
