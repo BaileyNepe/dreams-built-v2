@@ -3,13 +3,13 @@
 FROM oven/bun:1.2.3-slim as builder
 WORKDIR /app
 
-COPY ./bun.lockb /app/
+COPY ./bun.lock /app/
 COPY ./package.json /app/
 
 COPY ./apps/server/package.json /app/apps/server/
 COPY ./apps/shared/package.json /app/apps/shared/
 COPY ./apps/client/package.json /app/apps/client/
-COPY ./apps/server/prisma /app/apps/server/prisma
+COPY ./apps/server/prisma/ /app/apps/server/prisma/
 
 RUN apt update \
     && apt install -y curl
