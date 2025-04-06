@@ -5,7 +5,6 @@ import * as trpcExpress from '@trpc/server/adapters/express';
 import { logError } from '@utils/logger';
 import { apiRouter } from 'api';
 
-import { v1Prefix } from '@dreams-built/shared';
 import cacheApi from 'api/cache/routes';
 import healthApi from 'api/health/route';
 import compression from 'compression';
@@ -15,6 +14,7 @@ import helmet from 'helmet';
 import { errorHandler } from './middleware/errorHandler';
 
 const app: ReturnType<typeof express> = express();
+const v1Prefix = '/api/v1';
 
 initialiseCache();
 
