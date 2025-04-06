@@ -43,7 +43,6 @@ COPY --from=builder /app/node_modules/.prisma /node_modules/.prisma
 # and copy them over manually
 COPY --from=builder /app/node_modules/argon2 /node_modules/argon2
 COPY --from=builder /app/node_modules/@phc/format /node_modules/@phc/format 
-COPY --from=builder /app/node_modules/node-gyp-build /node_modules/node-gyp-build
 
 EXPOSE 5001
 
