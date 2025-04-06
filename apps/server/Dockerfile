@@ -39,10 +39,6 @@ WORKDIR /app
 COPY --from=builder /app/apps/server/dist /app/apps/server/dist
 COPY --from=builder /app/node_modules/.prisma /node_modules/.prisma
 
-# When building the server express-oauth2-jwt-bearer and jose are not correctly built so we need to split them out
-# and copy them over manually
-COPY --from=builder /app/node_modules/argon2 /node_modules/argon2
-COPY --from=builder /app/node_modules/@phc/format /node_modules/@phc/format 
 
 EXPOSE 5001
 
