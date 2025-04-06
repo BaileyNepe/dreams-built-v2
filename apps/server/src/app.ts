@@ -23,12 +23,12 @@ app.use(helmet());
 
 app.use(json());
 app.use(compression());
-app.use(`${v1Prefix}/health`, cors(), healthApi);
-app.use(`${v1Prefix}/clear-cache`, cors(), cacheApi);
 
 app.use(cors(corsConfig));
-
 app.options('*', cors());
+
+app.use(`${v1Prefix}/health`, healthApi);
+app.use(`${v1Prefix}/clear-cache`, cacheApi);
 
 app.use(
   '/trpc/v1',
