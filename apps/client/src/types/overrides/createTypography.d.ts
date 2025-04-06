@@ -22,7 +22,8 @@ declare module '@mui/material/styles/createTypography' {
     | 'largeAvatar'
     | 'tableHeader';
 
-  export interface TypographyOptions extends Partial<Record<Variant, TypographyStyleOptions> & FontStyleOptions> {
+  export interface TypographyOptions
+    extends Partial<Record<Variant, TypographyStyleOptions> & FontStyleOptions> {
     customInput?: TypographyStyleOptions;
     mainContent?: TypographyStyleOptions;
     menuCaption?: TypographyStyleOptions;
@@ -34,7 +35,10 @@ declare module '@mui/material/styles/createTypography' {
     tableHeader?: TypographyStyleOptions;
   }
 
-  export interface Typography extends Record<Variant, TypographyStyle>, FontStyle, TypographyUtils {
+  export interface Typography
+    extends Record<Variant, TypographyStyle>,
+      FontStyle,
+      TypographyUtils {
     customInput: TypographyStyle;
     mainContent: TypographyStyle;
     menuCaption: TypographyStyleOptions;
