@@ -3,7 +3,7 @@ import { createServer } from 'http';
 import app from './app';
 import { env } from './config/env';
 
-const port = env.expressPort || 5000;
+const port = env.expressPort || 5001;
 
 const server = createServer(app);
 

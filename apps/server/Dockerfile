@@ -1,6 +1,6 @@
 
 
-FROM oven/bun:1.2.3-slim as builder
+FROM oven/bun:1.2.8-slim as builder
 WORKDIR /app
 
 COPY ./bun.lock /app/
@@ -32,7 +32,7 @@ RUN bun run server:db-generate
 RUN bun run server:build
 
 
-FROM oven/bun:1.2.3-slim
+FROM oven/bun:1.2.8-slim
 
 WORKDIR /app
 
