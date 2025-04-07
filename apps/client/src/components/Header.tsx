@@ -4,7 +4,9 @@ import { type LinkProps } from '@tanstack/react-router';
 import { type FC, useState } from 'react';
 import styled from 'styled-components';
 import { bgBlur } from 'themes/css';
+import { useIsCoverPage } from 'utils/hooks/useIsCoverPage';
 import { useOffSetTop } from 'utils/hooks/useOffsetTop';
+import { useResponsive } from 'utils/hooks/useResponsive';
 import { paths } from 'utils/paths';
 import { AuthButton } from './AuthButton';
 import { Button } from './Button';
@@ -65,8 +67,14 @@ const StyledAppBar = styled(AppBar)`
   }
 `;
 
-const StyledToolbar = styled(Toolbar)<{ $offset: boolean }>`
-  color: ${({ $offset }) => ($offset ? 'text.primary' : 'inherit')};
+const StyledToolbar = styled(Toolbar)<{ $offset: boolean; $isLightMode: boolean }>`
+  color: ${({ $isLightMode, theme }) =>
+    $isLightMode ? theme.palette.grey[300] : 'inherit'};
+  a {
+    color: ${({ $isLightMode, theme }) =>
+      $isLightMode ? theme.palette.grey[300] : 'inherit'};
+  }
+
   height: ${({ $offset }) =>
     $offset ? `${HEADER.H_DESKTOP - 16}px` : `${HEADER.H_DESKTOP}px`};
   ${({ $offset: offset, theme }) =>
@@ -122,21 +130,24 @@ const MobileNavigation: FC<{ onClose: () => void; open: boolean }> = ({
 
 // Main Header component
 export const Header: FC = () => {
+  const isCoverPage = useIsCoverPage();
+  const isExtraSmallScreen = useResponsive('down', 'sm');
   const [mobileOpen, setMobileOpen] = useState(false);
   const offset = useOffSetTop();
+  const isHeaderLightMode = isCoverPage && !offset;
 
   const handleOpenMobileNav = () => setMobileOpen(true);
   const handleCloseMobileNav = () => setMobileOpen(false);
 
   return (
     <StyledAppBar elevation={0}>
-      <StyledToolbar disableGutters $offset={offset}>
+      <StyledToolbar disableGutters $offset={offset} $isLightMode={isHeaderLightMode}>
         <Container>
           <Toolbar disableGutters sx={{ py: 2, justifyContent: 'space-between' }}>
             {/* Left Section: Logo + Desktop Nav */}
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <RouterLink to="/" aria-label="Home">
-                <Logo />
+                <Logo light={isHeaderLightMode} />
               </RouterLink>
               <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2 }}>
                 {links.map((link) => (
@@ -152,15 +163,22 @@ export const Header: FC = () => {
               <Box sx={{ display: { xs: 'none', md: 'block' } }}>
                 <AuthButton />
               </Box>
-              <RouterLink to={paths.contact}>
-                <Button variant="contained" color="primary">
-                  Contact Us
-                </Button>
-              </RouterLink>
+              {!isExtraSmallScreen && (
+                <RouterLink to={paths.contact}>
+                  <Button variant="contained" color="primary">
+                    Contact Us
+                  </Button>
+                </RouterLink>
+              )}
+
               {/* Mobile Menu Toggle */}
               <Box sx={{ display: { xs: 'block', md: 'none' } }}>
                 <IconButton aria-label="Open navigation" onClick={handleOpenMobileNav}>
-                  <MenuIcon />
+                  <MenuIcon
+                    sx={{
+                      color: isHeaderLightMode ? 'lightgray' : 'text.primary'
+                    }}
+                  />
                 </IconButton>
               </Box>
             </Box>

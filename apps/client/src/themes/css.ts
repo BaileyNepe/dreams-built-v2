@@ -49,7 +49,7 @@ export function bgBlur(props?: {
         position: 'absolute',
         top: 0,
         left: 0,
-        zIndex: 9,
+        zIndex: props?.overlay ? 0 : 1,
         content: '""',
         width: '100%',
         height: '100%',

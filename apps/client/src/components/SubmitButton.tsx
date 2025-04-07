@@ -5,14 +5,16 @@ import { Button } from './Button';
 export const SubmitButton: FC<{
   onClick?: () => void;
   isLoading: boolean;
-}> = ({ onClick, isLoading = false }) => (
+  text?: string;
+  icon?: React.ReactNode;
+}> = ({ onClick, isLoading = false, text = 'Save', icon }) => (
   <Button
-    startIcon={<SaveIcon />}
+    startIcon={icon ?? <SaveIcon />}
     loading={isLoading}
     type="submit"
     variant="contained"
     onClick={onClick}
   >
-    Save
+    {text}
   </Button>
 );

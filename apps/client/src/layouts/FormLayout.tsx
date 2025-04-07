@@ -56,11 +56,13 @@ export const FormBody: FC<{
   isSubmitting: boolean;
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
   onDelete?: () => void;
-}> = ({ children, onSubmit, onDelete, isSubmitting }) => (
+  buttonText?: string;
+  buttonIcon?: React.ReactNode;
+}> = ({ children, onSubmit, onDelete, isSubmitting, buttonIcon, buttonText }) => (
   <Form onSubmit={onSubmit}>
     <div>{children}</div>
     <ButtonContainer>
-      <SubmitButton isLoading={isSubmitting} />
+      <SubmitButton isLoading={isSubmitting} text={buttonText} icon={buttonIcon} />
       {!!onDelete && (
         <Button color="error" startIcon={<DeleteOutlineIcon />} onClick={onDelete}>
           Delete

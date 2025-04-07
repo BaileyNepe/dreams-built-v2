@@ -145,3 +145,16 @@ model Note {
 
     @@map("note")
 }
+
+model Contact {
+    id        String   @id @default(cuid())
+    name      String   @default("")
+    email     String   @default("")
+    phone     String   @default("")
+    message   String   @default("")
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+    deleted   Boolean  @default(false)
+
+    @@map("contact")
+}

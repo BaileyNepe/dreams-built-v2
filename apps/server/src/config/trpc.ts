@@ -3,9 +3,9 @@ import { checkJwt } from '@middleware/auth';
 import { initTRPC, TRPCError } from '@trpc/server';
 import { type CreateExpressContextOptions } from '@trpc/server/adapters/express';
 import { logWarning } from '@utils/logger';
-import { getOptionalUser, getUser } from 'api/user/service';
-
 import { upsertUser } from 'api/user/model';
+import { getOptionalUser, getUser } from 'api/user/service';
+import { LRUCache } from 'lru-cache';
 import superjson from 'superjson';
 import { ZodError } from 'zod';
 import { prisma } from './db';
@@ -56,7 +56,44 @@ export const trpc = initTRPC.context<TRPCContext>().create({
   }
 });
 
-export const publicProcedure = trpc.procedure;
+// Configure the LRU cache for rate limiting.
+// The cache stores an object with the request count and expiry for each IP.
+const rateLimitCache = new LRUCache<string, { count: number; expiry: number }>({
+  max: 5000, // Maximum number of IP entries to store
+  ttl: 60 * 1000 // Default time-to-live (60 seconds) in milliseconds
+});
+
+// Create the rate limiting middleware
+const rateLimitMiddleware = trpc.middleware(async ({ ctx, next }) => {
+  const ip = ctx.req.ip ?? 'unknown';
+
+  const now = Date.now();
+  const windowMs = 60 * 1000; // 1 minute window
+  const maxRequests = 10; // Maximum allowed requests per window
+
+  let entry = rateLimitCache.get(ip);
+
+  // Reset the entry if it doesn't exist or if the time window has expired
+  if (!entry || now > entry.expiry) {
+    entry = { count: 1, expiry: now + windowMs };
+  } else {
+    entry.count += 1;
+  }
+
+  // Update the cache with the current entry
+  rateLimitCache.set(ip, entry);
+
+  if (entry.count > maxRequests) {
+    throw new TRPCError({
+      code: 'TOO_MANY_REQUESTS',
+      message: 'Too many requests, please try again later.'
+    });
+  }
+
+  return next();
+});
+
+export const publicProcedure = trpc.procedure.use(rateLimitMiddleware);
 
 const authenticateUser = trpc.middleware(async ({ ctx, next }) => {
   const { req, res } = ctx;

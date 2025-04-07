@@ -114,3 +114,10 @@ export const updateUserSchema = z.object({
   lastName: z.string(),
   role: RoleSchema
 });
+
+export const ContactSchema = z.object({
+  name: z.string().min(1, 'Name is too short').max(50, 'Name is too long').trim(),
+  email: z.string().email('Invalid email address'),
+  phoneNumber: z.string().optional(),
+  message: z.string().min(5, 'Message should be at least 5 characters long')
+});

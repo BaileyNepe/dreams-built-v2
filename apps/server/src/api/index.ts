@@ -1,5 +1,6 @@
 import { trpc } from '@config/trpc';
 import { clientRouter } from './client/routes';
+import { contactRouter } from './contact/route';
 import { projectsRouter } from './project/routes';
 import { reportsRouter } from './report/route';
 import { scheduleRouter } from './schedule/routes';
@@ -12,7 +13,8 @@ export const apiRouter = trpc.router({
   projects: projectsRouter,
   timesheet: timesheetRouter,
   schedule: scheduleRouter,
-  reports: reportsRouter
+  reports: reportsRouter,
+  contact: contactRouter
 });
 
 export type ApiRouter = typeof apiRouter;

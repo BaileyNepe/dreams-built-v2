@@ -81,7 +81,7 @@ export const NavBar: FC<{
   return (
     <Container>
       <HeaderBox>
-        <Logo />
+        <Logo light />
       </HeaderBox>
       <Box flex="1" overflow="auto">
         <List>

@@ -27,7 +27,8 @@ const StyledContainer = styled(ToastContainer)`
 
   .Toastify__toast {
     min-height: 40px; // Set a smaller height
-    border-radius: ${(props) => props.theme.borderRadius}px; // Use theme's border radius
+    border-radius: ${(props) =>
+      props.theme.shape.borderRadius}px; // Use theme's border radius
   }
 
   // Apply color styles using the utility function
