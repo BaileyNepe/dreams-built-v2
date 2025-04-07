@@ -5,8 +5,13 @@ import styled from 'styled-components';
 import { bgBlur } from 'themes/css';
 
 const PageContainer = styled.div`
-  height: 100dvh;
+  height: 100%;
+  min-height: 100dvh;
   position: relative;
+
+  @media (max-width: 600px) {
+    min-height: calc(100dvh + 27rem);
+  }
 `;
 
 const BackgroundImage = styled.div`
@@ -20,6 +25,7 @@ const BackgroundImage = styled.div`
 
   background-size: cover;
   height: 100%;
+  min-height: 100dvh;
   position: absolute;
   width: 100%;
   z-index: -1;
@@ -27,9 +33,11 @@ const BackgroundImage = styled.div`
 
 /* Wrapper to ensure content is above the background */
 const ContentWrapper = styled.div`
-  padding-top: 6rem;
+  display: flex;
+  justify-content: center;
+  padding-top: 4.5rem;
   position: relative;
-  z-index: 1;
+  width: 100%;
 `;
 
 function RouteComponent() {

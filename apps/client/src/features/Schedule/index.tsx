@@ -1,5 +1,8 @@
-import { Box } from '@mui/material';
+import PrintRoundedIcon from '@mui/icons-material/PrintRounded';
+import { Box, IconButton } from '@mui/material';
 import { DateSelector } from 'components/DateSelector';
+import { PrintableContent } from 'components/PrintableContent';
+import { usePrint } from 'components/PrintableContent/hooks';
 import React, { type FC } from 'react';
 import styled from 'styled-components';
 import { ScheduleHeader } from './Header';
@@ -20,6 +23,7 @@ const JobPartCell = styled(Box)`
   border-bottom: 1px solid ${({ theme }) => theme.palette.grey[300]};
   border-right: 1px solid ${({ theme }) => theme.palette.grey[300]};
   display: flex;
+  font-weight: bold;
   padding: 0.5rem;
 `;
 
@@ -28,9 +32,16 @@ const Grid = styled.div`
   grid-template-columns: ${projectPartWidth} 1fr;
 `;
 
+const Header = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+`;
+
 /* Component */
 
 export const Schedule: FC = () => {
+  const { printRef, handlePrint } = usePrint<HTMLDivElement>({ isPrimaryContent: true });
   const {
     projectPartsWithSegments: jobPartsWithSegments,
     selectedDate,
@@ -41,14 +52,21 @@ export const Schedule: FC = () => {
 
   return (
     <Container>
-      <DateSelector
-        value={selectedDate}
-        defaultValue={selectedDate}
-        onChange={changeDate}
-        getNextPeriod={getNextWeek}
-        getPreviousPeriod={getPreviousWeek}
-      />
-      <div>
+      <Header>
+        <div />
+        <DateSelector
+          value={selectedDate}
+          defaultValue={selectedDate}
+          onChange={changeDate}
+          getNextPeriod={getNextWeek}
+          getPreviousPeriod={getPreviousWeek}
+        />
+        <IconButton onClick={handlePrint}>
+          <PrintRoundedIcon />
+        </IconButton>
+      </Header>
+
+      <PrintableContent orientation="landscape" ref={printRef}>
         <ScheduleHeader />
 
         <Grid>
@@ -59,7 +77,7 @@ export const Schedule: FC = () => {
             </React.Fragment>
           ))}
         </Grid>
-      </div>
+      </PrintableContent>
     </Container>
   );
 };

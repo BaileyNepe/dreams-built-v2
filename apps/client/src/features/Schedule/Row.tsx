@@ -16,6 +16,10 @@ const ScheduleRowContainer = styled(Box)`
   padding-top: ${taskBarSpacing};
   position: relative;
   user-select: none;
+
+  @media print {
+    padding-bottom: 0;
+  }
 `;
 
 const LaneContainer = styled(Box)`
@@ -30,6 +34,21 @@ const DragSkeletonBar = styled(TaskBar)`
   height: ${taskBarHeight};
   position: absolute;
   top: auto;
+`;
+
+const PrintableGridOverlay = styled.div<{ $cells: number }>`
+  height: 100%;
+  left: 0;
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  @media print {
+    /* Draw a vertical line (1px) on the right of each cell */
+    background-image: linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+    /* The grid repeats every cell width */
+    background-size: ${(props) => 100 / props.$cells}% 100%;
+  }
 `;
 
 /* Helper: convert a percentage (0-100) to a DateTime between start and end */
@@ -140,6 +159,7 @@ export const InteractiveScheduleRow = ({
     >
       {skeleton}
       <BlockDaysOverlay />
+      <PrintableGridOverlay $cells={datesToShow.length} />
       {laneNumbers.map((lane) => (
         <LaneContainer key={lane}>
           <ScheduleTask

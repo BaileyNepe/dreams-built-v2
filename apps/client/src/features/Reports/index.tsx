@@ -1,5 +1,5 @@
 import PrintRoundedIcon from '@mui/icons-material/PrintRounded';
-import { Skeleton, Tab, Tabs } from '@mui/material';
+import { IconButton, Skeleton, Tab, Tabs } from '@mui/material';
 import { DateSelector } from 'components/DateSelector';
 import { PrintableContent } from 'components/PrintableContent';
 import { usePrint } from 'components/PrintableContent/hooks';
@@ -47,32 +47,12 @@ const Actions = styled.div`
 `;
 
 export const Report: FC = () => {
-  // State for the week selection
   const [currentWeek, setCurrentWeek] = useState(getDate(getWeekStart()));
   const { printRef, handlePrint } = usePrint<HTMLDivElement>({ isPrimaryContent: true });
-  // State for selecting the active report type
+
   const [selectedReport, setSelectedReport] = useState<'timesheet' | 'project'>(
     'timesheet'
   );
-
-  const getNextWeek = () => {
-    setCurrentWeek((prev) => prev.plus({ weeks: 1 }));
-  };
-
-  const getPreviousWeek = () => {
-    setCurrentWeek((prev) => prev.minus({ weeks: 1 }));
-  };
-
-  const handleDateChange = (date: string) => {
-    setCurrentWeek(getDate(getWeekStart(date)));
-  };
-
-  const handleReportChange = (
-    _: React.SyntheticEvent,
-    newValue: 'timesheet' | 'project'
-  ) => {
-    setSelectedReport(newValue);
-  };
 
   return (
     <Container>
@@ -80,7 +60,9 @@ export const Report: FC = () => {
         <Actions>
           <Tabs
             value={selectedReport}
-            onChange={handleReportChange}
+            onChange={(_, newValue: 'timesheet' | 'project') =>
+              setSelectedReport(newValue)
+            }
             textColor="primary"
             indicatorColor="primary"
             centered
@@ -88,14 +70,16 @@ export const Report: FC = () => {
             <Tab label="Timesheet Report" value="timesheet" />
             <Tab label="Project Report" value="project" />
           </Tabs>
-          <PrintRoundedIcon onClick={handlePrint} sx={{ cursor: 'pointer' }} />
+          <IconButton onClick={handlePrint}>
+            <PrintRoundedIcon />
+          </IconButton>
         </Actions>
         <DateSelector
           value={currentWeek}
           defaultValue={currentWeek}
-          onChange={handleDateChange}
-          getNextPeriod={getNextWeek}
-          getPreviousPeriod={getPreviousWeek}
+          onChange={(date: string) => setCurrentWeek(getDate(getWeekStart(date)))}
+          getNextPeriod={() => setCurrentWeek((prev) => prev.plus({ weeks: 1 }))}
+          getPreviousPeriod={() => setCurrentWeek((prev) => prev.minus({ weeks: 1 }))}
         />
       </HeaderContainer>
 

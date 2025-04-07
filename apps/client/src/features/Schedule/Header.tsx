@@ -39,6 +39,12 @@ const DayCellContainer: FC<{
       {formatDate(day, 'ccc d LLL')}
       {hasPermissionToEdit && (
         <Checkbox
+          sx={{
+            // hide on print
+            '@media print': {
+              display: 'none'
+            }
+          }}
           size="small"
           checked={isBlocked}
           onChange={(e) =>

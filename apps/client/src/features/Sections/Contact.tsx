@@ -64,11 +64,19 @@ export const ContactForm: FC = () => {
           }
         } catch {}
       })}
-      isSubmitting={methods.formState.isSubmitting}
+      isSubmitting={methods.formState.isSubmitting || mutate.isPending}
       buttonIcon={<SendRoundedIcon />}
       buttonText="Send Message"
     >
       <ContactFormContainer>
+        <Typography variant="h3" fontWeight={700} gutterBottom color="grey.700">
+          Drop Us A Line
+        </Typography>
+        <Typography variant="caption" sx={{ mb: 2 }}>
+          We would love to hear from you! Please fill out the form below and we will get
+          back to you as soon as possible.
+        </Typography>
+
         <Stack spacing={0}>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
             <TextFieldRHF name="name" {...methods} />
@@ -82,124 +90,124 @@ export const ContactForm: FC = () => {
   );
 };
 
-// --------------------------
-// Styled layout components
-// --------------------------
 const StyledContainer = styled.div`
-  margin: 0 auto;
-
-  @media (min-width: 768px) {
-    padding: 4rem 1rem 7rem;
-  }
-  max-width: 1000px;
-  padding: 5rem 1rem 10rem;
-`;
-
-const ContactContent = styled.div`
   background-color: ${({ theme }) => theme.palette.background.default};
   border-radius: ${({ theme }) => theme.shape.borderRadius}px;
-  box-shadow: ${({ theme }) => theme.customShadows.z8};
-  display: flex;
-  flex-direction: column;
+  box-shadow: ${({ theme }) => theme.customShadows.heavy};
+  display: grid;
   gap: 2rem;
+  grid-template-areas: 'heading' 'details' 'form';
+  grid-template-columns: 1fr;
+  margin: 1rem;
+  max-width: 1000px;
   padding: 2rem;
-  @media (min-width: 768px) {
-    flex-direction: row;
-    gap: 3rem;
+
+  @media (min-width: 720px) {
+    grid-template-columns: 0.6fr 1fr;
+    grid-template-rows: max-content auto;
+
+    grid-template-areas:
+      'heading heading'
+      'details form';
   }
 `;
 
 const ContactDetails = styled.div`
-  text-align: center;
-  width: 100%;
-  @media (min-width: 768px) {
-    width: 50%;
-    text-align: left;
-  }
+  grid-area: details;
 `;
 
 const ContactFormWrapper = styled.div`
-  width: 100%;
-  @media (min-width: 768px) {
-    width: 65%;
-  }
+  grid-area: form;
 `;
 
 const ContactHeading = styled(Typography)`
-  && {
-    margin-bottom: ${({ theme }) => theme.spacing(5)};
+  grid-area: heading;
+
+  @media (min-width: 720px) {
     text-align: center;
-    @media (min-width: 768px) {
-      text-align: left;
+  }
+`;
+
+const StyledDivider = styled(Divider)`
+  && {
+    border-style: dashed;
+    margin: 0 0 2rem;
+    width: 100%;
+    @media (min-width: 720px) {
+      display: none;
     }
   }
 `;
 
-// --------------------------
-// Contact Section
-// --------------------------
 export default function ContactSection() {
   return (
     <StyledContainer>
-      <ContactContent>
-        <ContactDetails>
-          <ContactHeading variant="h1">Get In Touch</ContactHeading>
-          <Stack
-            spacing={3}
-            alignItems="center"
-            sx={{ alignItems: { md: 'flex-start' } }}
-          >
-            <Stack spacing={1}>
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <MarkunreadOutlinedIcon sx={{ fontSize: 24 }} />
-                <Typography variant="subtitle2">Email</Typography>
-              </Stack>
-              <Link
-                color="inherit"
-                variant="body2"
-                sx={{ pl: 4 }}
-                href="mailto:admin@dreamsbuilt.co.nz"
-              >
-                admin@dreamsbuilt.co.nz
-              </Link>
+      <ContactHeading variant="h1" fontWeight={700} gutterBottom>
+        Get In Touch
+      </ContactHeading>
+      <ContactDetails>
+        <Typography
+          display={{ xs: 'none', sm: 'block' }}
+          variant="h2"
+          fontWeight={700}
+          gutterBottom
+          sx={{ mb: 4 }}
+          color="grey.700"
+        >
+          Contact Us
+        </Typography>
+        <Stack spacing={3} alignItems="center" sx={{ alignItems: { md: 'flex-start' } }}>
+          <Stack spacing={1}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <MarkunreadOutlinedIcon sx={{ fontSize: 24 }} />
+              <Typography variant="subtitle2">Email</Typography>
             </Stack>
-
-            <Stack spacing={1}>
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <SmartphoneOutlinedIcon sx={{ fontSize: 24 }} />
-                <Typography variant="subtitle2">Phone</Typography>
-              </Stack>
-              <Typography variant="body2" sx={{ pl: 4 }}>
-                (021) 412-384
-              </Typography>
-            </Stack>
-
-            <Stack spacing={1}>
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <FmdGoodOutlinedIcon sx={{ fontSize: 24 }} />
-                <Typography variant="subtitle2">Address</Typography>
-              </Stack>
-              <Typography variant="body2" sx={{ pl: 4 }}>
-                Waikato, New Zealand
-              </Typography>
-            </Stack>
-
-            <Divider sx={{ borderStyle: 'dashed', width: '100%', my: 2 }} />
-
-            <Stack spacing={1} alignItems="center">
-              <Typography variant="overline" fontWeight={700}>
-                Follow Us
-              </Typography>
-              <Socials />
-            </Stack>
+            <Link
+              color="inherit"
+              variant="body2"
+              sx={{ pl: 4 }}
+              href="mailto:admin@dreamsbuilt.co.nz"
+            >
+              admin@dreamsbuilt.co.nz
+            </Link>
           </Stack>
-        </ContactDetails>
-        <ContactFormWrapper>
-          <ReCaptchaProvider>
-            <ContactForm />
-          </ReCaptchaProvider>
-        </ContactFormWrapper>
-      </ContactContent>
+
+          <Stack spacing={1}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <SmartphoneOutlinedIcon sx={{ fontSize: 24 }} />
+              <Typography variant="subtitle2">Phone</Typography>
+            </Stack>
+            <Typography variant="body2" sx={{ pl: 4 }}>
+              (021) 412-384
+            </Typography>
+          </Stack>
+
+          <Stack spacing={1}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <FmdGoodOutlinedIcon sx={{ fontSize: 24 }} />
+              <Typography variant="subtitle2">Address</Typography>
+            </Stack>
+            <Typography variant="body2" sx={{ pl: 4 }}>
+              Waikato, New Zealand
+            </Typography>
+          </Stack>
+
+          <Divider sx={{ borderStyle: 'dashed', width: '100%', my: 2 }} />
+
+          <Stack spacing={1} alignItems="center">
+            <Typography variant="overline" fontWeight={700}>
+              Follow Us
+            </Typography>
+            <Socials />
+          </Stack>
+        </Stack>
+      </ContactDetails>
+      <ContactFormWrapper>
+        <StyledDivider />
+        <ReCaptchaProvider>
+          <ContactForm />
+        </ReCaptchaProvider>
+      </ContactFormWrapper>
     </StyledContainer>
   );
 }

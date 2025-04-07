@@ -7,8 +7,7 @@ import { useAuthOptionalUser } from 'utils/contexts/AuthProvider';
 import { useIsCoverPage } from 'utils/hooks/useIsCoverPage';
 
 const Layout = styled.div`
-  display: flex;
-  flex-direction: column;
+  display: grid;
   min-height: 100vh;
 `;
 
