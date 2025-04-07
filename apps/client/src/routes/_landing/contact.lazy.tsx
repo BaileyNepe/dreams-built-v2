@@ -38,6 +38,10 @@ const ContentWrapper = styled.div`
   padding-top: 4.5rem;
   position: relative;
   width: 100%;
+
+  @media (min-width: 900px) {
+    padding-top: 5.5rem;
+  }
 `;
 
 function RouteComponent() {

@@ -43,18 +43,17 @@ export const routes: {
     icon: ServerIcon,
     requiredPermission: authz.clients_read
   },
-
-  {
-    name: 'Schedule',
-    to: paths.schedule,
-    icon: CalendarIcon,
-    requiredPermission: authz.jobs_read
-  },
   {
     name: 'Employees',
     to: paths.employees,
     icon: UsersIcon,
     requiredPermission: authz.roles_view_employee
+  },
+  {
+    name: 'Schedule',
+    to: paths.schedule,
+    icon: CalendarIcon,
+    requiredPermission: authz.jobs_read
   },
   {
     name: 'Reports',
