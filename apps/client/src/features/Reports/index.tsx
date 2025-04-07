@@ -1,9 +1,12 @@
+import PrintRoundedIcon from '@mui/icons-material/PrintRounded';
 import { Skeleton, Tab, Tabs } from '@mui/material';
 import { DateSelector } from 'components/DateSelector';
+import { PrintableContent } from 'components/PrintableContent';
+import { usePrint } from 'components/PrintableContent/hooks';
 import { Suspense, useState, type FC } from 'react';
 import styled from 'styled-components';
 import { formatDate, getDate, getWeekStart } from 'utils/date';
-import { ProjectReport } from './ProjectReport'; // Make sure this component exists
+import { ProjectReport } from './ProjectReport';
 import { TimesheetReport } from './TimesheetReport';
 
 const Container = styled.div`
@@ -33,11 +36,20 @@ const HeaderContainer = styled.div`
 
 const ReportContainer = styled.div`
   overflow: auto;
+  padding: 0 1rem 1rem 1rem;
+`;
+
+const Actions = styled.div`
+  align-items: center;
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
 `;
 
 export const Report: FC = () => {
   // State for the week selection
   const [currentWeek, setCurrentWeek] = useState(getDate(getWeekStart()));
+  const { printRef, handlePrint } = usePrint<HTMLDivElement>({ isPrimaryContent: true });
   // State for selecting the active report type
   const [selectedReport, setSelectedReport] = useState<'timesheet' | 'project'>(
     'timesheet'
@@ -65,16 +77,19 @@ export const Report: FC = () => {
   return (
     <Container>
       <HeaderContainer>
-        <Tabs
-          value={selectedReport}
-          onChange={handleReportChange}
-          textColor="primary"
-          indicatorColor="primary"
-          centered
-        >
-          <Tab label="Timesheet Report" value="timesheet" />
-          <Tab label="Project Report" value="project" />
-        </Tabs>
+        <Actions>
+          <Tabs
+            value={selectedReport}
+            onChange={handleReportChange}
+            textColor="primary"
+            indicatorColor="primary"
+            centered
+          >
+            <Tab label="Timesheet Report" value="timesheet" />
+            <Tab label="Project Report" value="project" />
+          </Tabs>
+          <PrintRoundedIcon onClick={handlePrint} sx={{ cursor: 'pointer' }} />
+        </Actions>
         <DateSelector
           value={currentWeek}
           defaultValue={currentWeek}
@@ -90,11 +105,13 @@ export const Report: FC = () => {
         )}
       >
         <ReportContainer>
-          {selectedReport === 'timesheet' ? (
-            <TimesheetReport weekStart={formatDate(currentWeek)} />
-          ) : (
-            <ProjectReport weekStart={formatDate(currentWeek)} />
-          )}
+          <PrintableContent ref={printRef}>
+            {selectedReport === 'timesheet' ? (
+              <TimesheetReport weekStart={formatDate(currentWeek)} />
+            ) : (
+              <ProjectReport weekStart={formatDate(currentWeek)} />
+            )}
+          </PrintableContent>
         </ReportContainer>
       </Suspense>
     </Container>

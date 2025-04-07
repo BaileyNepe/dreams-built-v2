@@ -1,4 +1,4 @@
-import { forwardRef, ReactNode } from 'react';
+import { forwardRef, type ReactNode } from 'react';
 import { createGlobalStyle, styled } from 'styled-components';
 
 type Orientation = 'portrait' | 'landscape';
@@ -28,7 +28,7 @@ const PrintableOrientation = createGlobalStyle<{
       print-color-adjust: exact;
       position: relative;
     }
-    #root {
+    #app {
       display: none;
     }
     #print {
@@ -75,9 +75,9 @@ export const PrintableContent = forwardRef<
       isHidden = false,
       margin,
       verticalMargin,
-      horizontalMargin,
+      horizontalMargin
     },
-    ref,
+    ref
   ) => (
     <div data-testid="printable-content" ref={ref}>
       <PrintableOrientation
@@ -88,7 +88,7 @@ export const PrintableContent = forwardRef<
       />
       <Container $isHidden={isHidden}>{children}</Container>
     </div>
-  ),
+  )
 );
 
 PrintableContent.displayName = 'PrintableContent';

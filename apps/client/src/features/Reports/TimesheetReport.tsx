@@ -61,15 +61,19 @@ export const TimesheetReport: FC<{ weekStart: string }> = ({ weekStart }) => {
           <Divider
             sx={{
               borderColor: theme.palette.grey[300],
-              my: 2
+              my: 2,
+
+              '@media print': {
+                display: 'none'
+              }
             }}
           />
         </>
       )}
 
-      {users.map((user) => (
+      {users.map((user, index) => (
         <Fragment key={user.userId}>
-          <ReportBlock>
+          <ReportBlock $isPrinted $isLast={index === users.length - 1}>
             <Typography variant="h5">{user.userName}</Typography>
             <Typography variant="caption" sx={{ mb: 1, display: 'block' }}>
               {formatDate(weekStartDate, 'dd/MM/yyyy')} -{' '}
@@ -138,7 +142,10 @@ export const TimesheetReport: FC<{ weekStart: string }> = ({ weekStart }) => {
           <Divider
             sx={{
               borderColor: theme.palette.grey[300],
-              my: 2
+              my: 2,
+              '@media print': {
+                display: 'none'
+              }
             }}
           />
         </Fragment>

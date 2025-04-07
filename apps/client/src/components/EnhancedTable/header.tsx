@@ -36,6 +36,7 @@ export const EnhancedTableHead: FC<{
           const label = headCell.label ?? sentenceCase(headCell.id);
           return (
             <CondensedTableCell
+              $isHiddenOnPrint={headCell.id === 'actions'}
               key={headCell.id}
               $size={size}
               width={headCell.width}

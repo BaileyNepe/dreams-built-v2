@@ -14,6 +14,7 @@ const StyledRow = styled(TableRow)<{ $hasOnClick: boolean }>`
 
 export const CondensedTableCell = styled(TableCell)<{
   $size?: 'x-small';
+  $isHiddenOnPrint?: boolean;
 }>`
   && {
     ${({ $size }) =>
@@ -22,6 +23,14 @@ export const CondensedTableCell = styled(TableCell)<{
             padding: 0 0.2rem;
           `
         : ''}
+
+    ${({ $isHiddenOnPrint }) =>
+      $isHiddenOnPrint &&
+      css`
+        @media print {
+          display: none;
+        }
+      `}
   }
 `;
 
@@ -129,6 +138,7 @@ export const EnhancedBody: FC<{
                   return (
                     <CondensedTableCell
                       key={`${row.id}_${key}`}
+                      $isHiddenOnPrint={key === 'actions'}
                       component="td"
                       id={labelId}
                       $size={size}

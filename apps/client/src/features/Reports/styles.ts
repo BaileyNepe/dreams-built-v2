@@ -1,9 +1,30 @@
 // ReportStyles.ts
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 
-export const ReportBlock = styled.div`
+export const ReportBlock = styled.div<{ $isPrinted?: boolean; $isLast?: boolean }>`
   margin-bottom: 1rem;
   padding: 1rem;
+
+  ${({ $isPrinted, $isLast }) =>
+    $isPrinted
+      ? css`
+          @media print {
+            ${!$isLast &&
+            css`
+              break-after: always;
+              page-break-after: always;
+            `}
+            &:last-child {
+              break-after: auto;
+              page-break-after: auto;
+            }
+          }
+        `
+      : css`
+          @media print {
+            display: none;
+          }
+        `}
 `;
 
 export const TotalRow = styled.div`
