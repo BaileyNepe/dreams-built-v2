@@ -12,13 +12,11 @@ export const timesheetRouter = trpc.router({
   get: protectedProcedure([authz.timesheet])
     .input(
       z.object({
-        userId: z.string().cuid(),
+        userId: z.string().cuid2(),
         weekStart: shortDateString
       })
     )
     .query(async ({ ctx, input }) => {
-      // Check if the user is trying to view another user's timesheet
-      // Note: they must have the required permissions to view other users timesheets
       if (
         input.userId !== ctx.user.id &&
         !ctx.user.permissions.includes(authz.timesheet_view_all)

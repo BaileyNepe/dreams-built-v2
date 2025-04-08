@@ -4,8 +4,9 @@ import { createLazyFileRoute, useNavigate } from '@tanstack/react-router';
 import { useUsers } from 'api/user';
 import { UserAvatar } from 'components/Avatar';
 import { EnhancedTable } from 'components/EnhancedTable';
+import { RoleFilter } from 'components/EnhancedTable/components/RoleFilter';
 import PageLayout from 'layouts/PageLayout';
-import { type FC } from 'react';
+import { type FC, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { formatDate } from 'utils/date';
 import { useFilteredPaginatedList } from 'utils/hooks/useStaticPagination';
@@ -32,7 +33,6 @@ const Tag = styled.div<{ $color: ReturnType<typeof getColor> }>`
   border-radius: ${({ theme }) => theme.shape.borderRadius * 2}px;
   color: ${({ theme, $color }) => theme.palette[$color].main};
   font-size: 0.6rem;
-  font-weight: 500;
   font-weight: bold;
   padding: 0 0.5rem;
   text-transform: capitalize;
@@ -41,9 +41,14 @@ const Tag = styled.div<{ $color: ReturnType<typeof getColor> }>`
 
 const Page: FC = () => {
   const navigate = useNavigate();
-  const users = useUsers({
-    showAll: true
-  });
+  const users = useUsers({ showAll: true });
+
+  // For the role filter, default to showing only "EMPLOYEE" results.
+  // Change this to include all roles if desired (e.g. ['ADMIN','MANAGER','EMPLOYEE','USER'])
+  const [roleFilter, setRoleFilter] = useState<Role[]>(['EMPLOYEE']);
+  const [isFilterActive, setIsFilterActive] = useState(true);
+
+  // Extend the filter function to include role filtering.
 
   const {
     query,
@@ -55,14 +60,37 @@ const Page: FC = () => {
     handleOrderChange
   } = useFilteredPaginatedList({
     initialList: users.data,
-    filterFunction: (item, q) =>
-      item.firstName.toLowerCase().includes(q.toLowerCase()) ||
-      item.lastName.toLowerCase().includes(q.toLowerCase()) ||
-      item.email.toLowerCase().includes(q.toLowerCase()) ||
-      item.role.toLowerCase().includes(q.toLowerCase()),
+    filterFunction: (user, q) =>
+      (q === '' ||
+        user.firstName.toLowerCase().includes(q.toLowerCase()) ||
+        user.lastName.toLowerCase().includes(q.toLowerCase()) ||
+        user.email.toLowerCase().includes(q.toLowerCase()) ||
+        user.role.toLowerCase().includes(q.toLowerCase())) &&
+      (!isFilterActive || roleFilter.length === 0 || roleFilter.includes(user.role)),
     defaultSortBy: 'lastActive',
     sort: 'desc'
   });
+
+  // Build the toolbar filters.
+  const toolbarFilters = useMemo(
+    () => [
+      {
+        label: 'Role',
+        component: (
+          <RoleFilter
+            value={roleFilter}
+            onChange={(value) => setRoleFilter(value as Role[])}
+          />
+        ),
+        active: isFilterActive,
+        toggleActive: () => {
+          setIsFilterActive((prev) => !prev);
+          setRoleFilter((prev) => (prev.length === 0 ? ['EMPLOYEE'] : []));
+        }
+      }
+    ],
+    [isFilterActive, roleFilter]
+  );
 
   return (
     <PageLayout title="Employees" description="Manage your employees">
@@ -70,6 +98,7 @@ const Page: FC = () => {
         headers={[
           { id: 'user' },
           { id: 'email' },
+          { id: 'userId' },
           { id: 'hourlyRate' },
           { id: 'role' },
           { id: 'lastActive' },
@@ -78,6 +107,7 @@ const Page: FC = () => {
         rows={
           paginatedList.map((user) => ({
             id: user.id,
+            userId: user.authId,
             user: (
               <UserAvatar
                 image={user.image}
@@ -90,7 +120,6 @@ const Page: FC = () => {
                 {user.role}
               </Tag>
             ),
-
             lastActive: formatDate(user.lastActive, 'HH:mm - d/MM/yyyy'),
             email: user.email,
             actions: [
@@ -98,10 +127,7 @@ const Page: FC = () => {
                 icon: <EditRoundedIcon />,
                 label: 'Edit',
                 onClick: () =>
-                  navigate({
-                    to: paths.employeeEdit,
-                    params: { employeeId: user.id }
-                  })
+                  navigate({ to: paths.employeeEdit, params: { employeeId: user.id } })
               }
             ]
           })) ?? []
@@ -111,7 +137,8 @@ const Page: FC = () => {
             placeholder: 'Search employees...',
             onChange: handleSearchChange,
             value: query
-          }
+          },
+          filters: toolbarFilters
         }}
         pagination={{
           page: pagination.page,

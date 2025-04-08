@@ -8,10 +8,15 @@ export const useTimesheetEntries = ({
   weekStart: string;
   userId: string;
 }) =>
-  api.timesheet.get.useQuery({
-    weekStart,
-    userId
-  });
+  api.timesheet.get.useQuery(
+    {
+      weekStart,
+      userId
+    },
+    {
+      throwOnError: true
+    }
+  );
 
 export const useTimesheetMutation = ({
   userId,

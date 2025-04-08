@@ -10,7 +10,7 @@ import {
   Tooltip
 } from '@mui/material';
 import { Search, type SearchProps } from 'components/Search';
-import { useState, type FC } from 'react';
+import { useState, type FC, type JSX } from 'react';
 import styled from 'styled-components';
 
 export type ToolbarProps = {

@@ -23,8 +23,8 @@ export const DateSelector: FC<{
   onChange: (value: string) => void;
   minDate?: DateTime;
   maxDate?: DateTime;
-  getPreviousPeriod: () => void;
-  getNextPeriod: () => void;
+  getPreviousPeriod?: () => void;
+  getNextPeriod?: () => void;
 }> = ({
   value,
   defaultValue,
@@ -35,7 +35,7 @@ export const DateSelector: FC<{
   getPreviousPeriod
 }) => (
   <DateSelectors>
-    <IconButton onClick={getPreviousPeriod}>
+    <IconButton onClick={getPreviousPeriod} disabled={!getPreviousPeriod}>
       <ChevronLeftIcon />
     </IconButton>
     <BasicDatePicker
@@ -45,7 +45,7 @@ export const DateSelector: FC<{
       minDate={minDate}
       maxDate={maxDate}
     />
-    <IconButton onClick={getNextPeriod}>
+    <IconButton onClick={getNextPeriod} disabled={!getNextPeriod}>
       <ChevronRightIcon />
     </IconButton>
   </DateSelectors>

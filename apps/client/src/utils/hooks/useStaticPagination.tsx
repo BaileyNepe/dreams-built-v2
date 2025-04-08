@@ -12,7 +12,7 @@ const parseDateValue = (val: unknown): number => {
 export const useFilteredPaginatedList = <T,>({
   initialList = [],
   filterFunction,
-  initialPerPage = 25,
+  initialPerPage = 50,
   defaultSortBy,
   sortDisabled = false,
   sort = 'asc'
@@ -42,9 +42,7 @@ export const useFilteredPaginatedList = <T,>({
   });
 
   const sortedAndFilteredList = useMemo(() => {
-    const filtered = query
-      ? initialList.filter((item) => filterFunction(item, query))
-      : initialList;
+    const filtered = initialList.filter((item) => filterFunction(item, query));
 
     if (order.sortBy && !sortDisabled) {
       return filtered
@@ -85,7 +83,8 @@ export const useFilteredPaginatedList = <T,>({
     setPagination({ ...pagination, page: 1 }); // Reset to first page on search
   };
 
-  const handlePageChange = (page: number) => setPagination((prev) => ({ ...prev, page }));
+  const handlePageChange = (page: number) =>
+    setPagination((prev) => ({ ...prev, page: page + 1 }));
   const handlePerPageChange = (perPage: number) => setPagination({ page: 1, perPage });
   const handleOrderChange = ({ sort: s, sortBy }: Sorting) =>
     setOrder({ sort: s, sortBy });

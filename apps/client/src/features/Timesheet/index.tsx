@@ -1,6 +1,6 @@
 import { authz } from '@dreams-built/shared/src/auth/permissions';
 import { Container } from '@mui/material';
-import { BasicDatePicker } from 'components/DatePicker';
+import { DateSelector } from 'components/DateSelector';
 import { SubmitButton } from 'components/SubmitButton';
 import styled from 'styled-components';
 import { useAuth } from 'utils/contexts/AuthProvider';
@@ -17,12 +17,8 @@ const Form = styled.form`
 
 const HeaderContainer = styled.div`
   display: grid;
-
   gap: 1rem;
-
-  /* For desktop, switch to a grid layout with 3 columns */
   @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
-    display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
     gap: 1rem;
@@ -53,7 +49,6 @@ const RightItem = styled.div`
 const FooterContainer = styled.div`
   display: flex;
   flex-direction: column;
-
   @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     flex-direction: row;
     justify-content: flex-end;
@@ -69,16 +64,41 @@ export const Timesheet = () => {
 
   const canEditOtherUsers = permissions?.includes(authz.timesheet_view_all);
 
+  // Compute our current week date using getDate.
+  // Assuming getDate returns a Luxon DateTime.
+  const currentWeekDate = getDate(weekStart);
+  const nextWeekDate = currentWeekDate.plus({ weeks: 1 });
+  const previousWeekDate = currentWeekDate.minus({ weeks: 1 });
+
+  // Get minimum and maximum allowed dates.
+  // We assume getDate returns a DateTime and getEndOfWeek returns a DateTime as well.
+  const minSelectableDate = getDate().minus({ months: 6 });
+  const maxSelectableDate = getEndOfWeek();
+
+  // Compare using toMillis() so that we're comparing numbers.
+  const getNextPeriod =
+    nextWeekDate.toMillis() > maxSelectableDate.toMillis()
+      ? undefined
+      : () => changeDate(nextWeekDate.toFormat('yyyy-MM-dd'));
+
+  const getPreviousPeriod =
+    previousWeekDate.toMillis() < minSelectableDate.toMillis()
+      ? undefined
+      : () => changeDate(previousWeekDate.toFormat('yyyy-MM-dd'));
+
   return (
     <Container>
       <Form onSubmit={handleSubmit}>
         <HeaderContainer>
           <LeftItem>
-            <BasicDatePicker
-              defaultValue={getDate(weekStart)}
+            <DateSelector
+              value={currentWeekDate}
+              defaultValue={currentWeekDate}
               onChange={changeDate}
-              maxDate={getEndOfWeek()}
-              minDate={getDate().minus({ months: 6 })}
+              getNextPeriod={getNextPeriod}
+              getPreviousPeriod={getPreviousPeriod}
+              minDate={minSelectableDate}
+              maxDate={maxSelectableDate}
             />
           </LeftItem>
           {canEditOtherUsers ? (
@@ -86,7 +106,6 @@ export const Timesheet = () => {
               <UserSelect value={userId} onChange={updateUser} />
             </CenterItem>
           ) : (
-            // User to keep the layout consistent
             <CenterItem />
           )}
           <RightItem>

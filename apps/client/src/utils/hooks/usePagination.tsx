@@ -16,7 +16,7 @@ export const usePagination = () => {
   };
 
   const handleSearchChange = (newQuery: string) => {
-    navigate({ search: (prev) => ({ ...prev, query: newQuery }) });
+    navigate({ search: (prev) => ({ ...prev, query: newQuery, page: 1 }) });
   };
 
   return {
