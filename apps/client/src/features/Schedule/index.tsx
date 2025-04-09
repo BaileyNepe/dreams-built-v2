@@ -41,14 +41,18 @@ const Header = styled.div`
 /* Component */
 
 export const Schedule: FC = () => {
-  const { printRef, handlePrint } = usePrint<HTMLDivElement>({ isPrimaryContent: true });
   const {
-    projectPartsWithSegments: jobPartsWithSegments,
+    projectPartsWithSegments,
+    toggleBlockedDaysVisibility,
     selectedDate,
     changeDate,
     getNextWeek,
     getPreviousWeek
   } = useScheduler();
+  const { printRef, handlePrint } = usePrint<HTMLDivElement>({
+    isPrimaryContent: true,
+    onAfterPrint: toggleBlockedDaysVisibility
+  });
 
   return (
     <Container>
@@ -61,16 +65,24 @@ export const Schedule: FC = () => {
           getNextPeriod={getNextWeek}
           getPreviousPeriod={getPreviousWeek}
         />
-        <IconButton onClick={handlePrint}>
+        <IconButton
+          onClick={() => {
+            toggleBlockedDaysVisibility();
+            // Delay the print to allow the toggle to take effect on the DOM
+            setTimeout(() => {
+              handlePrint();
+            }, 0);
+          }}
+        >
           <PrintRoundedIcon />
         </IconButton>
       </Header>
 
-      <PrintableContent orientation="landscape" ref={printRef} margin={0}>
+      <PrintableContent orientation="landscape" ref={printRef}>
         <ScheduleHeader />
 
         <Grid>
-          {jobPartsWithSegments.map((jp) => (
+          {projectPartsWithSegments.map((jp) => (
             <React.Fragment key={jp.id}>
               <JobPartCell>{jp.name}</JobPartCell>
               <InteractiveScheduleRow projectParts={jp} />
