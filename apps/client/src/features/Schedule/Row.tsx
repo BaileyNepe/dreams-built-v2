@@ -9,31 +9,34 @@ import { TaskBar } from './components/styles';
 import { type ProjectPart, useScheduler } from './components/useSchedule';
 import { ScheduleTask } from './Task';
 
+const LaneContainer = styled(Box)<{ columns: number }>`
+  display: grid;
+  gap: 0.2rem;
+  grid-template-columns: repeat(${({ columns }) => columns}, 1fr);
+  margin-bottom: ${taskBarSpacing};
+  min-height: ${taskBarHeight};
+  position: relative;
+`;
+
+const DragSkeletonBar = styled(TaskBar)`
+  border: 1px dashed ${({ theme }) => theme.palette.primary.main};
+  bottom: ${taskBarSpacing};
+  height: ${taskBarHeight};
+  opacity: 0.5;
+  pointer-events: none;
+  position: absolute;
+`;
+
 const ScheduleRowContainer = styled(Box)`
   border-bottom: 1px solid ${({ theme }) => theme.palette.grey[300]};
   cursor: pointer;
-  padding-bottom: calc(${taskBarHeight} + ${taskBarSpacing});
-  padding-top: ${taskBarSpacing};
+  padding: ${taskBarSpacing} 0 calc(${taskBarHeight} + ${taskBarSpacing});
   position: relative;
   user-select: none;
 
   @media print {
     padding-bottom: 0;
   }
-`;
-
-const LaneContainer = styled(Box)`
-  margin-bottom: ${taskBarSpacing};
-  min-height: 1.7rem;
-  position: relative;
-`;
-
-/* A helper to position the drag skeleton overlay at the bottom */
-const DragSkeletonBar = styled(TaskBar)`
-  bottom: ${taskBarSpacing};
-  height: ${taskBarHeight};
-  position: absolute;
-  top: auto;
 `;
 
 const PrintableGridOverlay = styled.div<{ $cells: number }>`
@@ -67,7 +70,6 @@ export const InteractiveScheduleRow = ({
   const [dragStart, setDragStart] = useState<number | null>(null);
   const [dragEnd, setDragEnd] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
   const [range, setRange] = useState<{ start: DateTime; end: DateTime } | null>(null);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
@@ -108,37 +110,39 @@ export const InteractiveScheduleRow = ({
     setDragEnd(null);
   };
 
-  // Render the skeleton overlay for drag–to–create new task.
-  // It is aligned with the schedule columns and positioned at the bottom.
   let skeleton = null;
+
   if (dragStart !== null && dragEnd !== null && containerRef.current) {
     const containerWidth = containerRef.current.getBoundingClientRect().width;
     const startPct = (Math.min(dragStart, dragEnd) / containerWidth) * 100;
     const endPct = (Math.max(dragStart, dragEnd) / containerWidth) * 100;
     const rangeStart = getDateFromPercentage(startPct, startOfWeek, endOfWeek);
     const rangeEnd = getDateFromPercentage(endPct, startOfWeek, endOfWeek);
+
     const firstIndex = datesToShow.findIndex(
-      (date) => date.startOf('day').toMillis() >= rangeStart.startOf('day').toMillis()
+      (date) => date.startOf('day') >= rangeStart.startOf('day')
     );
-    const lastIndexReversed = datesToShow
-      .slice()
-      .reverse()
-      .findIndex(
-        (date) => date.startOf('day').toMillis() <= rangeEnd.startOf('day').toMillis()
-      );
-    const adjustedLastIndex =
-      lastIndexReversed === -1
-        ? datesToShow.length - 1
-        : datesToShow.length - 1 - lastIndexReversed;
-    if (firstIndex !== -1 && adjustedLastIndex !== -1) {
+
+    const lastIndex = datesToShow.findLastIndex(
+      (date) => date.startOf('day') <= rangeEnd.startOf('day')
+    );
+
+    if (firstIndex !== -1 && lastIndex !== -1) {
       const cellWidthPercent = 100 / datesToShow.length;
       const leftPct = `${firstIndex * cellWidthPercent}%`;
-      const widthPct = `${(adjustedLastIndex - firstIndex + 1) * cellWidthPercent}%`;
-      skeleton = <DragSkeletonBar $left={leftPct} $width={widthPct} />;
+      const widthPct = `${(lastIndex - firstIndex + 1) * cellWidthPercent}%`;
+
+      skeleton = (
+        <DragSkeletonBar
+          style={{
+            left: leftPct,
+            width: widthPct
+          }}
+        />
+      );
     }
   }
 
-  // Group tasks by lane based on their original lane value
   const tasksByLaneObj = projectParts.tasks.reduce(
     (acc, task) => {
       (acc[task.lane] = acc[task.lane] || []).push(task);
@@ -161,7 +165,7 @@ export const InteractiveScheduleRow = ({
       <BlockDaysOverlay />
       <PrintableGridOverlay $cells={datesToShow.length} />
       {laneNumbers.map((lane) => (
-        <LaneContainer key={lane}>
+        <LaneContainer key={lane} columns={datesToShow.length}>
           <ScheduleTask
             tasks={tasksByLaneObj[lane]}
             onTaskModalChange={setIsTaskModalOpen}

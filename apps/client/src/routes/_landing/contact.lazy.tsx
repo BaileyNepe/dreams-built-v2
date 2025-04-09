@@ -40,7 +40,7 @@ const ContentWrapper = styled.div`
   width: 100%;
 
   @media (min-width: 900px) {
-    padding-top: 5.5rem;
+    padding-top: 7.5rem;
   }
 `;
 

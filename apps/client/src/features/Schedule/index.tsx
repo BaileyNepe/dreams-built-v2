@@ -66,7 +66,7 @@ export const Schedule: FC = () => {
         </IconButton>
       </Header>
 
-      <PrintableContent orientation="landscape" ref={printRef}>
+      <PrintableContent orientation="landscape" ref={printRef} margin={0}>
         <ScheduleHeader />
 
         <Grid>

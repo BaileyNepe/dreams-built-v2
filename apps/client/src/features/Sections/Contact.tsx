@@ -96,7 +96,7 @@ const StyledContainer = styled.div`
   box-shadow: ${({ theme }) => theme.customShadows.heavy};
   display: grid;
   gap: 2rem;
-  grid-template-areas: 'heading' 'details' 'form';
+  grid-template-areas: 'details' 'form';
   grid-template-columns: 1fr;
   margin: 1rem;
   max-width: 1000px;
@@ -104,11 +104,7 @@ const StyledContainer = styled.div`
 
   @media (min-width: 720px) {
     grid-template-columns: 0.6fr 1fr;
-    grid-template-rows: max-content auto;
-
-    grid-template-areas:
-      'heading heading'
-      'details form';
+    grid-template-areas: 'details form';
   }
 `;
 
@@ -118,14 +114,6 @@ const ContactDetails = styled.div`
 
 const ContactFormWrapper = styled.div`
   grid-area: form;
-`;
-
-const ContactHeading = styled(Typography)`
-  grid-area: heading;
-
-  @media (min-width: 720px) {
-    text-align: center;
-  }
 `;
 
 const StyledDivider = styled(Divider)`
@@ -142,12 +130,8 @@ const StyledDivider = styled(Divider)`
 export default function ContactSection() {
   return (
     <StyledContainer>
-      <ContactHeading variant="h1" fontWeight={700} gutterBottom>
-        Get In Touch
-      </ContactHeading>
       <ContactDetails>
         <Typography
-          display={{ xs: 'none', sm: 'block' }}
           variant="h2"
           fontWeight={700}
           gutterBottom

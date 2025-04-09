@@ -47,7 +47,7 @@ export const Footer: FC = () => (
           variant="body2"
           sx={{ color: 'text.secondary', mt: { xs: 2, sm: 0 } }}
         >
-          &copy; 2016 - {new Date().getFullYear()} {env.company} Ltd. All rights reserved.
+          &copy; 2015 - {new Date().getFullYear()} {env.company} Ltd. All rights reserved.
         </Typography>
       </BottomSection>
     </Container>
