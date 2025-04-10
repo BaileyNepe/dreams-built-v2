@@ -7,9 +7,7 @@ import styled from 'styled-components';
 import { Logo } from './Logo';
 import { Socials } from './Socials';
 
-const FooterRoot = styled.footer`
-  background-color: #f8fafc;
-`;
+const FooterRoot = styled.footer``;
 
 const ContentWrapper = styled.div`
   padding: 4rem 0;
