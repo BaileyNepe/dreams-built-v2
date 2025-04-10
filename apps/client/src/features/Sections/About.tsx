@@ -27,7 +27,7 @@ const ROWS = [
 const StyledContainer = styled(Container)`
   padding: 5rem 1rem;
   @media (min-width: 768px) {
-    padding: 10rem 1rem;
+    padding: 10rem 1rem 10rem;
   }
 `;
 
@@ -126,20 +126,14 @@ const StatContent = styled(Typography)`
   }
 `;
 
-/* Override the MUI button if you need additional layout styling. */
-const AboutButton = styled(Button)`
-  margin: 2rem 0;
-`;
-
 export default function LandingAbout() {
   return (
     <StyledContainer>
       <GridWrapper>
         <LeftColumn>
           <Typography
-            component="div"
             variant="overline"
-            fontWeight={700}
+            // fontWeight={700}
             sx={{ color: 'text.disabled' }}
           >
             About us
@@ -153,14 +147,14 @@ export default function LandingAbout() {
             tempor auctor, justo. Pellentesque habitant morbi tristique senectus et netus
             et malesuada fames ac turpis egestas.
           </Typography>
-          <AboutButton
+          <Button
             size="small"
             color="inherit"
             endIcon={<ChevronRightIcon />}
             sx={{ mt: 4 }}
           >
             Learn more
-          </AboutButton>
+          </Button>
         </LeftColumn>
         <RightColumn>
           {ROWS.map((row) => (

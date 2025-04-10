@@ -1,6 +1,7 @@
 import { createLazyFileRoute } from '@tanstack/react-router';
 import LandingAbout from 'features/Sections/About';
 import { FeatureSection } from 'features/Sections/Feature';
+import LandingServices from 'features/Sections/Services';
 import { type FC } from 'react';
 import { paths } from 'utils/paths';
 import video from '../../assets/dreamsbuilt.webm';
@@ -17,6 +18,7 @@ const HomePage: FC = () => (
       buttonText="Request a Free Quote"
       buttonLink={paths.contact}
     />
+    <LandingServices />
     <LandingAbout />
   </>
 );
