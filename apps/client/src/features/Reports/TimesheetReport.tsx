@@ -76,8 +76,11 @@ export const TimesheetReport: FC<{ weekStart: string }> = ({ weekStart }) => {
           <ReportBlock $isPrinted $isLast={index === users.length - 1}>
             <Typography variant="h5">{user.userName}</Typography>
             <Typography variant="caption" sx={{ mb: 1, display: 'block' }}>
-              {formatDate(weekStartDate, 'dd/MM/yyyy')} -{' '}
-              {formatDate(weekStartDate.plus({ days: 6 }), 'dd/MM/yyyy')}
+              {formatDate({ date: weekStartDate, format: 'dd/MM/yyyy' })} -{' '}
+              {formatDate({
+                date: weekStartDate.plus({ days: 6 }),
+                format: 'dd/MM/yyyy'
+              })}
             </Typography>
 
             <EnhancedTable

@@ -4,7 +4,6 @@ import { Header } from 'components/Header';
 import { useEffect, type FC } from 'react';
 import styled from 'styled-components';
 import { useAuthOptionalUser } from 'utils/contexts/AuthProvider';
-import { useIsCoverPage } from 'utils/hooks/useIsCoverPage';
 
 const Layout = styled.div`
   display: grid;
@@ -13,12 +12,11 @@ const Layout = styled.div`
 
 const Main = styled.main<{ $hasPadding?: boolean }>`
   flex: 1;
-  padding-top: ${({ $hasPadding }) => ($hasPadding ? '5.1rem' : '0')};
+  padding-top: 0;
 `;
 
 export const LandingLayout: FC = () => {
   const { isAuthenticated, isLoading } = useAuthOptionalUser();
-  const isCoverPage = useIsCoverPage();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -30,7 +28,7 @@ export const LandingLayout: FC = () => {
   return (
     <Layout>
       <Header />
-      <Main $hasPadding={!isCoverPage}>
+      <Main>
         <Outlet />
       </Main>
       <Footer />

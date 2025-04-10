@@ -4,7 +4,6 @@ import { type LinkProps } from '@tanstack/react-router';
 import { type FC, useState } from 'react';
 import styled from 'styled-components';
 import { bgBlur } from 'themes/css';
-import { useIsCoverPage } from 'utils/hooks/useIsCoverPage';
 import { useOffSetTop } from 'utils/hooks/useOffsetTop';
 import { useResponsive } from 'utils/hooks/useResponsive';
 import { paths } from 'utils/paths';
@@ -130,11 +129,10 @@ const MobileNavigation: FC<{ onClose: () => void; open: boolean }> = ({
 
 // Main Header component
 export const Header: FC = () => {
-  const isCoverPage = useIsCoverPage();
   const isExtraSmallScreen = useResponsive('down', 'sm');
   const [mobileOpen, setMobileOpen] = useState(false);
   const offset = useOffSetTop();
-  const isHeaderLightMode = isCoverPage && !offset;
+  const isHeaderLightMode = !offset;
 
   const handleOpenMobileNav = () => setMobileOpen(true);
   const handleCloseMobileNav = () => setMobileOpen(false);

@@ -36,7 +36,7 @@ const DayCellContainer: FC<{
 
   return (
     <DateContainer>
-      {formatDate(day, 'ccc d LLL')}
+      {formatDate({ date: day, format: 'ccc d LLL' })}
       {hasPermissionToEdit && (
         <Checkbox
           sx={{
@@ -49,7 +49,7 @@ const DayCellContainer: FC<{
           checked={isBlocked}
           onChange={(e) =>
             mutation.mutate({
-              date: formatDate(day),
+              date: formatDate({ date: day }),
               deleted: !e.target.checked
             })
           }

@@ -91,9 +91,9 @@ export const Report: FC = () => {
         <ReportContainer>
           <PrintableContent ref={printRef}>
             {selectedReport === 'timesheet' ? (
-              <TimesheetReport weekStart={formatDate(currentWeek)} />
+              <TimesheetReport weekStart={formatDate({ date: currentWeek })} />
             ) : (
-              <ProjectReport weekStart={formatDate(currentWeek)} />
+              <ProjectReport weekStart={formatDate({ date: currentWeek })} />
             )}
           </PrintableContent>
         </ReportContainer>

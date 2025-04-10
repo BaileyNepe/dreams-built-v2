@@ -65,8 +65,11 @@ export const ProjectReport: FC<{ weekStart: string }> = ({ weekStart }) => {
                       {project.jobNumber} - {project.projectAddress}
                     </Typography>
                     <Typography variant="caption">
-                      {formatDate(weekStartDate, 'dd/MM/yyyy')} -{' '}
-                      {formatDate(weekStartDate.plus({ days: 6 }), 'dd/MM/yyyy')}
+                      {formatDate({ date: weekStartDate, format: 'dd/MM/yyyy' })} -{' '}
+                      {formatDate({
+                        date: weekStartDate.plus({ days: 6 }),
+                        format: 'dd/MM/yyyy'
+                      })}
                     </Typography>
                   </StyledAccordionSummary>
 

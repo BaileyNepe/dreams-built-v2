@@ -35,8 +35,8 @@ const CreateScheduleBody: FC<{
   const methods = useCustomForm({
     schema: createScheduleSchema,
     defaultValues: {
-      startDate: formatDate(range.start),
-      endDate: formatDate(range.end),
+      startDate: formatDate({ date: range.start }),
+      endDate: formatDate({ date: range.end }),
       projectPartId,
       notes: '',
       projectId: ''
@@ -50,8 +50,8 @@ const CreateScheduleBody: FC<{
         create.mutate(
           {
             ...d,
-            startDate: formatDate(range.start),
-            endDate: formatDate(range.end),
+            startDate: formatDate({ date: range.start }),
+            endDate: formatDate({ date: range.end }),
             notes: d.notes || ''
           },
           {
@@ -104,8 +104,8 @@ export const EditScheduleModal: FC<{
     schema: updateScheduleSchema,
     defaultValues: {
       id: data.id,
-      startDate: formatDate(data.startDate),
-      endDate: formatDate(data.endDate),
+      startDate: formatDate({ date: data.startDate }),
+      endDate: formatDate({ date: data.endDate }),
       notes: data.notes,
       color: data.project.color,
       deleted: false
@@ -125,8 +125,8 @@ export const EditScheduleModal: FC<{
             {
               id: data.id,
               deleted: true,
-              startDate: formatDate(data.startDate),
-              endDate: formatDate(data.endDate),
+              startDate: formatDate({ date: data.startDate }),
+              endDate: formatDate({ date: data.endDate }),
               color: data.project.color
             },
             {

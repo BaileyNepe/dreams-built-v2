@@ -31,8 +31,8 @@ const useSchedule = () => {
   );
 
   const scheduleData = useScheduleQuery(
-    formatDate(initialDateOfWeek),
-    formatDate(endOfCurrentWeek)
+    formatDate({ date: initialDateOfWeek }),
+    formatDate({ date: endOfCurrentWeek })
   );
 
   // Convert raw blocked days to DateTime objects
@@ -126,7 +126,7 @@ const useSchedule = () => {
     () =>
       viewType === 'day'
         ? [initialDateOfWeek]
-        : generateWeekArray(formatDate(initialDateOfWeek))
+        : generateWeekArray(formatDate({ date: initialDateOfWeek }))
             .map((d) => d.dateFormat)
             .filter(
               (d) =>
