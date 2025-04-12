@@ -1,6 +1,5 @@
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import FormatQuoteIcon from '@mui/icons-material/FormatQuote';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Container from '@mui/material/Container';
@@ -8,7 +7,10 @@ import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { createLazyFileRoute } from '@tanstack/react-router';
 import { Button } from 'components/Button';
+import { RouterLink } from 'components/Link';
+import { StyledCaption, StyledHeading } from 'components/styles';
 import styled from 'styled-components';
+import { bgGradient } from 'themes/css';
 import { fShortenNumber } from 'utils/format-number';
 import { paths } from 'utils/paths';
 
@@ -22,7 +24,7 @@ const COMPANY_STATS = [
   },
   {
     label: 'Happy clients',
-    total: 500,
+    total: 550,
     content:
       'Satisfied clients who trust Dreams Built for quality construction services and professional workmanship.'
   },
@@ -58,61 +60,40 @@ const VALUES = [
   }
 ];
 
-// Team members
-const TEAM_MEMBERS = [
-  {
-    name: 'Craig Davis',
-    position: 'Founder & CEO',
-    bio: 'With over 25 years of experience in the construction industry, Craig founded Dreams Built with a vision to provide superior foundation services throughout the Waikato region.',
-    image: 'https://source.unsplash.com/random/300x300/?man,professional'
-  },
-  {
-    name: 'Emma Wilson',
-    position: 'Project Manager',
-    bio: 'Emma oversees all major projects, ensuring they run smoothly from planning to completion. Her attention to detail and organizational skills keep our projects on track.',
-    image: 'https://source.unsplash.com/random/300x300/?woman,professional'
-  },
-  {
-    name: 'Mike Johnson',
-    position: 'Lead Engineer',
-    bio: 'As our structural expert, Mike ensures all foundations meet strict building codes and are designed for maximum durability and stability for each unique site.',
-    image: 'https://source.unsplash.com/random/300x300/?engineer'
-  },
-  {
-    name: 'Sarah Thompson',
-    position: 'Customer Relations',
-    bio: 'Sarah is the friendly voice of Dreams Built, managing client communications and ensuring our clients are well-informed and satisfied throughout their project journey.',
-    image: 'https://source.unsplash.com/random/300x300/?woman,smile'
-  }
-];
-
 // Client testimonials
 const TESTIMONIALS = [
   {
     quote:
       "Dreams Built transformed our property with a beautiful new driveway and patio. The team was professional, the work was completed on time, and the quality is outstanding. Couldn't be happier!",
-    author: 'Michelle L.',
+    author: 'Hannah V.',
     location: 'Hamilton'
   },
   {
     quote:
       'When we needed a solid foundation for our new home, Dreams Built delivered beyond our expectations. Their attention to detail and expertise gave us confidence throughout the entire building process.',
-    author: 'James W.',
-    location: 'Cambridge'
+    author: 'Kelly S.',
+    location: 'Morrinsville'
   },
   {
     quote:
-      "We've worked with Dreams Built on multiple commercial projects, and they consistently deliver quality workmanship, reliable service, and competitive pricing. They're our go-to foundation specialists.",
-    author: 'Sarah T.',
-    location: 'Te Awamutu',
-    company: 'Waikato Construction Ltd'
+      'The team at Dreams Built exceeded our expectations with their professionalism and quality of work. Our new patio looks fantastic! We highly recommend them for any concrete work.',
+    author: 'John E.',
+    location: 'Hamilton'
   }
 ];
 
 // Styled components
 const HeroSection = styled(Box)`
-  background-color: ${({ theme }) => theme.palette.background.paper};
-  padding: 10rem 0 5rem;
+  align-items: center;
+  display: flex;
+  height: 30rem;
+  ${({ theme }) =>
+    bgGradient({
+      direction: '135deg',
+      startColor: theme.palette.secondary.darkest,
+      endColor: theme.palette.secondary.main
+    })};
+
   text-align: center;
 `;
 
@@ -125,15 +106,18 @@ const SectionContainer = styled(Container)`
 `;
 
 const ValueCard = styled(Card)`
-  height: 100%;
-  padding: 2rem;
-  transition:
-    transform 0.3s ease-in-out,
-    box-shadow 0.3s ease-in-out;
+  && {
+    height: 100%;
+    padding: 2rem;
 
-  &:hover {
-    box-shadow: ${({ theme }) => theme.customShadows.z20};
-    transform: translateY(-5px);
+    transition:
+      transform 0.3s ease-in-out,
+      box-shadow 0.3s ease-in-out;
+
+    &:hover {
+      box-shadow: ${({ theme }) => theme.customShadows.z20};
+      transform: translateY(-5px);
+    }
   }
 `;
 
@@ -142,33 +126,10 @@ const StorySection = styled(Box)`
   padding: 5rem 0;
 `;
 
-const TeamMemberCard = styled(Card)`
-  height: 100%;
-  padding: 2rem;
-  text-align: center;
-  transition: transform 0.3s ease-in-out;
-
-  &:hover {
-    transform: translateY(-5px);
-  }
-`;
-
 const TestimonialCard = styled(Card)`
   height: 100%;
   padding: 2rem;
   position: relative;
-
-  &:before {
-    color: ${({ theme }) => theme.palette.divider};
-    content: '"';
-    font-family: Georgia, serif;
-    font-size: 5rem;
-    left: 16px;
-    line-height: 1;
-    position: absolute;
-    top: 16px;
-    z-index: 0;
-  }
 `;
 
 const QuoteIcon = styled(FormatQuoteIcon)`
@@ -244,26 +205,47 @@ function AboutComponent() {
     <>
       <HeroSection>
         <Container>
-          <Typography
-            variant="overline"
-            sx={{ color: 'text.disabled', display: 'block', mb: 1 }}
-          >
-            Who We Are
-          </Typography>
-          <Typography variant="h1" fontSize={{ xs: 40, md: 60 }} mb={4}>
+          <StyledHeading variant="h1" fontSize={{ xs: 40, md: 45 }} mb={4}>
             Building Excellence
-          </Typography>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{ maxWidth: 700, mx: 'auto', mb: 4 }}
-          >
+          </StyledHeading>
+          <StyledCaption variant="caption" sx={{ maxWidth: 700, mx: 'auto', mb: 4 }}>
             Dreams Built was founded on a simple principle: provide the highest quality
             foundations and concrete work with unmatched service and reliability. Today,
             we're proud to be one of Waikato's most trusted construction specialists.
-          </Typography>
+          </StyledCaption>
         </Container>
       </HeroSection>
+
+      <SectionContainer>
+        <Typography variant="h2" fontSize={40} mb={1} textAlign="center">
+          Our Values
+        </Typography>
+        <Typography
+          variant="body1"
+          color="text.secondary"
+          mb={5}
+          textAlign="center"
+          sx={{ maxWidth: 700, mx: 'auto' }}
+        >
+          At Dreams Built, our work is guided by a set of core principles that define who
+          we are and how we operate.
+        </Typography>
+
+        <Grid container spacing={3}>
+          {VALUES.map((value, index) => (
+            <Grid item xs={12} sm={6} md={3} key={index}>
+              <ValueCard>
+                <Typography variant="h5" mb={2} color="primary.main">
+                  {value.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {value.description}
+                </Typography>
+              </ValueCard>
+            </Grid>
+          ))}
+        </Grid>
+      </SectionContainer>
 
       <StorySection>
         <Container>
@@ -273,7 +255,7 @@ function AboutComponent() {
                 Our Story
               </Typography>
               <Typography variant="body1" paragraph>
-                Dreams Built began as a small family operation in 1996, specialising in
+                Dreams Built began as a small family operation in 2015, specialising in
                 residential foundations. With a commitment to quality and a passion for
                 craftsmanship, our reputation quickly grew throughout the Waikato region.
               </Typography>
@@ -307,78 +289,6 @@ function AboutComponent() {
           </Grid>
         </Container>
       </StorySection>
-
-      <SectionContainer>
-        <Typography variant="h2" fontSize={40} mb={1} textAlign="center">
-          Our Values
-        </Typography>
-        <Typography
-          variant="body1"
-          color="text.secondary"
-          mb={5}
-          textAlign="center"
-          sx={{ maxWidth: 700, mx: 'auto' }}
-        >
-          At Dreams Built, our work is guided by a set of core principles that define who
-          we are and how we operate.
-        </Typography>
-
-        <Grid container spacing={3}>
-          {VALUES.map((value, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
-              <ValueCard>
-                <Typography variant="h5" mb={2} color="primary.main">
-                  {value.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {value.description}
-                </Typography>
-              </ValueCard>
-            </Grid>
-          ))}
-        </Grid>
-      </SectionContainer>
-
-      <Box sx={{ bgcolor: 'background.default', py: { xs: 5, md: 10 } }}>
-        <Container>
-          <Typography variant="h2" fontSize={40} mb={1} textAlign="center">
-            Meet Our Team
-          </Typography>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            mb={5}
-            textAlign="center"
-            sx={{ maxWidth: 700, mx: 'auto' }}
-          >
-            The people behind Dreams Built bring decades of combined experience and a
-            passion for excellence to every project.
-          </Typography>
-
-          <Grid container spacing={4}>
-            {TEAM_MEMBERS.map((member, index) => (
-              <Grid item xs={12} sm={6} md={3} key={index}>
-                <TeamMemberCard>
-                  <Avatar
-                    src={member.image}
-                    alt={member.name}
-                    sx={{ width: 120, height: 120, mx: 'auto', mb: 2 }}
-                  />
-                  <Typography variant="h6" mb={0.5}>
-                    {member.name}
-                  </Typography>
-                  <Typography variant="subtitle2" color="primary.main" mb={2}>
-                    {member.position}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {member.bio}
-                  </Typography>
-                </TeamMemberCard>
-              </Grid>
-            ))}
-          </Grid>
-        </Container>
-      </Box>
 
       <SectionContainer>
         <Typography variant="h2" fontSize={40} mb={1} textAlign="center">
@@ -425,22 +335,23 @@ function AboutComponent() {
         }}
       >
         <Container>
-          <Typography variant="h3" mb={3}>
+          <Typography variant="h3" mb={3} color="white">
             Ready to Work with Us?
           </Typography>
           <Typography variant="body1" mb={4} sx={{ maxWidth: 600, mx: 'auto' }}>
             Whether you're planning a new home foundation, a commercial project, or a
             driveway renovation, our team is ready to help turn your vision into reality.
           </Typography>
-          <Button
-            variant="contained"
-            color="secondary"
-            size="large"
-            href={paths.contact}
-            endIcon={<ChevronRightIcon />}
-          >
-            Contact Us Today
-          </Button>
+          <RouterLink to={paths.contact}>
+            <Button
+              variant="contained"
+              color="secondary"
+              size="large"
+              endIcon={<ChevronRightIcon />}
+            >
+              Contact Us Today
+            </Button>
+          </RouterLink>
         </Container>
       </Box>
     </>

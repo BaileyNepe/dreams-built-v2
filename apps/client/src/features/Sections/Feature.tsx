@@ -1,7 +1,7 @@
-import { Typography } from '@mui/material';
 import { type LinkProps } from '@tanstack/react-router';
 import { Button } from 'components/Button';
 import { RouterLink } from 'components/Link';
+import { StyledCaption, StyledHeading } from 'components/styles';
 import { type FC } from 'react';
 import styled from 'styled-components';
 import { bgBlur } from 'themes/css';
@@ -61,22 +61,6 @@ const Block = styled.div`
   display: flex;
   justify-content: center;
   margin-top: 1rem;
-`;
-
-const StyledHeading = styled(Typography)`
-  text-align: center;
-  text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
-  text-transform: uppercase;
-`;
-
-const StyledCaption = styled(Typography)`
-  && {
-    display: block;
-    margin: 0.2rem auto 0.5rem;
-    max-width: 30rem;
-    text-align: center;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
-  }
 `;
 
 export const FeatureSection: FC<{

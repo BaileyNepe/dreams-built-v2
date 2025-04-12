@@ -21,6 +21,7 @@ import Patio from 'assets/patio.webp';
 import Repair from 'assets/repair.webp';
 import Repair2 from 'assets/repair_2.webp';
 import { RouterLink } from 'components/Link';
+import { StyledCaption, StyledHeading } from 'components/styles';
 import { bgBlur } from 'themes/css';
 
 const FOUNDATION_SERVICES = [
@@ -114,14 +115,6 @@ const HeroContent = styled.div`
   @media (min-width: 735px) {
     left: 50%;
     transform: translate(-50%, -50%);
-  }
-`;
-
-const StyledHeading = styled(Typography)`
-  && {
-    text-align: center;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.6);
-    text-transform: uppercase;
   }
 `;
 
@@ -222,18 +215,14 @@ function ServicesPage() {
       <HeroSection>
         <PosterImage src={Patio} alt="Dreams Built Services" />
         <HeroContent>
-          <StyledHeading variant="h1" fontSize={{ xs: 30, md: 40 }} color="common.white">
+          <StyledHeading variant="h1" fontSize={{ xs: 30, md: 40 }}>
             Building Dreams from the Ground Up
           </StyledHeading>
-          <Typography
-            variant="body1"
-            color="common.white"
-            sx={{ maxWidth: 700, mx: 'auto' }}
-          >
+          <StyledCaption variant="body1" sx={{ maxWidth: 700, mx: 'auto' }}>
             At Dreams Built, we specialize in creating solid foundations for residential
             and commercial buildings, along with complementary services that ensure your
             property is beautiful, functional, and built to last.
-          </Typography>
+          </StyledCaption>
         </HeroContent>
       </HeroSection>
 
