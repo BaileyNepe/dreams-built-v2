@@ -116,7 +116,7 @@ export const FeatureSection: FC<{
 
           <Block>
             <RouterLink to={buttonLink}>
-              <Button variant="contained" color="warning" size="large">
+              <Button variant="contained" color="secondary" size="large">
                 {buttonText}
               </Button>
             </RouterLink>

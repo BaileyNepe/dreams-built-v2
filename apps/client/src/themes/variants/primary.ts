@@ -1,6 +1,5 @@
 import {
   background,
-  blue,
   common,
   dark,
   error,
@@ -8,7 +7,6 @@ import {
   indigo,
   orange,
   purple,
-  slate,
   success,
   warning
 } from 'themes/colors';
@@ -22,10 +20,10 @@ export const primary = {
   primary: dark,
 
   // secondary
-  secondary: indigo,
+  secondary: orange,
 
   // tertiary
-  tertiary: orange,
+  tertiary: indigo,
 
   forth: purple,
 

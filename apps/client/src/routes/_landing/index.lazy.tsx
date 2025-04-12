@@ -14,7 +14,7 @@ const HomePage: FC = () => (
       imageUrl={posterImage}
       imageAlt="Dreams Built Video Background"
       title="Building the Foundation to Your Dream"
-      description="At Dreams Built, we care about every detail. We specialize in quality residential and commercial foundations, driveways, patios, fences, and landscaping."
+      description="At Dreams Built, we care about every detail. We specialise in quality residential and commercial foundations, driveways, patios, fences, and landscaping."
       buttonText="Request a Free Quote"
       buttonLink={paths.contact}
     />

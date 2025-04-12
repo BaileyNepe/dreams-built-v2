@@ -2,24 +2,28 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { Container } from '@mui/material';
 import Typography from '@mui/material/Typography';
 import { Button } from 'components/Button';
+import { RouterLink } from 'components/Link';
 import styled from 'styled-components';
 import { fShortenNumber } from 'utils/format-number';
 
 const ROWS = [
   {
-    label: 'projects',
+    label: 'foundations completed',
     total: 600,
-    content: 'Praesent turpis. Praesent blandit laoreet nibh. Nunc nonummy metus.'
+    content:
+      'From basic residential foundations to complex engineered foundation systems, we have successfully delivered hundreds of quality concrete foundations that stand the test of time.'
   },
   {
-    label: 'Happy clients',
-    total: 32000,
-    content: 'Praesent turpis. Praesent blandit laoreet nibh. Nunc nonummy metus.'
+    label: 'Happy homeowners',
+    total: 550,
+    content:
+      'Our commitment to excellence has made us the trusted choice for residential concrete foundations. We provide the solid base upon which homeowners build their dreams.'
   },
   {
-    label: 'years of experience',
+    label: 'years of expertise',
     total: new Date().getFullYear() - 1996,
-    content: 'Praesent turpis. Praesent blandit laoreet nibh. Nunc nonummy metus.'
+    content:
+      'With decades specialising in concrete foundation work, our certified technicians bring unmatched expertise to every pour, ensuring structural integrity and precision in every project.'
   }
 ];
 
@@ -89,7 +93,7 @@ const StatValue = styled.div`
 
 /* Plus sign styling */
 const PlusSign = styled.span`
-  color: ${({ theme }) => theme.palette.warning.main};
+  color: ${({ theme }) => theme.palette.secondary.main};
   font-size: 1.2rem;
   margin-left: 0;
   margin-top: -1rem;
@@ -131,30 +135,31 @@ export default function LandingAbout() {
     <StyledContainer>
       <GridWrapper>
         <LeftColumn>
-          <Typography
-            variant="overline"
-            // fontWeight={700}
-            sx={{ color: 'text.disabled' }}
-          >
+          <Typography variant="overline" sx={{ color: 'text.disabled' }}>
             About us
           </Typography>
           <Typography variant="h2" fontSize={40} style={{ margin: '1.5rem 0' }}>
             Who We Are
           </Typography>
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            In hac habitasse platea dictumst. Aliquam lobortis. Lorem ipsum dolor sit
-            amet, consectetuer adipiscing elit. In dui magna, posuere eget, vestibulum et,
-            tempor auctor, justo. Pellentesque habitant morbi tristique senectus et netus
-            et malesuada fames ac turpis egestas.
+            Since 2015, Dreams Built has been the premier provider of residential concrete
+            foundations throughout the region. We specialise in durable, precise
+            foundation systems that ensure the structural integrity of your home for
+            generations. Our team combines traditional craftsmanship with modern
+            techniques and materials, delivering foundations that exceed building codes
+            and homeowner expectations. Every project begins with meticulous site
+            evaluation and ends with a foundation you can trust.
           </Typography>
-          <Button
-            size="small"
-            color="inherit"
-            endIcon={<ChevronRightIcon />}
-            sx={{ mt: 4 }}
-          >
-            Learn more
-          </Button>
+          <RouterLink to="/about">
+            <Button
+              size="small"
+              color="inherit"
+              endIcon={<ChevronRightIcon />}
+              sx={{ mt: 4 }}
+            >
+              Learn more
+            </Button>
+          </RouterLink>
         </LeftColumn>
         <RightColumn>
           {ROWS.map((row) => (

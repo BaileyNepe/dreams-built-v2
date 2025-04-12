@@ -9,10 +9,10 @@ import { Link } from '@tanstack/react-router';
 import SvgColor from 'components/SvgColor';
 import { paths } from 'utils/paths';
 
-import A from 'assets/service/ic_service_analysis.svg';
-import B from 'assets/service/ic_service_bullhorn.svg';
-import C from 'assets/service/ic_service_mail.svg';
-import D from 'assets/service/ic_service_seo.svg';
+import C from 'assets/service/commercial.svg';
+import D from 'assets/service/concrete.svg';
+import A from 'assets/service/driveways.svg';
+import B from 'assets/service/fence.svg';
 
 // ----------------------------------------------------------------------
 
@@ -20,27 +20,32 @@ const COLORS = ['primary', 'secondary', 'success', 'warning'] as const;
 
 const SERVICES = [
   {
-    name: 'SEO',
-    icon: D,
-    content: 'Nunc nonummy metus. Donec elit libero',
-    path: paths.services
-  },
-  {
-    name: 'Email Marketing',
+    name: 'Commercial Foundations',
     icon: C,
-    content: 'Nunc nonummy metus. Donec elit libero',
+    content:
+      'Expert concrete foundation solutions for commercial buildings, warehouses, and multi-unit residential properties.',
     path: paths.services
   },
   {
-    name: 'Search Engine Oprimization',
+    name: 'Concrete Driveways & Patios',
     icon: A,
-    content: 'Nunc nonummy metus. Donec elit libero',
+    content:
+      'Custom concrete driveways, patios, and walkways built to enhance your property with durability and aesthetic appeal.',
     path: paths.services
   },
   {
-    name: 'Social Marketing',
+    name: 'Residential Foundations',
+    icon: D,
+    content:
+      'Quality concrete foundations for residential properties, ensuring structural integrity and longevity for your home construction.',
+
+    path: paths.services
+  },
+  {
+    name: 'Fencing Solutions',
     icon: B,
-    content: 'Nunc nonummy metus. Donec elit libero',
+    content:
+      "Professional fence installation services to secure and beautify your property, complementing your home's foundation and landscaping.",
     path: paths.services
   }
 ];
@@ -139,8 +144,10 @@ export default function LandingServices() {
         </Typography>
 
         <Typography sx={{ color: 'text.secondary' }}>
-          Nunc nonummy metus. Donec elit libero, sodales nec, volutpat a, suscipit non,
-          turpis.
+          With decades of experience in concrete construction, we deliver high-quality
+          foundations and concrete structures for residential and commercial properties.
+          Our expert team ensures durability, structural integrity, and aesthetic
+          excellence in every project.
         </Typography>
       </Stack>
 

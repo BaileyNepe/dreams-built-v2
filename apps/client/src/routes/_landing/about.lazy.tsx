@@ -251,7 +251,7 @@ function AboutComponent() {
             Who We Are
           </Typography>
           <Typography variant="h1" fontSize={{ xs: 40, md: 60 }} mb={4}>
-            Building Excellence Since 1996
+            Building Excellence
           </Typography>
           <Typography
             variant="body1"
@@ -273,7 +273,7 @@ function AboutComponent() {
                 Our Story
               </Typography>
               <Typography variant="body1" paragraph>
-                Dreams Built began as a small family operation in 1996, specializing in
+                Dreams Built began as a small family operation in 1996, specialising in
                 residential foundations. With a commitment to quality and a passion for
                 craftsmanship, our reputation quickly grew throughout the Waikato region.
               </Typography>

@@ -134,9 +134,9 @@ function DashboardContent() {
   );
 
   const hasNotEnteredTimesheet =
-    !userEntries.data?.entries.length &&
-    !userEntries.data?.notes.length &&
-    !userEntries.isLoading;
+    (!userEntries.data?.entries.length || !userEntries.data?.notes.length) &&
+    !userEntries.isLoading &&
+    user.role === 'EMPLOYEE';
 
   return (
     <Board>
@@ -144,7 +144,7 @@ function DashboardContent() {
       <BlockGrid>
         <SectionTitle variant="h5">Notices</SectionTitle>
 
-        {user.role === 'EMPLOYEE' && !hasNotEnteredTimesheet && (
+        {hasNotEnteredTimesheet && (
           <NoticeAlert
             severity="warning"
             sx={{
