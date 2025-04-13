@@ -21,6 +21,7 @@ import {
   Typography
 } from '@mui/material';
 import { useDeleteFile, useProjectFiles, useUpdateFile } from 'api/projectFiles';
+import { ConfirmationDialog } from 'components/ConfirmationDialog';
 import { EnhancedTable } from 'components/EnhancedTable';
 import { formatFileSize } from 'components/FileDropzone';
 import { type FC, Suspense, useState } from 'react';
@@ -64,6 +65,15 @@ const List: FC<{
   const updateFile = useUpdateFile();
   const deleteFile = useDeleteFile();
 
+  // State for confirmation dialog
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: '',
+    message: '',
+    fileId: '',
+    action: '' as 'delete' | ''
+  });
+
   const handleTogglePin = (fileId: string, isPinned: boolean) => {
     if (!hasEditPermission) return;
     updateFile.mutate({ id: fileId, isPinned: !isPinned });
@@ -74,15 +84,27 @@ const List: FC<{
     updateFile.mutate({ id: fileId, isArchived: !isArchived });
   };
 
-  const handleDelete = (fileId: string) => {
+  const openDeleteConfirmation = (fileId: string) => {
     if (!hasEditPermission) return;
-    if (
-      window.confirm(
-        'Are you sure you want to delete this file? This action cannot be undone.'
-      )
-    ) {
-      deleteFile.mutate(fileId);
+    setConfirmDialog({
+      open: true,
+      title: 'Delete File',
+      message: 'Are you sure you want to delete this file? This action cannot be undone.',
+      fileId,
+      action: 'delete'
+    });
+  };
+
+  const handleConfirmAction = () => {
+    if (confirmDialog.action === 'delete' && confirmDialog.fileId) {
+      deleteFile.mutate(confirmDialog.fileId);
     }
+
+    setConfirmDialog({ open: false, title: '', message: '', fileId: '', action: '' });
+  };
+
+  const handleCloseDialog = () => {
+    setConfirmDialog({ open: false, title: '', message: '', fileId: '', action: '' });
   };
 
   const handleRename = (fileId: string, currentName: string) => {
@@ -187,11 +209,21 @@ const List: FC<{
                       color: 'error',
                       icon: <DeleteIcon />,
                       label: 'Delete',
-                      onClick: () => handleDelete(file.id)
+                      onClick: () => openDeleteConfirmation(file.id)
                     }
                   ]
                 : []
             }))}
+          />
+
+          <ConfirmationDialog
+            open={confirmDialog.open}
+            title={confirmDialog.title}
+            message={confirmDialog.message}
+            onConfirm={handleConfirmAction}
+            onCancel={handleCloseDialog}
+            confirmText={confirmDialog.action === 'delete' ? 'Delete' : 'Confirm'}
+            severity={confirmDialog.action === 'delete' ? 'error' : 'warning'}
           />
         </Main>
       </Container>
