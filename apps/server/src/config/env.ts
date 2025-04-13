@@ -17,10 +17,9 @@ const rawEnv = {
   s3AccessKey: process.env.S3_ACCESS_KEY,
   s3SecretKey: process.env.S3_SECRET_KEY,
   s3Region: process.env.S3_REGION,
-  s3BucketName: process.env.S3_BUCKET_NAME
+  s3BucketName: process.env.S3_BUCKET_NAME,
+  cloudFrontUrl: process.env.CLOUDFRONT_URL
 };
-
-const isDevelopment = process.env.NODE_ENV === 'development';
 
 const configValidation = z.object({
   databaseUrl: z.string(),
@@ -36,24 +35,11 @@ const configValidation = z.object({
     url: z.string().default('')
   }),
 
-  // S3 Configuration - optional in development
-  s3AccessKey: isDevelopment ? z.string().optional() : z.string(),
-  s3SecretKey: isDevelopment ? z.string().optional() : z.string(),
-  s3Region: isDevelopment ? z.string().optional() : z.string(),
-  s3BucketName: isDevelopment ? z.string().optional() : z.string()
+  s3AccessKey: z.string(),
+  s3SecretKey: z.string(),
+  s3Region: z.string(),
+  s3BucketName: z.string(),
+  cloudFrontUrl: z.string()
 });
 
 export const env = configValidation.parse(rawEnv);
-
-// Export a config object for easier access
-export const config = {
-  DATABASE_URL: env.databaseUrl,
-  PORT: env.expressPort,
-  NODE_ENV: env.environment,
-  AUTH0_ISSUER_BASE_URL: env.auth0IssuerBaseURL,
-  AUTH0_AUDIENCE: env.auth0Audience,
-  S3_ACCESS_KEY: env.s3AccessKey || '',
-  S3_SECRET_KEY: env.s3SecretKey || '',
-  S3_REGION: env.s3Region || '',
-  S3_BUCKET_NAME: env.s3BucketName || ''
-};

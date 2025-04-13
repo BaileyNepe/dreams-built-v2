@@ -21,3 +21,9 @@ variable "allowed_origins" {
   type        = list(string)
   default     = ["*"]
 }
+
+variable "cloudfront_distribution_arn" {
+  description = "ARN of the CloudFront distribution that will access the S3 bucket"
+  type        = string
+  default     = ""
+}

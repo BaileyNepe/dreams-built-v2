@@ -4,13 +4,14 @@ import {
   PutObjectCommand
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+import { env } from '@config/env';
 import { TRPCError } from '@trpc/server';
 import { randomUUID } from 'crypto';
-import { bucketName, s3Client } from '../config/s3/client';
+import { s3Client } from '../config/s3/client';
 
 // Check if S3 is configured
 const isS3Configured = () => {
-  if (!s3Client || !bucketName) {
+  if (!s3Client) {
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
       message: 'S3 storage is not configured. File operations are unavailable.'
@@ -35,7 +36,7 @@ export const getPresignedUploadUrl = async (
   isS3Configured();
 
   const command = new PutObjectCommand({
-    Bucket: bucketName,
+    Bucket: env.s3BucketName,
     Key: key,
     ContentType: contentType
   });
@@ -47,6 +48,12 @@ export const getPresignedUploadUrl = async (
 export const getPresignedDownloadUrl = async (key: string, expiresIn = 3600) => {
   isS3Configured();
 
+  // If CloudFront is configured, use it for download URLs
+  if (env.cloudFrontUrl) {
+    return `${env.cloudFrontUrl}/${key}`;
+  }
+  const bucketName = env.s3BucketName;
+  // Fall back to S3 presigned URL if no CloudFront is configured
   const command = new GetObjectCommand({
     Bucket: bucketName,
     Key: key
@@ -60,7 +67,7 @@ export const deleteS3Object = async (key: string) => {
   isS3Configured();
 
   const command = new DeleteObjectCommand({
-    Bucket: bucketName,
+    Bucket: env.s3BucketName,
     Key: key
   });
 

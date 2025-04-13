@@ -65,6 +65,29 @@ resource "aws_s3_bucket_intelligent_tiering_configuration" "files_tiering" {
   }
 }
 
+# Add bucket policy to allow CloudFront access
+resource "aws_s3_bucket_policy" "cloudfront_access_policy" {
+  bucket = aws_s3_bucket.files_bucket.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "cloudfront.amazonaws.com"
+        }
+        Action   = "s3:GetObject"
+        Resource = "${aws_s3_bucket.files_bucket.arn}/*"
+        Condition = {
+          StringEquals = {
+            "AWS:SourceArn" = var.cloudfront_distribution_arn
+          }
+        }
+      }
+    ]
+  })
+}
+
 # Configure lifecycle rules for object management
 resource "aws_s3_bucket_lifecycle_configuration" "files_bucket" {
   bucket = aws_s3_bucket.files_bucket.id

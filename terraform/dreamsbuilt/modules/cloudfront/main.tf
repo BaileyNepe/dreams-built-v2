@@ -12,11 +12,10 @@ resource "aws_cloudfront_distribution" "s3_distribution" {
     }
   }
 
-  enabled             = true
-  is_ipv6_enabled     = true
-  default_root_object = "index.html"
-  price_class         = "PriceClass_All" # Using standard price class
-  http_version        = "http2"
+  enabled         = true
+  is_ipv6_enabled = true
+  price_class     = "PriceClass_All" # Using standard price class
+  http_version    = "http2"
 
   aliases = var.domain_aliases
 
