@@ -39,7 +39,7 @@ module "files_bucket" {
   environment = "dev"
 
   allowed_origins = [
-    "http://localhost:5173",
+    "http://localhost:3000",
     "https://dev.dreamsbuilt.co.nz"
   ]
 }

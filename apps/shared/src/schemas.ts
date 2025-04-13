@@ -121,3 +121,24 @@ export const ContactSchema = z.object({
   phoneNumber: z.string().optional(),
   message: z.string().min(5, 'Message should be at least 5 characters long')
 });
+
+// Project file schemas
+export const fileMetadataSchema = z.object({
+  name: z.string().optional(),
+  contentType: z.string(),
+  size: z.number().int().positive(),
+  projectId: z.string()
+});
+
+export const updateFileSchema = z.object({
+  id: z.string(),
+  name: z.string().optional(),
+  isPinned: z.boolean().optional(),
+  isArchived: z.boolean().optional()
+});
+
+export const getPresignedUrlSchema = z.object({
+  fileName: z.string(),
+  contentType: z.string(),
+  projectId: z.string()
+});

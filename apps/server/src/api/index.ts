@@ -1,6 +1,7 @@
 import { trpc } from '@config/trpc';
 import { clientRouter } from './client/routes';
 import { contactRouter } from './contact/route';
+import { projectFilesRouter } from './project/file-routes';
 import { projectsRouter } from './project/routes';
 import { reportsRouter } from './report/route';
 import { scheduleRouter } from './schedule/routes';
@@ -11,6 +12,7 @@ export const apiRouter = trpc.router({
   users: userRouter,
   clients: clientRouter,
   projects: projectsRouter,
+  projectFiles: projectFilesRouter,
   timesheet: timesheetRouter,
   schedule: scheduleRouter,
   reports: reportsRouter,

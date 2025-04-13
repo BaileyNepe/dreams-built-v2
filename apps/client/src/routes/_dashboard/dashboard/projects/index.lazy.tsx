@@ -1,7 +1,7 @@
 import { createLazyFileRoute } from '@tanstack/react-router';
 
 import { authz } from '@dreams-built/shared/src/auth/permissions';
-import EditRoundedIcon from '@mui/icons-material/EditRounded';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { Checkbox } from '@mui/material';
 import { useProjectList, useToggleInvoiceProject } from 'api/projects';
 import { api } from 'api/trpc';
@@ -37,6 +37,10 @@ const ProjectsPage = () => {
 
   const hasEditPermission = useAuth().user.permissions?.includes(authz.jobs_edit);
 
+  const handleRowClick = (id: string) => {
+    navigate({ to: paths.projectsEdit, params: { projectId: id } });
+  };
+
   return (
     <PageLayout
       title="Projects"
@@ -64,6 +68,7 @@ const ProjectsPage = () => {
           setOrder: () => {}
         }}
         isLoading={isLoading}
+        onRowClick={handleRowClick}
         headers={[
           { id: 'jobNumber', width: '10%' },
           { id: 'client', width: '10%', align: 'center' },
@@ -101,11 +106,10 @@ const ProjectsPage = () => {
           ),
           actions: [
             {
-              icon: <EditRoundedIcon />,
-              label: 'Edit',
-              onClick: () => {
-                navigate({ to: paths.projectsEdit, params: { projectId: job.id } });
-              }
+              icon: <VisibilityIcon />,
+              label: 'View',
+              onClick: () =>
+                navigate({ to: paths.projectsEdit, params: { projectId: job.id } })
             }
           ]
         }))}

@@ -12,7 +12,8 @@ const AuthzSchema = z.enum([
   'jobs:edit',
   'schedule:read',
   'schedule:edit',
-  'messages:read'
+  'messages:read',
+  'upload'
 ]);
 
 export const RoleSchema = z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE', 'USER']);

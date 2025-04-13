@@ -19,7 +19,9 @@ export const authz = {
   schedule_read: 'schedule:read',
   schedule_edit: 'schedule:edit',
 
-  messages_read: 'messages:read'
+  messages_read: 'messages:read',
+
+  upload: 'upload'
 } as const;
 
 const rolesPermissions: Permission = [
@@ -82,6 +84,7 @@ const jobsPermissions: Permission = [
     name: 'Jobs Edit',
     roles: ['MANAGER']
   },
+  { id: authz.upload, name: 'Upload', roles: ['EMPLOYEE', 'MANAGER'] },
   {
     id: authz.schedule_read,
     name: 'Schedule Read',

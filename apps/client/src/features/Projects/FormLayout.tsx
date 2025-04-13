@@ -11,7 +11,7 @@ const Grid = styled.div`
   gap: 1rem;
 
   @media (min-width: 640px) {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     .address {
       grid-column: span 2;
     }
@@ -19,6 +19,8 @@ const Grid = styled.div`
       width: 5rem;
     }
   }
+
+  max-width: 40rem;
 `;
 
 export const ProjectFormFields: FC<{

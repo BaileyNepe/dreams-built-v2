@@ -1,0 +1,216 @@
+import { authz } from '@dreams-built/shared/src/auth/permissions';
+
+import ArchiveIcon from '@mui/icons-material/Archive';
+import DeleteIcon from '@mui/icons-material/Delete';
+import FileIcon from '@mui/icons-material/Description';
+import EditIcon from '@mui/icons-material/Edit';
+import ImageIcon from '@mui/icons-material/Image';
+import PdfIcon from '@mui/icons-material/PictureAsPdf';
+import PinnedIcon from '@mui/icons-material/PushPin';
+import UnarchiveIcon from '@mui/icons-material/Unarchive';
+import {
+  Box,
+  Card,
+  CardContent,
+  Chip,
+  Divider,
+  FormControlLabel,
+  Skeleton,
+  Switch,
+  Tooltip,
+  Typography
+} from '@mui/material';
+import { useDeleteFile, useProjectFiles, useUpdateFile } from 'api/projectFiles';
+import { EnhancedTable } from 'components/EnhancedTable';
+import { formatFileSize } from 'components/FileDropzone';
+import { type FC, Suspense, useState } from 'react';
+import { useProjectParams } from 'routes/_dashboard/dashboard/projects/edit.$projectId';
+import styled from 'styled-components';
+import { useAuth } from 'utils/contexts/AuthProvider';
+import { formatDate } from 'utils/date';
+import { ProjectFileUpload } from './ProjectFileUpload';
+
+const TableContainer = styled.div`
+  display: grid;
+
+  overflow-x: hidden;
+  padding: 1rem;
+`;
+
+const getFileIcon = (contentType: string) => {
+  if (contentType.includes('pdf')) {
+    return <PdfIcon />;
+  } else if (contentType.includes('image')) {
+    return <ImageIcon />;
+  }
+  return <FileIcon />;
+};
+
+const List: FC<{
+  isArchivedVisible: boolean;
+  toggleArchived: (show: boolean) => void;
+}> = ({ isArchivedVisible, toggleArchived }) => {
+  const { projectId } = useProjectParams();
+  const { user } = useAuth();
+
+  const files = useProjectFiles(projectId, isArchivedVisible);
+
+  const hasEditPermission = user.permissions?.includes(authz.jobs_edit) || false;
+  const updateFile = useUpdateFile();
+  const deleteFile = useDeleteFile();
+
+  const handleTogglePin = (fileId: string, isPinned: boolean) => {
+    if (!hasEditPermission) return;
+    updateFile.mutate({ id: fileId, isPinned: !isPinned });
+  };
+
+  const handleToggleArchive = (fileId: string, isArchived: boolean) => {
+    if (!hasEditPermission) return;
+    updateFile.mutate({ id: fileId, isArchived: !isArchived });
+  };
+
+  const handleDelete = (fileId: string) => {
+    if (!hasEditPermission) return;
+    if (
+      window.confirm(
+        'Are you sure you want to delete this file? This action cannot be undone.'
+      )
+    ) {
+      deleteFile.mutate(fileId);
+    }
+  };
+
+  const handleRename = (fileId: string, currentName: string) => {
+    if (!hasEditPermission) return;
+    const newName = window.prompt('Enter new file name:', currentName);
+    if (newName && newName !== currentName) {
+      updateFile.mutate({ id: fileId, name: newName });
+    }
+  };
+
+  const handleRowClick = (url: string) => {
+    window.open(url, '_blank');
+  };
+
+  return !files?.length ? (
+    <Typography variant="body1" color="textSecondary" align="center">
+      No files have been uploaded for this project yet.
+    </Typography>
+  ) : (
+    <>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 2
+        }}
+      >
+        <Typography variant="h6">Project Files ({files.length})</Typography>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={isArchivedVisible}
+              onChange={(e) => {
+                toggleArchived(e.target.checked);
+              }}
+              color="primary"
+            />
+          }
+          label="Show archived files"
+        />
+      </Box>
+
+      <TableContainer>
+        <EnhancedTable
+          onRowClick={(id) => {
+            const file = files.find((f) => f.id === id);
+            if (file) {
+              handleRowClick(file.url);
+            }
+          }}
+          headers={[
+            { id: 'icon', label: '' },
+            { id: 'name', label: 'File Name', width: '100%' },
+            { id: 'size', label: 'Size' },
+            { id: 'uploadedAt', label: 'Upload Date' },
+            { id: 'actions', label: '' }
+          ]}
+          rows={files.map((file) => ({
+            id: file.id,
+            icon: getFileIcon(file.contentType),
+            name: (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                {file.isPinned && (
+                  <Tooltip title="Pinned">
+                    <PinnedIcon fontSize="small" color="primary" />
+                  </Tooltip>
+                )}
+                {file.name}
+                {file.isArchived && (
+                  <Chip size="small" label="Archived" variant="outlined" />
+                )}
+              </Box>
+            ),
+            size: formatFileSize(file.size),
+            uploadedAt: formatDate({ date: file.uploadedAt, format: 'dd/MM/yyyy' }),
+            actions: hasEditPermission
+              ? [
+                  {
+                    icon: file.isPinned ? (
+                      <PinnedIcon />
+                    ) : (
+                      <PinnedIcon color="disabled" />
+                    ),
+                    label: file.isPinned ? 'Unpin' : 'Pin',
+                    onClick: () => handleTogglePin(file.id, file.isPinned)
+                  },
+                  {
+                    icon: <EditIcon />,
+                    label: 'Rename',
+                    onClick: () => handleRename(file.id, file.name)
+                  },
+                  {
+                    icon: file.isArchived ? <UnarchiveIcon /> : <ArchiveIcon />,
+                    label: file.isArchived ? 'Unarchive' : 'Archive',
+                    color: 'warning',
+                    onClick: () => handleToggleArchive(file.id, file.isArchived)
+                  },
+                  {
+                    color: 'error',
+                    icon: <DeleteIcon />,
+                    label: 'Delete',
+                    onClick: () => handleDelete(file.id)
+                  }
+                ]
+              : []
+          }))}
+        />
+      </TableContainer>
+    </>
+  );
+};
+
+export const ProjectFileList: FC = () => {
+  const { projectId } = useProjectParams();
+  const [showArchived, setShowArchived] = useState(false);
+
+  return (
+    <Card elevation={0} variant="outlined">
+      <CardContent>
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Upload Files
+          </Typography>
+          <ProjectFileUpload projectId={projectId} />
+        </Box>
+
+        <Divider sx={{ my: 3 }} />
+
+        <Suspense fallback={<Skeleton variant="rectangular" height={400} />}>
+          <List isArchivedVisible={showArchived} toggleArchived={setShowArchived} />
+        </Suspense>
+      </CardContent>
+    </Card>
+  );
+};
