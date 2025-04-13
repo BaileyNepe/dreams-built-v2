@@ -3,6 +3,7 @@ import { authz } from '@dreams-built/shared/src/auth/permissions';
 import ArchiveIcon from '@mui/icons-material/Archive';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FileIcon from '@mui/icons-material/Description';
+import DownloadIcon from '@mui/icons-material/Download';
 import EditIcon from '@mui/icons-material/Edit';
 import ImageIcon from '@mui/icons-material/Image';
 import PdfIcon from '@mui/icons-material/PictureAsPdf';
@@ -10,11 +11,17 @@ import PinnedIcon from '@mui/icons-material/PushPin';
 import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import {
   Box,
+  Button,
   Card,
   CardContent,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Divider,
   FormControlLabel,
+  IconButton,
   Skeleton,
   Switch,
   Tooltip,
@@ -24,6 +31,7 @@ import { useDeleteFile, useProjectFiles, useUpdateFile } from 'api/projectFiles'
 import { ConfirmationDialog } from 'components/ConfirmationDialog';
 import { EnhancedTable } from 'components/EnhancedTable';
 import { formatFileSize } from 'components/FileDropzone';
+import { saveAs } from 'file-saver';
 import { type FC, Suspense, useState } from 'react';
 import { useProjectParams } from 'routes/_dashboard/dashboard/projects/edit.$projectId';
 import styled from 'styled-components';
@@ -52,6 +60,27 @@ const Main = styled.div`
   }
 `;
 
+const FilePreviewContent = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: center;
+  max-height: 80vh;
+  min-height: 300px;
+  width: 100%;
+
+  img {
+    max-height: 70vh;
+    max-width: 100%;
+    object-fit: contain;
+  }
+
+  iframe {
+    border: none;
+    height: 70vh;
+    width: 100%;
+  }
+`;
+
 const List: FC<{
   isArchivedVisible: boolean;
   toggleArchived: (show: boolean) => void;
@@ -72,6 +101,12 @@ const List: FC<{
     message: '',
     fileId: '',
     action: '' as 'delete' | ''
+  });
+
+  // State for preview dialog
+  const [previewDialog, setPreviewDialog] = useState({
+    open: false,
+    file: null as { id: string; name: string; url: string; contentType: string } | null
   });
 
   const handleTogglePin = (fileId: string, isPinned: boolean) => {
@@ -115,8 +150,58 @@ const List: FC<{
     }
   };
 
+  const handleDownload = (url: string, fileName: string) => {
+    fetch(url)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.blob();
+      })
+      .then((blob) => {
+        saveAs(blob, fileName);
+      })
+      .catch((error) => {
+        console.error('Download error:', error);
+        // Optionally fallback: open the URL
+        window.open(url, '_blank');
+      });
+  };
+
   const handleRowClick = (url: string) => {
-    window.open(url, '_blank');
+    const file = files.find((f) => f.url === url);
+    if (file) {
+      setPreviewDialog({
+        open: true,
+        file: {
+          id: file.id,
+          name: file.name,
+          url: file.url,
+          contentType: file.contentType
+        }
+      });
+    }
+  };
+
+  const renderFilePreview = (file: { contentType: string; url: string }) => {
+    if (file.contentType.includes('image')) {
+      return <img src={file.url} alt="File preview" />;
+    } else if (file.contentType.includes('pdf')) {
+      return <iframe src={`${file.url}#toolbar=0`} title="PDF preview" />;
+    }
+    return (
+      <Box sx={{ textAlign: 'center' }}>
+        <FileIcon sx={{ fontSize: 60, mb: 2 }} />
+        <Typography>This file type cannot be previewed</Typography>
+      </Box>
+    );
+  };
+
+  const closePreviewDialog = () => {
+    setPreviewDialog({
+      open: false,
+      file: null
+    });
   };
 
   return !files?.length ? (
@@ -183,38 +268,85 @@ const List: FC<{
               ),
               size: formatFileSize(file.size),
               uploadedAt: formatDate({ date: file.uploadedAt, format: 'dd/MM/yyyy' }),
-              actions: hasEditPermission
-                ? [
-                    {
-                      icon: file.isPinned ? (
-                        <PinnedIcon />
-                      ) : (
-                        <PinnedIcon color="disabled" />
-                      ),
-                      label: file.isPinned ? 'Unpin' : 'Pin',
-                      onClick: () => handleTogglePin(file.id, file.isPinned)
-                    },
-                    {
-                      icon: <EditIcon />,
-                      label: 'Rename',
-                      onClick: () => handleRename(file.id, file.name)
-                    },
-                    {
-                      icon: file.isArchived ? <UnarchiveIcon /> : <ArchiveIcon />,
-                      label: file.isArchived ? 'Unarchive' : 'Archive',
-                      color: 'warning',
-                      onClick: () => handleToggleArchive(file.id, file.isArchived)
-                    },
-                    {
-                      color: 'error',
-                      icon: <DeleteIcon />,
-                      label: 'Delete',
-                      onClick: () => openDeleteConfirmation(file.id)
-                    }
-                  ]
-                : []
+              actions: [
+                {
+                  icon: <DownloadIcon color="primary" />,
+                  label: 'Download',
+                  onClick: () => {
+                    handleDownload(file.url, file.name);
+                  }
+                },
+                ...(hasEditPermission
+                  ? [
+                      {
+                        icon: file.isPinned ? (
+                          <PinnedIcon />
+                        ) : (
+                          <PinnedIcon color="disabled" />
+                        ),
+                        label: file.isPinned ? 'Unpin' : 'Pin',
+                        onClick: () => {
+                          handleTogglePin(file.id, file.isPinned);
+                        }
+                      },
+                      {
+                        icon: <EditIcon />,
+                        label: 'Rename',
+                        onClick: () => {
+                          handleRename(file.id, file.name);
+                        }
+                      },
+                      {
+                        icon: file.isArchived ? <UnarchiveIcon /> : <ArchiveIcon />,
+                        label: file.isArchived ? 'Unarchive' : 'Archive',
+                        color: 'warning',
+                        onClick: () => {
+                          handleToggleArchive(file.id, file.isArchived);
+                        }
+                      },
+                      {
+                        color: 'error',
+                        icon: <DeleteIcon />,
+                        label: 'Delete',
+                        onClick: () => {
+                          openDeleteConfirmation(file.id);
+                        }
+                      }
+                    ]
+                  : [])
+              ]
             }))}
           />
+
+          {/* Preview Dialog */}
+          <Dialog
+            open={previewDialog.open}
+            onClose={closePreviewDialog}
+            maxWidth="lg"
+            fullWidth
+          >
+            <DialogTitle>{previewDialog.file?.name || 'File Preview'}</DialogTitle>
+            <DialogContent dividers>
+              <FilePreviewContent>
+                {previewDialog.file && renderFilePreview(previewDialog.file)}
+              </FilePreviewContent>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={closePreviewDialog}>Close</Button>
+              {previewDialog.file && (
+                <Button
+                  variant="contained"
+                  startIcon={<DownloadIcon />}
+                  onClick={() =>
+                    previewDialog.file &&
+                    handleDownload(previewDialog.file.url, previewDialog.file.name)
+                  }
+                >
+                  Download
+                </Button>
+              )}
+            </DialogActions>
+          </Dialog>
 
           <ConfirmationDialog
             open={confirmDialog.open}

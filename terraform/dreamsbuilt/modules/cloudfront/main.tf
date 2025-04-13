@@ -261,28 +261,38 @@ resource "aws_cloudfront_response_headers_policy" "security_headers" {
   name    = "${var.environment}-dreamsbuilt-security-headers"
   comment = "Security headers policy for DreamsBuilt"
 
-  security_headers_config {
-    content_type_options {
+  cors_config {
+    access_control_allow_credentials = false
+
+    access_control_allow_headers {
+      items = ["*"]
+    }
+
+    access_control_allow_methods {
+      items = ["GET", "HEAD", "OPTIONS"]
+    }
+
+    access_control_allow_origins {
+      items = ["*"] # In production, you might want to restrict this to specific domains
+    }
+
+    origin_override = true
+
+
+  }
+
+  custom_headers_config {
+    items {
+      header   = "Cache-Control"
+      value    = "public, max-age=31536000, immutable"
       override = true
     }
-    frame_options {
-      frame_option = "DENY"
-      override     = true
-    }
-    referrer_policy {
-      referrer_policy = "strict-origin-when-cross-origin"
-      override        = true
-    }
-    strict_transport_security {
-      access_control_max_age_sec = 31536000
-      include_subdomains         = true
-      preload                    = true
-      override                   = true
-    }
-    xss_protection {
-      mode_block = true
-      protection = true
-      override   = true
+    items {
+      header   = "Content-Disposition"
+      value    = "inline"
+      override = true
     }
   }
+
+
 }
