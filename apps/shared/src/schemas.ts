@@ -104,7 +104,8 @@ export const projectSchema = z.object({
   clientId: z.string(),
   color: z.string().regex(colorRegex, 'Color must be a valid hex color'),
   jobNumber: z.coerce.number().int().positive(),
-  endClient: z.string()
+  endClient: z.string(),
+  deleted: z.boolean().optional()
 });
 
 export const updateUserSchema = z.object({

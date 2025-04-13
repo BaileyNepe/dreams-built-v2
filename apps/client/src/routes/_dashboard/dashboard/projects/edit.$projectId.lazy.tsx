@@ -42,12 +42,23 @@ const EditProjectForm: FC = () => {
       clientId: project.clientId,
       endClient: project.endClient,
       jobNumber: project.jobNumber,
-      color: project.color
+      color: project.color,
+      deleted: project.deleted
     }
   });
 
   return (
     <FormBody
+      onDelete={() => {
+        update.mutate(
+          { ...methods.getValues(), projectId, deleted: true },
+          {
+            onSuccess: () => {
+              navigate({ to: paths.projects });
+            }
+          }
+        );
+      }}
       isSubmitting={methods.formState.isSubmitting || update.isPending}
       onSubmit={methods.handleSubmit((data) => {
         update.mutate(

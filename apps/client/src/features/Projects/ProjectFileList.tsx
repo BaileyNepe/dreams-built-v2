@@ -30,13 +30,6 @@ import { useAuth } from 'utils/contexts/AuthProvider';
 import { formatDate } from 'utils/date';
 import { ProjectFileUpload } from './ProjectFileUpload';
 
-const TableContainer = styled.div`
-  display: grid;
-
-  overflow-x: hidden;
-  padding: 1rem;
-`;
-
 const getFileIcon = (contentType: string) => {
   if (contentType.includes('pdf')) {
     return <PdfIcon />;
@@ -45,6 +38,18 @@ const getFileIcon = (contentType: string) => {
   }
   return <FileIcon />;
 };
+
+const Container = styled.div`
+  display: grid;
+`;
+
+const Main = styled.div`
+  overflow-x: auto;
+  padding: 0.2rem;
+  @media (min-width: 640px) {
+    padding: 1rem;
+  }
+`;
 
 const List: FC<{
   isArchivedVisible: boolean;
@@ -103,7 +108,8 @@ const List: FC<{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          mb: 2
+          mb: 2,
+          flexDirection: { xs: 'column', sm: 'row' }
         }}
       >
         <Typography variant="h6">Project Files ({files.length})</Typography>
@@ -121,72 +127,74 @@ const List: FC<{
         />
       </Box>
 
-      <TableContainer>
-        <EnhancedTable
-          onRowClick={(id) => {
-            const file = files.find((f) => f.id === id);
-            if (file) {
-              handleRowClick(file.url);
-            }
-          }}
-          headers={[
-            { id: 'icon', label: '' },
-            { id: 'name', label: 'File Name', width: '100%' },
-            { id: 'size', label: 'Size' },
-            { id: 'uploadedAt', label: 'Upload Date' },
-            { id: 'actions', label: '' }
-          ]}
-          rows={files.map((file) => ({
-            id: file.id,
-            icon: getFileIcon(file.contentType),
-            name: (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                {file.isPinned && (
-                  <Tooltip title="Pinned">
-                    <PinnedIcon fontSize="small" color="primary" />
-                  </Tooltip>
-                )}
-                {file.name}
-                {file.isArchived && (
-                  <Chip size="small" label="Archived" variant="outlined" />
-                )}
-              </Box>
-            ),
-            size: formatFileSize(file.size),
-            uploadedAt: formatDate({ date: file.uploadedAt, format: 'dd/MM/yyyy' }),
-            actions: hasEditPermission
-              ? [
-                  {
-                    icon: file.isPinned ? (
-                      <PinnedIcon />
-                    ) : (
-                      <PinnedIcon color="disabled" />
-                    ),
-                    label: file.isPinned ? 'Unpin' : 'Pin',
-                    onClick: () => handleTogglePin(file.id, file.isPinned)
-                  },
-                  {
-                    icon: <EditIcon />,
-                    label: 'Rename',
-                    onClick: () => handleRename(file.id, file.name)
-                  },
-                  {
-                    icon: file.isArchived ? <UnarchiveIcon /> : <ArchiveIcon />,
-                    label: file.isArchived ? 'Unarchive' : 'Archive',
-                    color: 'warning',
-                    onClick: () => handleToggleArchive(file.id, file.isArchived)
-                  },
-                  {
-                    color: 'error',
-                    icon: <DeleteIcon />,
-                    label: 'Delete',
-                    onClick: () => handleDelete(file.id)
-                  }
-                ]
-              : []
-          }))}
-        />
-      </TableContainer>
+      <Container>
+        <Main>
+          <EnhancedTable
+            onRowClick={(id) => {
+              const file = files.find((f) => f.id === id);
+              if (file) {
+                handleRowClick(file.url);
+              }
+            }}
+            headers={[
+              { id: 'icon', label: '' },
+              { id: 'name', label: 'File Name', width: '100%' },
+              { id: 'size', label: 'Size' },
+              { id: 'uploadedAt', label: 'Upload Date' },
+              { id: 'actions', label: '' }
+            ]}
+            rows={files.map((file) => ({
+              id: file.id,
+              icon: getFileIcon(file.contentType),
+              name: (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  {file.isPinned && (
+                    <Tooltip title="Pinned">
+                      <PinnedIcon fontSize="small" color="primary" />
+                    </Tooltip>
+                  )}
+                  {file.name}
+                  {file.isArchived && (
+                    <Chip size="small" label="Archived" variant="outlined" />
+                  )}
+                </Box>
+              ),
+              size: formatFileSize(file.size),
+              uploadedAt: formatDate({ date: file.uploadedAt, format: 'dd/MM/yyyy' }),
+              actions: hasEditPermission
+                ? [
+                    {
+                      icon: file.isPinned ? (
+                        <PinnedIcon />
+                      ) : (
+                        <PinnedIcon color="disabled" />
+                      ),
+                      label: file.isPinned ? 'Unpin' : 'Pin',
+                      onClick: () => handleTogglePin(file.id, file.isPinned)
+                    },
+                    {
+                      icon: <EditIcon />,
+                      label: 'Rename',
+                      onClick: () => handleRename(file.id, file.name)
+                    },
+                    {
+                      icon: file.isArchived ? <UnarchiveIcon /> : <ArchiveIcon />,
+                      label: file.isArchived ? 'Unarchive' : 'Archive',
+                      color: 'warning',
+                      onClick: () => handleToggleArchive(file.id, file.isArchived)
+                    },
+                    {
+                      color: 'error',
+                      icon: <DeleteIcon />,
+                      label: 'Delete',
+                      onClick: () => handleDelete(file.id)
+                    }
+                  ]
+                : []
+            }))}
+          />
+        </Main>
+      </Container>
     </>
   );
 };

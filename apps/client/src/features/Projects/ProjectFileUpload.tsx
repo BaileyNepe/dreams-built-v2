@@ -1,13 +1,11 @@
 import { useCreateFileRecord, useGetPresignedUrl } from 'api/projectFiles';
 import { FileDropzone } from 'components/FileDropzone';
 import { notify } from 'libs/Notify';
-import { useState } from 'react';
+import { type FC, useState } from 'react';
 
-interface ProjectFileUploadProps {
+export const ProjectFileUpload: FC<{
   projectId: string;
-}
-
-export const ProjectFileUpload = ({ projectId }: ProjectFileUploadProps) => {
+}> = ({ projectId }) => {
   const [isUploading, setIsUploading] = useState(false);
   const getPresignedUrl = useGetPresignedUrl();
   const createFileRecord = useCreateFileRecord();
@@ -43,7 +41,6 @@ export const ProjectFileUpload = ({ projectId }: ProjectFileUploadProps) => {
 
       notify('File uploaded successfully', { type: 'success' });
     } catch (error) {
-      console.error('Error uploading file:', error);
       notify('Error uploading file', { type: 'error' });
     }
   };
