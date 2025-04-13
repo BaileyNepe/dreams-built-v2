@@ -1,0 +1,90 @@
+name: Deploy Terraform Infrastructure
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'terraform/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy (prod or dev)'
+        required: true
+        default: 'prod'
+        type: choice
+        options:
+          - prod
+          - dev
+
+jobs:
+  terraform:
+    name: Deploy Terraform
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+
+    env:
+      AWS_REGION: ap-southeast-2
+      TF_WORKSPACE: ${{ github.event.inputs.environment || 'prod' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-duration-seconds: 1200
+          role-session-name: GithubActions-${{ github.run_id }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.7
+
+      # Deploy remote state first if it doesn't exist
+      - name: Deploy Remote State (First Run Only)
+        id: remote_state
+        working-directory: ./terraform/dreamsbuilt
+        continue-on-error: true
+        run: |
+          terraform init
+          terraform plan -input=false -out=tfplan
+          terraform apply -auto-approve tfplan
+
+      - name: Initialize Terraform
+        working-directory: ./terraform/dreamsbuilt/environments/${{ env.TF_WORKSPACE }}
+        run: |
+          # Uncomment the backend configuration in main.tf
+          sed -i 's/# backend "s3"/backend "s3"/g' main.tf
+          terraform init
+
+      - name: Terraform Plan
+        id: plan
+        working-directory: ./terraform/dreamsbuilt/environments/${{ env.TF_WORKSPACE }}
+        run: terraform plan -input=false -out=tfplan
+
+      - name: Terraform Apply
+        working-directory: ./terraform/dreamsbuilt/environments/${{ env.TF_WORKSPACE }}
+        run: terraform apply -auto-approve tfplan
+
+      - name: Extract CloudFront Domain
+        id: cloudfront
+        working-directory: ./terraform/dreamsbuilt/environments/${{ env.TF_WORKSPACE }}
+        run: |
+          CLOUDFRONT_DOMAIN=$(terraform output -raw cloudfront_domain_name)
+          echo "CLOUDFRONT_DOMAIN=${CLOUDFRONT_DOMAIN}" >> $GITHUB_OUTPUT
+          echo "::set-output name=domain::${CLOUDFRONT_DOMAIN}"
+
+      - name: Update Environment Files with CloudFront Domain
+        working-directory: ./apps/server
+        run: |
+          # Use sed to replace the placeholder in the .env file
+          if [ -f .env.${{ env.TF_WORKSPACE }} ]; then
+            sed -i "s|FILES_CLOUDFRONT_URL=https://your-files-cloudfront-url.cloudfront.net|FILES_CLOUDFRONT_URL=https://${{ steps.cloudfront.outputs.domain }}|g" .env.${{ env.TF_WORKSPACE }}
+          fi

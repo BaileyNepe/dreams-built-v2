@@ -49,8 +49,28 @@ model Project {
 
     timeEntry       TimeEntry[]
     projectSchedule ProjectSchedule[]
+    projectFiles    ProjectFile[]
 
     @@map("project")
+}
+
+model ProjectFile {
+    id          String   @id @default(cuid())
+    name        String   @default("")
+    url         String
+    key         String
+    size        Int
+    contentType String   @map("content_type")
+    isPinned    Boolean  @default(false) @map("is_pinned")
+    isArchived  Boolean  @default(false) @map("is_archived")
+    projectId   String   @map("project_id")
+    uploadedAt  DateTime @default(now()) @map("uploaded_at")
+    updatedAt   DateTime @updatedAt @map("updated_at")
+    deleted     Boolean  @default(false)
+
+    project Project @relation(fields: [projectId], references: [id])
+
+    @@map("project_file")
 }
 
 model ProjectPart {

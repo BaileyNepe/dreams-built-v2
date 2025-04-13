@@ -29,6 +29,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.787.0",
+    "@aws-sdk/s3-request-presigner": "^3.787.0",
     "@dreams-built/shared": "workspace:shared",
     "@prisma/client": "^5.19.1",
     "@trpc/server": "^11.0.0-rc.645",
@@ -44,6 +46,8 @@
     "express-oauth2-jwt-bearer": "^1.6.0",
     "helmet": "^8.0.0",
     "lru-cache": "^11.1.0",
+    "multer": "^1.4.5-lts.2",
+    "multer-s3": "^3.0.1",
     "nodemailer": "^6.9.14",
     "prisma": "^5.19.1",
     "socket.io": "^4.8.1",
