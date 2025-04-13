@@ -21,7 +21,6 @@ import {
   DialogTitle,
   Divider,
   FormControlLabel,
-  IconButton,
   Skeleton,
   Switch,
   Tooltip,
@@ -162,6 +161,7 @@ const List: FC<{
         saveAs(blob, fileName);
       })
       .catch((error) => {
+        // eslint-disable-next-line no-console
         console.error('Download error:', error);
         // Optionally fallback: open the URL
         window.open(url, '_blank');
