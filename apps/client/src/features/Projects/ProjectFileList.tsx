@@ -299,13 +299,13 @@ const List: FC<{
                       {
                         icon: file.isArchived ? <UnarchiveIcon /> : <ArchiveIcon />,
                         label: file.isArchived ? 'Unarchive' : 'Archive',
-                        color: 'warning',
+                        color: 'warning' as const,
                         onClick: () => {
                           handleToggleArchive(file.id, file.isArchived);
                         }
                       },
                       {
-                        color: 'error',
+                        color: 'error' as const,
                         icon: <DeleteIcon />,
                         label: 'Delete',
                         onClick: () => {
