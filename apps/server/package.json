@@ -55,7 +55,9 @@
     "tsconfig-paths": "^4.2.0",
     "ua-parser-js": "^1.0.39",
     "winston": "^3.13.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "bun": "latest",
+    "sharp": "^0.33.2"
   },
   "devDependencies": {
     "@trpc/client": "^11.0.0-rc.645",
@@ -74,6 +76,8 @@
     "supertest": "^7.0.0",
     "typescript": "^5.7.2",
     "vite-tsconfig-paths": "^4.3.2",
-    "vitest": "^2.0.3"
+    "vitest": "^2.0.3",
+    "sharp": "^0.33.2",
+    "bun-types": "latest"
   }
 }
