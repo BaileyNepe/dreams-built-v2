@@ -318,7 +318,6 @@ function AboutComponent() {
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {testimonial.location}
-                  {testimonial.company && `, ${testimonial.company}`}
                 </Typography>
               </TestimonialCard>
             </Grid>

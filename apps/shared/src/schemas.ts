@@ -74,7 +74,7 @@ const validateDateRange = (
 export const updateScheduleSchema = rawDateRangeSchema
   .merge(
     z.object({
-      id: z.string().cuid2('ID is required'),
+      id: z.string(),
       deleted: z.boolean(),
       color: z.string().regex(colorRegex, 'Color must be a valid hex color'),
       notes: z.string().optional()
@@ -85,8 +85,8 @@ export const updateScheduleSchema = rawDateRangeSchema
 export const createScheduleSchema = rawDateRangeSchema
   .merge(
     z.object({
-      projectPartId: z.string().cuid2('Project part is required'),
-      projectId: z.string().cuid2('Project is required'),
+      projectPartId: z.string(),
+      projectId: z.string(),
       notes: z.string().optional()
     })
   )
@@ -101,7 +101,7 @@ export const projectSchema = z.object({
   address: z.string().nonempty('Address is required'),
   area: z.coerce.number(),
   city: z.string(),
-  clientId: z.string().cuid2('Client is required'),
+  clientId: z.string(),
   color: z.string().regex(colorRegex, 'Color must be a valid hex color'),
   jobNumber: z.coerce.number().int().positive(),
   endClient: z.string()

@@ -3,7 +3,9 @@ import FmdGoodOutlinedIcon from '@mui/icons-material/FmdGoodOutlined';
 import MarkunreadOutlinedIcon from '@mui/icons-material/MarkunreadOutlined';
 import SendRoundedIcon from '@mui/icons-material/SendRounded';
 import SmartphoneOutlinedIcon from '@mui/icons-material/SmartphoneOutlined';
+import Box from '@mui/material/Box';
 import Divider from '@mui/material/Divider';
+import LinearProgress from '@mui/material/LinearProgress';
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
@@ -22,6 +24,41 @@ const ContactFormContainer = styled.div`
   text-align: left;
 `;
 
+const CharacterCounter = styled(Box)`
+  display: flex;
+  flex-direction: column;
+  margin-top: 4px;
+  width: 100%;
+`;
+
+const CounterText = styled(Typography)<{ $isNearLimit: boolean; $isOverLimit: boolean }>`
+  align-self: flex-end;
+  color: ${({ theme, $isNearLimit, $isOverLimit }) =>
+    $isOverLimit
+      ? theme.palette.error.main
+      : $isNearLimit
+        ? theme.palette.warning.main
+        : theme.palette.text.secondary};
+  font-size: 0.75rem;
+  margin-top: 4px;
+`;
+
+const StyledProgress = styled(LinearProgress)<{ $value: number }>`
+  height: 4px;
+  margin-top: 2px;
+  width: 100%;
+
+  .MuiLinearProgress-bar {
+    background-color: ${({ theme, $value }) => {
+      if ($value > 100) return theme.palette.error.main;
+      if ($value > 85) return theme.palette.warning.main;
+      return theme.palette.primary.main;
+    }};
+  }
+`;
+
+const MAX_MESSAGE_LENGTH = 2000;
+
 export const ContactForm: FC = () => {
   const mutate = useContactMutation();
   const { execute, reset: resetReCaptcha } = useReCaptcha();
@@ -36,9 +73,24 @@ export const ContactForm: FC = () => {
     }
   });
 
+  // Get message value directly from form watch
+  const message = methods.watch('message') || '';
+  const messageLength = message.length;
+
+  const isNearLimit = messageLength >= MAX_MESSAGE_LENGTH * 0.85;
+  const isOverLimit = messageLength > MAX_MESSAGE_LENGTH;
+  const progressValue = (messageLength / MAX_MESSAGE_LENGTH) * 100;
+
   return (
     <FormBody
       onSubmit={methods.handleSubmit(async (input) => {
+        if (input.message.length > MAX_MESSAGE_LENGTH) {
+          toast.error(
+            `Message exceeds maximum length of ${MAX_MESSAGE_LENGTH} characters`
+          );
+          return;
+        }
+
         try {
           const token = execute();
           if (token) {
@@ -83,7 +135,31 @@ export const ContactForm: FC = () => {
           </Stack>
           <TextFieldRHF name="email" fullWidth {...methods} />
           <TextFieldRHF name="phoneNumber" fullWidth {...methods} />
-          <TextFieldRHF name="message" multiline rows={8} fullWidth {...methods} />
+          <TextFieldRHF
+            name="message"
+            multiline
+            rows={8}
+            fullWidth
+            inputProps={{
+              maxLength: MAX_MESSAGE_LENGTH,
+              style: { overflowY: 'auto' } // Control the scrollbar
+            }}
+            {...methods}
+          />
+          <CharacterCounter>
+            <StyledProgress
+              variant="determinate"
+              value={Math.min(progressValue, 100)}
+              $value={progressValue}
+            />
+            <CounterText
+              variant="caption"
+              $isNearLimit={isNearLimit}
+              $isOverLimit={isOverLimit}
+            >
+              {messageLength}/{MAX_MESSAGE_LENGTH} characters
+            </CounterText>
+          </CharacterCounter>
         </Stack>
       </ContactFormContainer>
     </FormBody>

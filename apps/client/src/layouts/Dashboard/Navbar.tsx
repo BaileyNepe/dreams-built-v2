@@ -1,8 +1,10 @@
 import Box from '@mui/material/Box';
 
 import { useLocation } from '@tanstack/react-router';
+import { useUnreadMessagesCount } from 'api/contact';
 import { RouterLink } from 'components/Link';
 import { Logo } from 'components/Logo';
+import { NotificationBadge } from 'components/NotificationBadge';
 import { type FC } from 'react';
 import { styled } from 'styled-components';
 import { useAuth } from 'utils/contexts/AuthProvider';
@@ -70,6 +72,8 @@ export const NavBar: FC<{
 }> = ({ onClose }) => {
   const { pathname } = useLocation();
   const { user } = useAuth();
+  const { data: unreadMessagesData } = useUnreadMessagesCount();
+  const unreadMessages = unreadMessagesData?.count || 0;
 
   const filteredRoutes = routes.filter((route) => {
     if (route.requiredPermission) {
@@ -87,12 +91,24 @@ export const NavBar: FC<{
         <List>
           {filteredRoutes.map((item) => {
             const active = pathname === item.to;
+            const isMessagesRoute = item.name === 'Messages';
+
+            const icon = (
+              <ListItemIcon>
+                {isMessagesRoute ? (
+                  <NotificationBadge count={unreadMessages}>
+                    <item.icon />
+                  </NotificationBadge>
+                ) : (
+                  <item.icon />
+                )}
+              </ListItemIcon>
+            );
+
             return (
               <RouterLink key={item.name} to={item.to}>
                 <Button $isActive={active} onClick={onClose}>
-                  <ListItemIcon>
-                    <item.icon />
-                  </ListItemIcon>
+                  {icon}
                   <ButtonText>{item.name}</ButtonText>
                 </Button>
               </RouterLink>

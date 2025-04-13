@@ -22,6 +22,8 @@ export const paths = {
 
   timesheet: '/dashboard/timesheet',
 
+  messages: '/dashboard/messages',
+
   logout: '/logout',
 
   contact: '/contact',

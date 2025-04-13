@@ -5,6 +5,7 @@ import {
   CalendarIcon,
   FolderIcon,
   GlobeAltIcon,
+  InboxIcon,
   ServerIcon,
   SignalIcon,
   UsersIcon
@@ -60,6 +61,12 @@ export const routes: {
     to: paths.projectReports,
     icon: SignalIcon,
     requiredPermission: authz.timesheet_view_all
+  },
+  {
+    name: 'Messages',
+    to: paths.messages,
+    icon: InboxIcon,
+    requiredPermission: authz.messages_read
   },
   {
     name: 'Logout',
