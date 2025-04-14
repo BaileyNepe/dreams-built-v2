@@ -1,8 +1,4 @@
-import {
-  DeleteObjectCommand,
-  GetObjectCommand,
-  PutObjectCommand
-} from '@aws-sdk/client-s3';
+import { GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { env } from '@config/env';
 import { TRPCError } from '@trpc/server';
@@ -45,34 +41,7 @@ export const getPresignedUploadUrl = async (
 };
 
 // Get a presigned URL for downloading/viewing files
-export const getPresignedDownloadUrl = async (key: string, expiresIn = 3600) => {
-  isS3Configured();
-
-  // If CloudFront is configured, use it for download URLs
-  if (env.cloudFrontUrl) {
-    return `${env.cloudFrontUrl}/${key}`;
-  }
-  const bucketName = env.s3BucketName;
-  // Fall back to S3 presigned URL if no CloudFront is configured
-  const command = new GetObjectCommand({
-    Bucket: bucketName,
-    Key: key
-  });
-
-  return getSignedUrl(s3Client!, command, { expiresIn });
-};
-
-// Delete a file from S3
-export const deleteS3Object = async (key: string) => {
-  isS3Configured();
-
-  const command = new DeleteObjectCommand({
-    Bucket: env.s3BucketName,
-    Key: key
-  });
-
-  return s3Client!.send(command);
-};
+export const getPresignedDownloadUrl = (key: string) => `${env.cloudFrontUrl}/${key}`;
 
 // Get file from S3
 export const getS3Object = async (key: string): Promise<Buffer> => {
@@ -132,10 +101,3 @@ export const generateOptimizedKey = (
   // For PDF optimization, keep the same extension
   return `${keyParts.join('.')}_optimized.${extension}`;
 };
-
-// Compress image/PDF utilities could be added here
-export const optimizeFile = (fileBuffer: Buffer, contentType: string): Promise<Buffer> =>
-  // This is where you'd implement image compression, PDF optimization, etc.
-  // For now, we'll just return the original buffer
-  // Future implementation could use libraries like sharp for images
-  Promise.resolve(fileBuffer);

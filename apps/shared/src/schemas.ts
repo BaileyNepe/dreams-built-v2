@@ -143,3 +143,56 @@ export const getPresignedUrlSchema = z.object({
   contentType: z.string(),
   projectId: z.string()
 });
+
+// Forum schemas
+export const forumPostSchema = z.object({
+  id: z.string().optional(),
+  title: z.string().min(1, 'Title is required').max(100, 'Title is too long'),
+  content: z.string().min(1, 'Content is required'),
+  userId: z.string(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  deleted: z.boolean().optional(),
+  isPinned: z.boolean().optional(),
+  attachments: z.array(z.string()).optional()
+});
+
+export const forumCommentSchema = z.object({
+  id: z.string().optional(),
+  content: z.string().min(1, 'Comment is required'),
+  postId: z.string(),
+  userId: z.string(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  deleted: z.boolean().optional()
+});
+
+export const forumLikeSchema = z.object({
+  id: z.string().optional(),
+  postId: z.string().optional(),
+  commentId: z.string().optional(),
+  userId: z.string(),
+  createdAt: z.string().optional()
+});
+
+export const forumViewSchema = z.object({
+  id: z.string().optional(),
+  postId: z.string(),
+  userId: z.string(),
+  viewedAt: z.string().optional()
+});
+
+export const forumAttachmentSchema = z.object({
+  id: z.string().optional(),
+  name: z.string(),
+  contentType: z.string(),
+  size: z.number().int().positive(),
+  postId: z.string(),
+  key: z.string()
+});
+
+export const getPresignedUrlForForumSchema = z.object({
+  fileName: z.string(),
+  contentType: z.string(),
+  postId: z.string()
+});

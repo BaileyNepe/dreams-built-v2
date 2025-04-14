@@ -15,7 +15,9 @@ type DateFormats =
   | 'dd/MM/yyyy' // e.g. 01/01/2023
   | 'd MMM' // e.g. 1 Jan
   | 'ccc d LLL' // e.g. Mon 1 Jan
-  | 'HH:mm - d/MM/yyyy'; // e.g. 13:00 - 1/01/2023
+  | 'd MMM yyyy HH:mm' // e.g. 1 Jan 2023 13:00
+  | 'HH:mm - d/MM/yyyy' // e.g. 13:00 - 1/01/2023
+  | 'd MMM yyyy'; // e.g. 1 Jan 2023
 
 export const formatDate = ({
   date,
