@@ -11,6 +11,7 @@ import ImageIcon from '@mui/icons-material/Image';
 import PdfIcon from '@mui/icons-material/PictureAsPdf';
 import PinnedIcon from '@mui/icons-material/PushPin';
 import UnarchiveIcon from '@mui/icons-material/Unarchive';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import {
   Box,
   Button,
@@ -312,6 +313,13 @@ const List: FC<{
               uploadedAt: formatDate({ date: file.uploadedAt, format: 'dd/MM/yyyy' }),
               actions: [
                 {
+                  icon: <VisibilityIcon />,
+                  label: 'View',
+                  onClick: () => {
+                    handleRowClick(file.url);
+                  }
+                },
+                {
                   icon: <DownloadIcon color="primary" />,
                   label: 'Download',
                   onClick: () => {
@@ -451,6 +459,21 @@ const List: FC<{
                         Download Original
                       </Button>
                     )}
+                  <Button
+                    variant="outlined"
+                    startIcon={<VisibilityIcon />}
+                    onClick={() => {
+                      if (previewDialog.file) {
+                        const url =
+                          previewDialog.showOriginal && previewDialog.file.originalUrl
+                            ? previewDialog.file.originalUrl
+                            : previewDialog.file.url;
+                        window.open(url, '_blank');
+                      }
+                    }}
+                  >
+                    Open in New Tab
+                  </Button>
                 </>
               )}
             </DialogActions>

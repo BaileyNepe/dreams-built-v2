@@ -17,7 +17,7 @@ export const UserProfile: FC = () => {
 
   return (
     <ProfileContainer>
-      {user?.permissions?.includes(authz.messages_read) && (
+      {!!user?.permissions?.includes(authz.messages_read) && (
         <NotificationMenu maxNotifications={5} />
       )}
 

@@ -51,6 +51,13 @@ const DashboardContainer = styled(Box)`
   padding: ${(props) => props.theme.spacing?.(3) || '24px'};
 `;
 
+const SectionHeader = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin: 2rem 0 1rem;
+`;
+
 const WelcomeCard = styled(Card)`
   && {
     box-shadow: ${(props) => props.theme.customShadows?.light};
@@ -750,15 +757,16 @@ function DashboardContent() {
         </BlockGrid>
       </Board>
 
-      <SectionTitle variant="h5">Recent Forum Posts</SectionTitle>
-      <CreatePostButton
-        variant="contained"
-        color="primary"
-        onClick={() => setOpenCreateDialog(true)}
-      >
-        Create New Post
-      </CreatePostButton>
-
+      <SectionHeader>
+        <SectionTitle variant="h5">Recent Forum Posts</SectionTitle>
+        <CreatePostButton
+          variant="contained"
+          color="primary"
+          onClick={() => setOpenCreateDialog(true)}
+        >
+          Create New Post
+        </CreatePostButton>
+      </SectionHeader>
       {posts.length > 0 ? (
         <InfiniteScroll
           hasMore={hasNextPage}

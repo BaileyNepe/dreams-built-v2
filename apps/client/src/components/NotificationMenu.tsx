@@ -101,11 +101,9 @@ const MarkAsReadIcon = styled(IconButton)`
   padding: 4px;
 `;
 
-interface NotificationMenuProps {
+export const NotificationMenu: FC<{
   maxNotifications?: number;
-}
-
-export const NotificationMenu: FC<NotificationMenuProps> = ({ maxNotifications = 5 }) => {
+}> = ({ maxNotifications = 5 }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();

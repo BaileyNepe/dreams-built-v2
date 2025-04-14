@@ -1,3 +1,5 @@
+import { authz } from '@dreams-built/shared/src/auth/permissions';
+import { useAuth } from 'utils/contexts/AuthProvider';
 import { api } from './trpc';
 
 export const useContactMutation = () => api.contact.contact.useMutation();
@@ -10,19 +12,16 @@ export const useMessagesList = ({
   page: number;
   perPage: number;
   query?: string;
-}) =>
-  api.contact.list.useQuery(
-    { page, perPage, query },
-    {
-      keepPreviousData: true
-    }
-  );
+}) => api.contact.list.useQuery({ page, perPage, query });
 
-export const useUnreadMessagesCount = (options?: { refetchInterval?: number }) =>
-  api.contact.countUnread.useQuery(undefined, {
+export const useUnreadMessagesCount = (options?: { refetchInterval?: number }) => {
+  const { user } = useAuth();
+  return api.contact.countUnread.useQuery(undefined, {
     refetchInterval: options?.refetchInterval ?? 30000, // Default to 30 seconds
-    refetchOnWindowFocus: true
+    refetchOnWindowFocus: true,
+    enabled: !!user?.permissions?.includes(authz.messages_read)
   });
+};
 
 export const useMarkMessageAsRead = () => {
   const utils = api.useUtils();
