@@ -126,6 +126,12 @@ model User {
     timeEntry  TimeEntry[]
     note       Note[]
 
+    // Forum relations
+    forumPosts    ForumPost[]
+    forumComments ForumComment[]
+    forumLikes    ForumLike[]
+    forumViews    ForumView[]
+
     @@map("user")
 }
 
@@ -182,4 +188,80 @@ model Contact {
     isRead    Boolean  @default(false) @map("is_read")
 
     @@map("contact")
+}
+
+model ForumPost {
+    id        String   @id @default(cuid())
+    title     String
+    content   String
+    createdAt DateTime @default(now()) @map("created_at")
+    updatedAt DateTime @updatedAt @map("updated_at")
+    deleted   Boolean  @default(false)
+    userId    String   @map("user_id")
+    user      User     @relation(fields: [userId], references: [id])
+
+    comments ForumComment[]
+    likes    ForumLike[]
+    views    ForumView[]
+    files    ForumFile[]
+
+    @@map("forum_post")
+}
+
+model ForumComment {
+    id        String    @id @default(cuid())
+    content   String
+    createdAt DateTime  @default(now()) @map("created_at")
+    updatedAt DateTime  @updatedAt @map("updated_at")
+    deleted   Boolean   @default(false)
+    userId    String    @map("user_id")
+    postId    String    @map("post_id")
+    user      User      @relation(fields: [userId], references: [id])
+    post      ForumPost @relation(fields: [postId], references: [id])
+
+    @@map("forum_comment")
+}
+
+model ForumLike {
+    id        String    @id @default(cuid())
+    createdAt DateTime  @default(now()) @map("created_at")
+    userId    String    @map("user_id")
+    postId    String    @map("post_id")
+    user      User      @relation(fields: [userId], references: [id])
+    post      ForumPost @relation(fields: [postId], references: [id])
+
+    @@unique([userId, postId])
+    @@map("forum_like")
+}
+
+model ForumView {
+    id        String    @id @default(cuid())
+    createdAt DateTime  @default(now()) @map("created_at")
+    userId    String    @map("user_id")
+    postId    String    @map("post_id")
+    user      User      @relation(fields: [userId], references: [id])
+    post      ForumPost @relation(fields: [postId], references: [id])
+
+    @@unique([userId, postId])
+    @@map("forum_view")
+}
+
+model ForumFile {
+    id                  String   @id @default(cuid())
+    name                String
+    url                 String?
+    key                 String
+    originalKey         String?
+    originalSize        Int?
+    originalContentType String?
+    size                Int
+    contentType         String   @map("content_type")
+    postId              String   @map("post_id")
+    uploadedAt          DateTime @default(now()) @map("uploaded_at")
+    updatedAt           DateTime @updatedAt @map("updated_at")
+    deleted             Boolean  @default(false)
+
+    post ForumPost @relation(fields: [postId], references: [id])
+
+    @@map("forum_file")
 }
