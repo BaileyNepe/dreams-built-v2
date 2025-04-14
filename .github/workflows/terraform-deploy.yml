@@ -3,7 +3,7 @@ name: Deploy Terraform Infrastructure
 on:
   push:
     branches:
-      - main
+      - notactive
     paths:
       - 'terraform/**'
   workflow_dispatch:
