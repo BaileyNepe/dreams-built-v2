@@ -15,12 +15,22 @@ type DateFormats =
   | 'dd/MM/yyyy' // e.g. 01/01/2023
   | 'd MMM' // e.g. 1 Jan
   | 'ccc d LLL' // e.g. Mon 1 Jan
-  | 'HH:mm - d/MM/yyyy'; // e.g. 13:00 - 1/01/2023
+  | 'd MMM yyyy HH:mm' // e.g. 1 Jan 2023 13:00
+  | 'HH:mm - d/MM/yyyy' // e.g. 13:00 - 1/01/2023
+  | 'd MMM yyyy'; // e.g. 1 Jan 2023
 
-export const formatDate = (date: DateTime | Date, format: DateFormats = 'yyyy-MM-dd') =>
-  date instanceof Date
+export const formatDate = ({
+  date,
+  format = 'yyyy-MM-dd'
+}: {
+  format?: DateFormats;
+  date?: DateTime | Date;
+} = {}) => {
+  if (!date) return DateTime.now().toFormat(format);
+  return date instanceof Date
     ? DateTime.fromJSDate(date).toFormat(format)
     : date.toFormat(format);
+};
 
 export const getDate = (date?: string | Date, fromFormat: DateFormats = 'yyyy-MM-dd') => {
   if (date instanceof Date) {
@@ -29,8 +39,15 @@ export const getDate = (date?: string | Date, fromFormat: DateFormats = 'yyyy-MM
   return date ? DateTime.fromFormat(date, fromFormat) : DateTime.now();
 };
 
-export const getEndOfWeek = (date?: string, fromFormat: DateFormats = 'yyyy-MM-dd') =>
-  getDate(date, fromFormat).endOf('week');
+export const getEndOfWeek = ({
+  date,
+  fromFormat = 'yyyy-MM-dd',
+  weeks = 0
+}: {
+  date?: string;
+  fromFormat?: DateFormats;
+  weeks?: number;
+} = {}) => getDate(date, fromFormat).plus({ weeks }).endOf('week');
 
 export const generateWeekArray = (
   weekStart: string,

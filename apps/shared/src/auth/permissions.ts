@@ -17,7 +17,24 @@ export const authz = {
   jobs_edit: 'jobs:edit',
 
   schedule_read: 'schedule:read',
-  schedule_edit: 'schedule:edit'
+  schedule_edit: 'schedule:edit',
+
+  messages_read: 'messages:read',
+
+  upload: 'upload',
+
+  // Forum permissions
+  forum_create_post: 'forum:create:post',
+  forum_update_post: 'forum:update:post',
+  forum_delete_post: 'forum:delete:post',
+  forum_view_posts: 'forum:view:posts',
+  forum_create_comment: 'forum:create:comment',
+  forum_update_comment: 'forum:update:comment',
+  forum_delete_comment: 'forum:delete:comment',
+  forum_view_comments: 'forum:view:comments',
+  forum_like_post: 'forum:like:post',
+  forum_unlike_post: 'forum:unlike:post',
+  forum_create_attachment: 'forum:create:attachment'
 } as const;
 
 const rolesPermissions: Permission = [
@@ -34,6 +51,11 @@ const rolesPermissions: Permission = [
   {
     id: authz.roles_update_user,
     name: 'Roles Update User',
+    roles: ['ADMIN', 'MANAGER']
+  },
+  {
+    id: authz.messages_read,
+    name: 'Messages Read',
     roles: ['ADMIN', 'MANAGER']
   }
 ];
@@ -75,6 +97,7 @@ const jobsPermissions: Permission = [
     name: 'Jobs Edit',
     roles: ['MANAGER']
   },
+  { id: authz.upload, name: 'Upload', roles: ['EMPLOYEE', 'MANAGER'] },
   {
     id: authz.schedule_read,
     name: 'Schedule Read',
@@ -87,11 +110,70 @@ const jobsPermissions: Permission = [
   }
 ];
 
+const forumPermissions: Permission = [
+  {
+    id: authz.forum_create_post,
+    name: 'Create Forum Posts',
+    roles: ['ADMIN', 'MANAGER', 'EMPLOYEE']
+  },
+  {
+    id: authz.forum_update_post,
+    name: 'Update Forum Posts',
+    roles: ['ADMIN', 'MANAGER', 'EMPLOYEE']
+  },
+  {
+    id: authz.forum_delete_post,
+    name: 'Delete Forum Posts',
+    roles: ['ADMIN', 'MANAGER', 'EMPLOYEE']
+  },
+  {
+    id: authz.forum_view_posts,
+    name: 'View Forum Posts',
+    roles: ['ADMIN', 'MANAGER', 'EMPLOYEE']
+  },
+  {
+    id: authz.forum_create_comment,
+    name: 'Create Forum Comments',
+    roles: ['ADMIN', 'MANAGER', 'EMPLOYEE']
+  },
+  {
+    id: authz.forum_update_comment,
+    name: 'Update Forum Comments',
+    roles: ['ADMIN', 'MANAGER', 'EMPLOYEE']
+  },
+  {
+    id: authz.forum_delete_comment,
+    name: 'Delete Forum Comments',
+    roles: ['ADMIN', 'MANAGER', 'EMPLOYEE']
+  },
+  {
+    id: authz.forum_view_comments,
+    name: 'View Forum Comments',
+    roles: ['ADMIN', 'MANAGER', 'EMPLOYEE']
+  },
+  {
+    id: authz.forum_like_post,
+    name: 'Like Forum Posts',
+    roles: ['ADMIN', 'MANAGER', 'EMPLOYEE']
+  },
+  {
+    id: authz.forum_unlike_post,
+    name: 'Unlike Forum Posts',
+    roles: ['ADMIN', 'MANAGER', 'EMPLOYEE']
+  },
+  {
+    id: authz.forum_create_attachment,
+    name: 'Create Forum Attachments',
+    roles: ['ADMIN', 'MANAGER', 'EMPLOYEE']
+  }
+];
+
 export const permissions: Permission = [
   ...rolesPermissions,
   ...clientPermissions,
   ...timesheetPermissions,
-  ...jobsPermissions
+  ...jobsPermissions,
+  ...forumPermissions
 ];
 
 export const getViewablePermissions = (role?: Set<Role>) =>

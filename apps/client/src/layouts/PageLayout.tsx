@@ -1,7 +1,7 @@
 import PlusIcon from '@mui/icons-material/Add';
 import { Button, Typography } from '@mui/material';
 import { Link, type LinkProps } from '@tanstack/react-router';
-import { type FC, type PropsWithChildren } from 'react';
+import { type FC, type PropsWithChildren, type ReactNode } from 'react';
 import { styled } from 'styled-components';
 
 const Container = styled.div`
@@ -28,6 +28,8 @@ const TextContainer = styled.div`
 `;
 
 const ButtonContainer = styled.div`
+  display: flex;
+  gap: 1rem;
   margin-top: 1rem;
 
   button {
@@ -59,8 +61,9 @@ const PageLayout: FC<
     title: string;
     to?: LinkProps['to'];
     description?: string;
+    actionButton?: ReactNode;
   }
-> = ({ children, title, to, description }) => (
+> = ({ children, title, to, description, actionButton }) => (
   <Container>
     <HeaderContainer>
       <TextContainer>
@@ -73,13 +76,16 @@ const PageLayout: FC<
           </Typography>
         )}
       </TextContainer>
-      {to && (
+      {(to || actionButton) && (
         <ButtonContainer>
-          <Link to={to} preload="intent">
-            <Button variant="contained" startIcon={<PlusIcon />}>
-              Add
-            </Button>
-          </Link>
+          {actionButton}
+          {to && (
+            <Link to={to} preload="intent">
+              <Button variant="contained" startIcon={<PlusIcon />}>
+                Add
+              </Button>
+            </Link>
+          )}
         </ButtonContainer>
       )}
     </HeaderContainer>

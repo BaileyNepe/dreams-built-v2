@@ -46,7 +46,7 @@ export const clientRouter = trpc.router({
       })
     ),
   get: protectedProcedure([authz.clients_read])
-    .input(z.string().cuid())
+    .input(z.string())
     .query(async ({ ctx, input }) =>
       ctx.db.client.findUniqueOrThrow({
         where: {
@@ -58,7 +58,7 @@ export const clientRouter = trpc.router({
     .input(
       z
         .object({
-          id: z.string().cuid()
+          id: z.string()
         })
         .and(clientSchema)
     )

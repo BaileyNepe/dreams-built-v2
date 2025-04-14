@@ -29,6 +29,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.787.0",
+    "@aws-sdk/s3-request-presigner": "^3.787.0",
     "@dreams-built/shared": "workspace:shared",
     "@prisma/client": "^5.19.1",
     "@trpc/server": "^11.0.0-rc.645",
@@ -44,6 +46,8 @@
     "express-oauth2-jwt-bearer": "^1.6.0",
     "helmet": "^8.0.0",
     "lru-cache": "^11.1.0",
+    "multer": "^1.4.5-lts.2",
+    "multer-s3": "^3.0.1",
     "nodemailer": "^6.9.14",
     "prisma": "^5.19.1",
     "socket.io": "^4.8.1",
@@ -51,7 +55,9 @@
     "tsconfig-paths": "^4.2.0",
     "ua-parser-js": "^1.0.39",
     "winston": "^3.13.0",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "bun": "latest",
+    "sharp": "^0.33.2"
   },
   "devDependencies": {
     "@trpc/client": "^11.0.0-rc.645",
@@ -65,10 +71,13 @@
     "@types/ua-parser-js": "^0.7.39",
     "@vitest/coverage-v8": "^2.0.3",
     "esbuild-plugin-d.ts": "^1.2.3",
+    "mongoose": "^8.13.2",
     "prettier": "^3.3.2",
     "supertest": "^7.0.0",
     "typescript": "^5.7.2",
     "vite-tsconfig-paths": "^4.3.2",
-    "vitest": "^2.0.3"
+    "vitest": "^2.0.3",
+    "sharp": "^0.33.2",
+    "bun-types": "latest"
   }
 }

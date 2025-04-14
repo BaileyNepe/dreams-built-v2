@@ -9,6 +9,7 @@ export const paths = {
   projects: '/dashboard/projects',
   projectsCreate: '/dashboard/projects/create',
   projectsEdit: '/dashboard/projects/edit/$projectId',
+  projectDetail: '/dashboard/projects/detail/$projectId',
 
   projectParts: '/dashboard/project-parts',
 
@@ -21,6 +22,8 @@ export const paths = {
   schedule: '/dashboard/schedule',
 
   timesheet: '/dashboard/timesheet',
+
+  messages: '/dashboard/messages',
 
   logout: '/logout',
 

@@ -31,8 +31,8 @@ const useSchedule = () => {
   );
 
   const scheduleData = useScheduleQuery(
-    formatDate(initialDateOfWeek),
-    formatDate(endOfCurrentWeek)
+    formatDate({ date: initialDateOfWeek }),
+    formatDate({ date: endOfCurrentWeek })
   );
 
   // Convert raw blocked days to DateTime objects
@@ -120,15 +120,28 @@ const useSchedule = () => {
     [scheduleData, initialDateOfWeek, endOfCurrentWeek, blockedDays]
   );
 
-  // Compute an array of dates to display for the week.
+  const [isBlockedDaysVisible, setIsBlockedDaysVisible] = useState(true);
 
   const datesToShow = useMemo(
     () =>
       viewType === 'day'
         ? [initialDateOfWeek]
-        : generateWeekArray(formatDate(initialDateOfWeek)).map((d) => d.dateFormat),
-    [initialDateOfWeek, viewType]
+        : generateWeekArray(formatDate({ date: initialDateOfWeek }))
+            .map((d) => d.dateFormat)
+            .filter(
+              (d) =>
+                isBlockedDaysVisible ||
+                !isMatchingDates(
+                  d,
+                  blockedDays.map((bd) => bd.date)
+                )
+            ),
+    [blockedDays, initialDateOfWeek, isBlockedDaysVisible, viewType]
   );
+
+  const toggleBlockedDaysVisibility = () => {
+    setIsBlockedDaysVisible((prev) => !prev);
+  };
 
   const changeDate = (date: string) => {
     setSelectedDate(getDate(date));
@@ -151,6 +164,7 @@ const useSchedule = () => {
     isSmallScreen,
     changeDate,
     getNextWeek,
+    toggleBlockedDaysVisibility,
     getPreviousWeek,
     hasPermissionToEdit,
     selectedDate,

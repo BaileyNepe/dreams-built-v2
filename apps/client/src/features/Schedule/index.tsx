@@ -1,5 +1,8 @@
-import { Box } from '@mui/material';
+import PrintRoundedIcon from '@mui/icons-material/PrintRounded';
+import { Box, IconButton } from '@mui/material';
 import { DateSelector } from 'components/DateSelector';
+import { PrintableContent } from 'components/PrintableContent';
+import { usePrint } from 'components/PrintableContent/hooks';
 import React, { type FC } from 'react';
 import styled from 'styled-components';
 import { ScheduleHeader } from './Header';
@@ -20,6 +23,7 @@ const JobPartCell = styled(Box)`
   border-bottom: 1px solid ${({ theme }) => theme.palette.grey[300]};
   border-right: 1px solid ${({ theme }) => theme.palette.grey[300]};
   display: flex;
+  font-weight: bold;
   padding: 0.5rem;
 `;
 
@@ -28,38 +32,64 @@ const Grid = styled.div`
   grid-template-columns: ${projectPartWidth} 1fr;
 `;
 
+const Header = styled.div`
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+`;
+
 /* Component */
 
 export const Schedule: FC = () => {
   const {
-    projectPartsWithSegments: jobPartsWithSegments,
+    projectPartsWithSegments,
+    toggleBlockedDaysVisibility,
     selectedDate,
     changeDate,
     getNextWeek,
     getPreviousWeek
   } = useScheduler();
+  const { printRef, handlePrint } = usePrint<HTMLDivElement>({
+    isPrimaryContent: true,
+    onAfterPrint: toggleBlockedDaysVisibility
+  });
 
   return (
     <Container>
-      <DateSelector
-        value={selectedDate}
-        defaultValue={selectedDate}
-        onChange={changeDate}
-        getNextPeriod={getNextWeek}
-        getPreviousPeriod={getPreviousWeek}
-      />
-      <div>
+      <Header>
+        <div />
+        <DateSelector
+          value={selectedDate}
+          defaultValue={selectedDate}
+          onChange={changeDate}
+          getNextPeriod={getNextWeek}
+          getPreviousPeriod={getPreviousWeek}
+        />
+        <IconButton
+          onClick={() => {
+            toggleBlockedDaysVisibility();
+            // Delay the print to allow the toggle to take effect on the DOM
+            setTimeout(() => {
+              handlePrint();
+            }, 0);
+          }}
+        >
+          <PrintRoundedIcon />
+        </IconButton>
+      </Header>
+
+      <PrintableContent orientation="landscape" ref={printRef}>
         <ScheduleHeader />
 
         <Grid>
-          {jobPartsWithSegments.map((jp) => (
+          {projectPartsWithSegments.map((jp) => (
             <React.Fragment key={jp.id}>
               <JobPartCell>{jp.name}</JobPartCell>
               <InteractiveScheduleRow projectParts={jp} />
             </React.Fragment>
           ))}
         </Grid>
-      </div>
+      </PrintableContent>
     </Container>
   );
 };

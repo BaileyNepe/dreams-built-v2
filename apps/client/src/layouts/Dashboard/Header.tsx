@@ -34,6 +34,7 @@ export const Header: FC<{
             <MenuIcon />
           </IconButton>
         )}
+
         <Box flex={1} display="flex" justifyContent="flex-end">
           <UserProfile />
         </Box>

@@ -12,13 +12,11 @@ export const timesheetRouter = trpc.router({
   get: protectedProcedure([authz.timesheet])
     .input(
       z.object({
-        userId: z.string().cuid(),
+        userId: z.string(),
         weekStart: shortDateString
       })
     )
     .query(async ({ ctx, input }) => {
-      // Check if the user is trying to view another user's timesheet
-      // Note: they must have the required permissions to view other users timesheets
       if (
         input.userId !== ctx.user.id &&
         !ctx.user.permissions.includes(authz.timesheet_view_all)
@@ -67,9 +65,9 @@ export const timesheetRouter = trpc.router({
     .input(
       z
         .object({
-          id: z.string().cuid2(),
-          userId: z.string().cuid2(),
-          projectId: z.string().cuid2(),
+          id: z.string(),
+          userId: z.string(),
+          projectId: z.string(),
           deleted: z.boolean().optional()
         })
         .merge(rawTimeSchema)
@@ -95,15 +93,15 @@ export const timesheetRouter = trpc.router({
   update: protectedProcedure([authz.timesheet])
     .input(
       z.object({
-        userId: z.string().cuid2(),
+        userId: z.string(),
         weekStart: shortDateString,
         entries: z.array(
           z
             .object({
-              id: z.string().cuid2(),
+              id: z.string(),
               day: z.string(),
 
-              projectId: z.string().cuid2()
+              projectId: z.string()
             })
             .merge(rawTimeSchema)
             .superRefine(validateTimeRange)

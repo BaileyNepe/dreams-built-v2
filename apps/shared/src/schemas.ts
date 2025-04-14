@@ -74,7 +74,7 @@ const validateDateRange = (
 export const updateScheduleSchema = rawDateRangeSchema
   .merge(
     z.object({
-      id: z.string().cuid2('ID is required'),
+      id: z.string(),
       deleted: z.boolean(),
       color: z.string().regex(colorRegex, 'Color must be a valid hex color'),
       notes: z.string().optional()
@@ -85,8 +85,8 @@ export const updateScheduleSchema = rawDateRangeSchema
 export const createScheduleSchema = rawDateRangeSchema
   .merge(
     z.object({
-      projectPartId: z.string().cuid2('Project part is required'),
-      projectId: z.string().cuid2('Project is required'),
+      projectPartId: z.string(),
+      projectId: z.string(),
       notes: z.string().optional()
     })
   )
@@ -101,10 +101,11 @@ export const projectSchema = z.object({
   address: z.string().nonempty('Address is required'),
   area: z.coerce.number(),
   city: z.string(),
-  clientId: z.string().cuid2('Client is required'),
+  clientId: z.string(),
   color: z.string().regex(colorRegex, 'Color must be a valid hex color'),
   jobNumber: z.coerce.number().int().positive(),
-  endClient: z.string()
+  endClient: z.string(),
+  deleted: z.boolean().optional()
 });
 
 export const updateUserSchema = z.object({
@@ -120,4 +121,78 @@ export const ContactSchema = z.object({
   email: z.string().email('Invalid email address'),
   phoneNumber: z.string().optional(),
   message: z.string().min(5, 'Message should be at least 5 characters long')
+});
+
+// Project file schemas
+export const fileMetadataSchema = z.object({
+  name: z.string().optional(),
+  contentType: z.string(),
+  size: z.number().int().positive(),
+  projectId: z.string()
+});
+
+export const updateFileSchema = z.object({
+  id: z.string(),
+  name: z.string().optional(),
+  isPinned: z.boolean().optional(),
+  isArchived: z.boolean().optional()
+});
+
+export const getPresignedUrlSchema = z.object({
+  fileName: z.string(),
+  contentType: z.string(),
+  projectId: z.string()
+});
+
+// Forum schemas
+export const forumPostSchema = z.object({
+  id: z.string().optional(),
+  title: z.string().min(1, 'Title is required').max(100, 'Title is too long'),
+  content: z.string().min(1, 'Content is required'),
+  userId: z.string(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  deleted: z.boolean().optional(),
+  isPinned: z.boolean().optional(),
+  attachments: z.array(z.string()).optional()
+});
+
+export const forumCommentSchema = z.object({
+  id: z.string().optional(),
+  content: z.string().min(1, 'Comment is required'),
+  postId: z.string(),
+  userId: z.string(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+  deleted: z.boolean().optional()
+});
+
+export const forumLikeSchema = z.object({
+  id: z.string().optional(),
+  postId: z.string().optional(),
+  commentId: z.string().optional(),
+  userId: z.string(),
+  createdAt: z.string().optional()
+});
+
+export const forumViewSchema = z.object({
+  id: z.string().optional(),
+  postId: z.string(),
+  userId: z.string(),
+  viewedAt: z.string().optional()
+});
+
+export const forumAttachmentSchema = z.object({
+  id: z.string().optional(),
+  name: z.string(),
+  contentType: z.string(),
+  size: z.number().int().positive(),
+  postId: z.string(),
+  key: z.string()
+});
+
+export const getPresignedUrlForForumSchema = z.object({
+  fileName: z.string(),
+  contentType: z.string(),
+  postId: z.string()
 });

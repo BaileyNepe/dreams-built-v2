@@ -110,7 +110,7 @@ export const EnhancedBody: FC<{
         return (
           <StyledRow
             hover
-            $hasOnClick={false}
+            $hasOnClick={!!onRowClick}
             key={row.id}
             onClick={() => {
               onRowClick?.(row.id);

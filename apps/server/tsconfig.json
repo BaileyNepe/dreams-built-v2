@@ -2,7 +2,7 @@
   "compilerOptions": {
     "composite": true,
     "outDir": "dist",
-    "types": ["vitest/globals"],
+    "types": ["bun-types"],
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
 

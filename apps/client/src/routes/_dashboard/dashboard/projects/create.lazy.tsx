@@ -29,6 +29,7 @@ const ProjectCreationForm: FC = () => {
 
   return (
     <FormBody
+      isSubmitting={create.isPending || methods.formState.isSubmitting}
       onSubmit={methods.handleSubmit((data) => {
         create.mutate(data, {
           onSuccess: async () => {

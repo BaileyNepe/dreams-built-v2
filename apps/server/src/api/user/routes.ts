@@ -99,6 +99,8 @@ export const userRouter = trpc.router({
         }
       });
 
+      await cache().user.delete(user.authId);
+
       return user;
     }),
   profile: protectedProcedure()

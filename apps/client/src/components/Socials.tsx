@@ -2,16 +2,13 @@ import FacebookIcon from '@mui/icons-material/Facebook';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import { env } from 'config/env';
 import styled from 'styled-components';
-import { RouterLink } from './Link';
 
 const IconLinkContainer = styled.div`
   display: flex;
   gap: 0.7rem;
 `;
 
-const IconStyledLink = styled((props: React.ComponentProps<typeof RouterLink>) => (
-  <RouterLink {...props} />
-))`
+const IconStyledLink = styled.a`
   display: inline-flex;
 
   svg {
@@ -29,12 +26,16 @@ export const Socials = () => (
     <IconStyledLink
       href="https://www.facebook.com/profile.php?id=61556609252800"
       aria-label={`${env.company} on Facebook`}
+      target="_blank"
+      rel="noopener noreferrer"
     >
       <FacebookIcon />
     </IconStyledLink>
     <IconStyledLink
       href="https://www.linkedin.com/company/dreams-built"
       aria-label={`${env.company} on LinkedIn`}
+      target="_blank"
+      rel="noopener noreferrer"
     >
       <LinkedInIcon />
     </IconStyledLink>

@@ -3,22 +3,9 @@ import { Container, Typography } from '@mui/material';
 import { env } from 'config/env';
 import { type FC } from 'react';
 import styled from 'styled-components';
-
-import { Logo } from './Logo';
 import { Socials } from './Socials';
 
-const FooterRoot = styled.footer`
-  background-color: #f8fafc;
-`;
-
-const ContentWrapper = styled.div`
-  padding: 4rem 0;
-`;
-
-const LogoContainer = styled.div`
-  display: flex;
-  justify-content: center;
-`;
+const FooterRoot = styled.footer``;
 
 const BottomSection = styled.div`
   align-items: center;
@@ -36,18 +23,13 @@ const BottomSection = styled.div`
 export const Footer: FC = () => (
   <FooterRoot>
     <Container>
-      <ContentWrapper>
-        <LogoContainer>
-          <Logo />
-        </LogoContainer>
-      </ContentWrapper>
       <BottomSection>
         <Socials />
         <Typography
           variant="body2"
           sx={{ color: 'text.secondary', mt: { xs: 2, sm: 0 } }}
         >
-          &copy; 2016 - {new Date().getFullYear()} {env.company} Ltd. All rights reserved.
+          &copy; 2015 - {new Date().getFullYear()} {env.company} Ltd. All rights reserved.
         </Typography>
       </BottomSection>
     </Container>

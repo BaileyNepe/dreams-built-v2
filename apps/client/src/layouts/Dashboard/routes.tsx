@@ -5,6 +5,7 @@ import {
   CalendarIcon,
   FolderIcon,
   GlobeAltIcon,
+  InboxIcon,
   ServerIcon,
   SignalIcon,
   UsersIcon
@@ -43,13 +44,6 @@ export const routes: {
     icon: ServerIcon,
     requiredPermission: authz.clients_read
   },
-
-  {
-    name: 'Schedule',
-    to: paths.schedule,
-    icon: CalendarIcon,
-    requiredPermission: authz.jobs_read
-  },
   {
     name: 'Employees',
     to: paths.employees,
@@ -57,10 +51,22 @@ export const routes: {
     requiredPermission: authz.roles_view_employee
   },
   {
+    name: 'Schedule',
+    to: paths.schedule,
+    icon: CalendarIcon,
+    requiredPermission: authz.jobs_read
+  },
+  {
     name: 'Reports',
     to: paths.projectReports,
     icon: SignalIcon,
     requiredPermission: authz.timesheet_view_all
+  },
+  {
+    name: 'Messages',
+    to: paths.messages,
+    icon: InboxIcon,
+    requiredPermission: authz.messages_read
   },
   {
     name: 'Logout',

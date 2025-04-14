@@ -11,7 +11,21 @@ const AuthzSchema = z.enum([
   'jobs:read',
   'jobs:edit',
   'schedule:read',
-  'schedule:edit'
+  'schedule:edit',
+  'messages:read',
+  'upload',
+  // Forum permissions
+  'forum:create:post',
+  'forum:update:post',
+  'forum:delete:post',
+  'forum:view:posts',
+  'forum:create:comment',
+  'forum:update:comment',
+  'forum:delete:comment',
+  'forum:view:comments',
+  'forum:like:post',
+  'forum:unlike:post',
+  'forum:create:attachment'
 ]);
 
 export const RoleSchema = z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE', 'USER']);

@@ -46,7 +46,7 @@ export const useUsers = (
       if (showAll) {
         return data;
       }
-      return data.filter((u) => u.role !== 'USER');
+      return data.filter((u) => u.role === 'EMPLOYEE');
     }
   });
 };
