@@ -64,7 +64,13 @@ export const getS3Object = async (key: string): Promise<Buffer> => {
     chunks.push(chunk);
   }
 
-  return Buffer.concat(chunks);
+  // Create a single buffer from all chunks
+  const buffer = Buffer.concat(chunks);
+
+  // Clear chunks array to help garbage collection
+  chunks.length = 0;
+
+  return buffer;
 };
 
 // Upload optimized file to S3 (replace the existing one or create a new one with a different key)
@@ -83,6 +89,9 @@ export const uploadOptimizedFile = async (
   });
 
   await s3Client!.send(command);
+
+  // Note: We don't clear the data buffer here as it's the caller's responsibility
+  // to manage memory for the buffer they pass in
 };
 
 // Generate a key for optimized version

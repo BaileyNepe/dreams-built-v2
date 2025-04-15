@@ -39,6 +39,7 @@ module "files_bucket" {
   environment = "prod"
 
   allowed_origins = [
+    "*",
     "https://dreamsbuilt.co.nz",
     "https://www.dreamsbuilt.co.nz"
   ]

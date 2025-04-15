@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { existsSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -12,37 +13,14 @@ interface OptimizationResult {
 }
 
 /**
- * Optimize a file based on its content type
+ * Create temp directory for file operations
  */
-export async function optimizeFile(
-  key: string,
-  contentType: string
-): Promise<OptimizationResult> {
-  try {
-    const fileBuffer = await getS3Object(key);
-
-    // Handle image optimization
-    if (contentType.startsWith('image/') && contentType !== 'image/webp') {
-      return await optimizeImage(key, fileBuffer, contentType);
-    }
-
-    // Handle PDF optimization
-    if (contentType === 'application/pdf') {
-      return await optimizePdf(key, fileBuffer, contentType);
-    }
-
-    // Return original file details if type not supported
-    return {
-      key,
-      contentType,
-      size: fileBuffer.length
-    };
-  } catch (error) {
-    console.error('Error optimizing file:', error);
-    throw new Error(
-      `File optimization failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-    );
+function createTempDir(): string {
+  const tempDir = join(tmpdir(), 'dreams-built-temp');
+  if (!existsSync(tempDir)) {
+    mkdirSync(tempDir, { recursive: true });
   }
+  return tempDir;
 }
 
 /**
@@ -53,9 +31,20 @@ async function optimizeImage(
   fileBuffer: Buffer,
   contentType: string
 ): Promise<OptimizationResult> {
+  let optimizedBuffer: Buffer | null = null;
   try {
-    // Use Sharp directly instead of CLI
-    const optimizedBuffer = await sharp(fileBuffer).webp({ quality: 80 }).toBuffer();
+    // Use Sharp with settings optimized for larger files
+    const sharpInstance = sharp(fileBuffer, {
+      limitInputPixels: false // Allow processing of large images
+    });
+
+    // Convert to WebP with quality settings
+    optimizedBuffer = await sharpInstance
+      .webp({
+        quality: 80,
+        effort: 4 // Higher compression effort (0-6)
+      })
+      .toBuffer();
 
     // Generate new key for optimized image
     const newKey = generateOptimizedKey(key, 'webp');
@@ -63,13 +52,19 @@ async function optimizeImage(
     // Upload the optimized image to S3
     await uploadOptimizedFile(newKey, optimizedBuffer, 'image/webp');
 
-    return {
+    const result = {
       key: newKey,
       contentType: 'image/webp',
       size: optimizedBuffer.length
     };
+
+    // Clear the buffer reference to help garbage collection
+    optimizedBuffer = null;
+    return result;
   } catch (error) {
     console.error('Image optimization error:', error);
+    // Clear the buffer reference to help garbage collection
+    optimizedBuffer = null;
     // Return original if optimization fails
     return {
       key,
@@ -88,17 +83,21 @@ async function optimizePdf(
   fileBuffer: Buffer,
   contentType: string
 ): Promise<OptimizationResult> {
+  let optimizedBuffer: ArrayBuffer | null = null;
+  let inputPath: string | null = null;
+  let outputPath: string | null = null;
+
   try {
     // Generate temp file paths
     const tmpDir = createTempDir();
-    const inputPath = join(tmpDir, `input-${Date.now()}.pdf`);
-    const outputPath = join(tmpDir, `output-${Date.now()}.pdf`);
+    inputPath = join(tmpDir, `input-${Date.now()}.pdf`);
+    outputPath = join(tmpDir, `output-${Date.now()}.pdf`);
 
     // Write buffer to temp file
-    Bun.write(inputPath, fileBuffer);
+    await Bun.write(inputPath, fileBuffer);
 
-    // Use Bun to run ghostscript for PDF optimization
-    const { success, stdout, stderr } = Bun.spawnSync([
+    // Use Bun to run ghostscript for PDF optimization with increased memory limits
+    const { success, stderr } = Bun.spawnSync([
       'gs',
       '-sDEVICE=pdfwrite',
       '-dCompatibilityLevel=1.4',
@@ -106,6 +105,8 @@ async function optimizePdf(
       '-dNOPAUSE',
       '-dQUIET',
       '-dBATCH',
+      '-dMemoryLimit=1000000000', // Increased to 1GB
+      '-dBufferSize=100000000', // Increased to 100MB
       `-sOutputFile=${outputPath}`,
       inputPath
     ]);
@@ -116,16 +117,21 @@ async function optimizePdf(
     }
 
     // Read the optimized PDF
-    const optimizedBuffer = await Bun.file(outputPath).arrayBuffer();
+    optimizedBuffer = await Bun.file(outputPath).arrayBuffer();
 
     // Only proceed if the optimized file is smaller
     if (optimizedBuffer.byteLength < fileBuffer.length) {
       const newKey = generateOptimizedKey(key, 'pdf');
-      await uploadOptimizedFile(newKey, Buffer.from(optimizedBuffer), contentType);
+      const buffer = Buffer.from(optimizedBuffer);
+      await uploadOptimizedFile(newKey, buffer, contentType);
+
+      // Clear the buffer reference to help garbage collection
+      optimizedBuffer = null;
 
       // Clean up temp files
       try {
-        Bun.spawn(['rm', inputPath, outputPath]);
+        if (inputPath) Bun.spawn(['rm', inputPath]);
+        if (outputPath) Bun.spawn(['rm', outputPath]);
       } catch (e) {
         console.error('Failed to clean up temp files:', e);
       }
@@ -133,16 +139,20 @@ async function optimizePdf(
       return {
         key: newKey,
         contentType, // Use the passed contentType parameter
-        size: optimizedBuffer.byteLength
+        size: buffer.length
       };
     }
 
     // Clean up temp files
     try {
-      Bun.spawn(['rm', inputPath, outputPath]);
+      if (inputPath) Bun.spawn(['rm', inputPath]);
+      if (outputPath) Bun.spawn(['rm', outputPath]);
     } catch (e) {
       console.error('Failed to clean up temp files:', e);
     }
+
+    // Clear the buffer reference to help garbage collection
+    optimizedBuffer = null;
 
     // Return original if optimization didn't yield savings
     return {
@@ -152,6 +162,17 @@ async function optimizePdf(
     };
   } catch (error) {
     console.error('PDF optimization error:', error);
+    // Clean up temp files
+    try {
+      if (inputPath) Bun.spawn(['rm', inputPath]);
+      if (outputPath) Bun.spawn(['rm', outputPath]);
+    } catch (e) {
+      console.error('Failed to clean up temp files:', e);
+    }
+
+    // Clear the buffer reference to help garbage collection
+    optimizedBuffer = null;
+
     return {
       key,
       contentType, // Use the passed contentType parameter
@@ -161,12 +182,49 @@ async function optimizePdf(
 }
 
 /**
- * Create temp directory for file operations
+ * Optimize a file based on its content type
  */
-function createTempDir(): string {
-  const tempDir = join(tmpdir(), 'dreams-built-temp');
-  if (!existsSync(tempDir)) {
-    mkdirSync(tempDir, { recursive: true });
+export async function optimizeFile(
+  key: string,
+  contentType: string
+): Promise<OptimizationResult> {
+  let fileBuffer: Buffer | null = null;
+  try {
+    // Get the file from S3
+    fileBuffer = await getS3Object(key);
+    const bufferSize = fileBuffer.length;
+
+    // Handle image optimization
+    if (contentType.startsWith('image/') && contentType !== 'image/webp') {
+      const result = await optimizeImage(key, fileBuffer, contentType);
+      // Clear the buffer reference to help garbage collection
+      fileBuffer = null;
+      return result;
+    }
+
+    // Handle PDF optimization
+    if (contentType === 'application/pdf') {
+      const result = await optimizePdf(key, fileBuffer, contentType);
+      // Clear the buffer reference to help garbage collection
+      fileBuffer = null;
+      return result;
+    }
+
+    // Return original file details if type not supported
+    const result = {
+      key,
+      contentType,
+      size: bufferSize
+    };
+    // Clear the buffer reference to help garbage collection
+    fileBuffer = null;
+    return result;
+  } catch (error) {
+    console.error('Error optimizing file:', error);
+    // Clear the buffer reference to help garbage collection
+    fileBuffer = null;
+    throw new Error(
+      `File optimization failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
-  return tempDir;
 }

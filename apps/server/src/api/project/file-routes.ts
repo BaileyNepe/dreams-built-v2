@@ -7,13 +7,81 @@ import {
   updateFileSchema
 } from '@dreams-built/shared/src/schemas';
 import { TRPCError } from '@trpc/server';
+import { spawn } from 'child_process';
+import { join } from 'path';
 import { z } from 'zod';
-import { optimizeFile } from '../../utils/file-optimizer';
 import {
   generateS3Key,
   getPresignedDownloadUrl,
   getPresignedUploadUrl
 } from '../../utils/s3-utils';
+
+// Define the optimization result interface
+interface OptimizationResult {
+  key: string;
+  contentType: string;
+  size: number;
+}
+
+// Function to run optimization in a separate process
+function runOptimizationInWorker(
+  key: string,
+  contentType: string
+): Promise<OptimizationResult> {
+  return new Promise((resolve, reject) => {
+    // Path to the worker script
+    const workerPath = join(__dirname, '../../utils/optimize-file-worker.ts');
+
+    // Spawn a new process for optimization
+    const worker = spawn('bun', [workerPath, key, contentType], {
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    // Collect stdout
+    worker.stdout.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    // Collect stderr
+    worker.stderr.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    // Handle process completion
+    worker.on('close', (code) => {
+      if (code === 0) {
+        try {
+          // Parse the JSON result
+          const result = JSON.parse(stdout) as OptimizationResult;
+          resolve(result);
+        } catch (error) {
+          reject(new Error(`Failed to parse optimization result: ${error}`));
+        }
+      } else {
+        try {
+          // Try to parse the error result from stdout
+          const errorResult = JSON.parse(stdout);
+          if (errorResult.error) {
+            reject(new Error(`Optimization failed: ${errorResult.message}`));
+          } else {
+            reject(new Error(`Optimization failed with code ${code}: ${stderr}`));
+          }
+        } catch (error) {
+          // If parsing fails, use the stderr
+          reject(new Error(`Optimization failed with code ${code}: ${stderr}`));
+        }
+      }
+    });
+
+    // Handle process errors
+    worker.on('error', (error) => {
+      reject(new Error(`Failed to start optimization process: ${error.message}`));
+    });
+  });
+}
 
 export const projectFilesRouter = trpc.router({
   // Get a pre-signed URL for uploading a file directly to S3
@@ -80,8 +148,8 @@ export const projectFilesRouter = trpc.router({
 
       if (shouldOptimize) {
         try {
-          // Optimization happens asynchronously - we don't wait for it
-          optimizeFile(input.key, input.contentType)
+          // Use the worker process for optimization to avoid memory issues
+          runOptimizationInWorker(input.key, input.contentType)
             .then(async (optimizationResult) => {
               // Update the file record with optimized data
               await ctx.db.projectFile.update({
