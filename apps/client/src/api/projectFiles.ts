@@ -33,6 +33,7 @@ export const useProjectFiles = (projectId: string, includeArchived = false) =>
       includeArchived
     },
     {
+      refetchInterval: 1000 * 30,
       refetchOnWindowFocus: true
     }
   )[0];

@@ -17,7 +17,7 @@ export const useMessagesList = ({
 export const useUnreadMessagesCount = (options?: { refetchInterval?: number }) => {
   const { user } = useAuth();
   return api.contact.countUnread.useQuery(undefined, {
-    refetchInterval: options?.refetchInterval ?? 30000, // Default to 30 seconds
+    refetchInterval: options?.refetchInterval ?? 1000 * 60 * 2,
     refetchOnWindowFocus: true,
     enabled: !!user?.permissions?.includes(authz.messages_read)
   });

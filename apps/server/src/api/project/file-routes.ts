@@ -7,81 +7,13 @@ import {
   updateFileSchema
 } from '@dreams-built/shared/src/schemas';
 import { TRPCError } from '@trpc/server';
-import { spawn } from 'child_process';
-import { join } from 'path';
 import { z } from 'zod';
+import { optimizeFile } from '../../utils/file-optimizer';
 import {
   generateS3Key,
   getPresignedDownloadUrl,
   getPresignedUploadUrl
 } from '../../utils/s3-utils';
-
-// Define the optimization result interface
-interface OptimizationResult {
-  key: string;
-  contentType: string;
-  size: number;
-}
-
-// Function to run optimization in a separate process
-function runOptimizationInWorker(
-  key: string,
-  contentType: string
-): Promise<OptimizationResult> {
-  return new Promise((resolve, reject) => {
-    // Path to the worker script
-    const workerPath = join(__dirname, '../../utils/optimize-file-worker.ts');
-
-    // Spawn a new process for optimization
-    const worker = spawn('bun', [workerPath, key, contentType], {
-      stdio: ['ignore', 'pipe', 'pipe']
-    });
-
-    let stdout = '';
-    let stderr = '';
-
-    // Collect stdout
-    worker.stdout.on('data', (data) => {
-      stdout += data.toString();
-    });
-
-    // Collect stderr
-    worker.stderr.on('data', (data) => {
-      stderr += data.toString();
-    });
-
-    // Handle process completion
-    worker.on('close', (code) => {
-      if (code === 0) {
-        try {
-          // Parse the JSON result
-          const result = JSON.parse(stdout) as OptimizationResult;
-          resolve(result);
-        } catch (error) {
-          reject(new Error(`Failed to parse optimization result: ${error}`));
-        }
-      } else {
-        try {
-          // Try to parse the error result from stdout
-          const errorResult = JSON.parse(stdout);
-          if (errorResult.error) {
-            reject(new Error(`Optimization failed: ${errorResult.message}`));
-          } else {
-            reject(new Error(`Optimization failed with code ${code}: ${stderr}`));
-          }
-        } catch (error) {
-          // If parsing fails, use the stderr
-          reject(new Error(`Optimization failed with code ${code}: ${stderr}`));
-        }
-      }
-    });
-
-    // Handle process errors
-    worker.on('error', (error) => {
-      reject(new Error(`Failed to start optimization process: ${error.message}`));
-    });
-  });
-}
 
 export const projectFilesRouter = trpc.router({
   // Get a pre-signed URL for uploading a file directly to S3
@@ -139,7 +71,7 @@ export const projectFilesRouter = trpc.router({
         originalContentType: input.contentType
       };
 
-      // First create the file record in the database
+      // Create the file record in the database
       const fileRecord = await ctx.db.projectFile.create({ data });
 
       // Check if file type is supported for optimization
@@ -147,30 +79,29 @@ export const projectFilesRouter = trpc.router({
         input.contentType.startsWith('image/') || input.contentType === 'application/pdf';
 
       if (shouldOptimize) {
-        try {
-          // Use the worker process for optimization to avoid memory issues
-          runOptimizationInWorker(input.key, input.contentType)
-            .then(async (optimizationResult) => {
-              // Update the file record with optimized data
-              await ctx.db.projectFile.update({
-                where: { id: fileRecord.id },
-                data: {
-                  key: optimizationResult.key,
-                  contentType: optimizationResult.contentType,
-                  size: optimizationResult.size,
-                  isOptimized: true
-                }
-              });
-              console.log(`Successfully optimized file: ${input.name}`);
-            })
-            .catch((error) => {
-              console.error('File optimization error:', error);
-              // File record already exists with original data, so no further action needed
+        // Run optimization asynchronously without waiting for it to complete
+        // This allows the API to return immediately while optimization happens in the background
+        (async () => {
+          try {
+            // Run optimization in the background
+            const optimizationResult = await optimizeFile(input.key, input.contentType);
+
+            // Update the file record with optimized data
+            await ctx.db.projectFile.update({
+              where: { id: fileRecord.id },
+              data: {
+                key: optimizationResult.key,
+                contentType: optimizationResult.contentType,
+                size: optimizationResult.size,
+                isOptimized: true
+              }
             });
-        } catch (error) {
-          console.error('Error starting optimization process:', error);
-          // Continue with the original file
-        }
+            console.log(`Successfully optimized file: ${input.name}`);
+          } catch (error) {
+            console.error('File optimization error:', error);
+            // File record already exists with original data, so no further action needed
+          }
+        })();
       }
 
       return fileRecord;
