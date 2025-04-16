@@ -11,6 +11,7 @@ import ImageIcon from '@mui/icons-material/Image';
 import PdfIcon from '@mui/icons-material/PictureAsPdf';
 import PinnedIcon from '@mui/icons-material/PushPin';
 import UnarchiveIcon from '@mui/icons-material/Unarchive';
+import VideocamIcon from '@mui/icons-material/Videocam';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import {
   Box,
@@ -39,6 +40,7 @@ import { useProjectParams } from 'routes/_dashboard/dashboard/projects/edit.$pro
 import styled from 'styled-components';
 import { useAuth } from 'utils/contexts/AuthProvider';
 import { formatDate } from 'utils/date';
+import { useResponsive } from 'utils/hooks/useResponsive';
 import { ProjectFileUpload } from './ProjectFileUpload';
 
 const getFileIcon = (contentType: string) => {
@@ -46,6 +48,8 @@ const getFileIcon = (contentType: string) => {
     return <PdfIcon />;
   } else if (contentType.includes('image')) {
     return <ImageIcon />;
+  } else if (contentType.includes('video')) {
+    return <VideocamIcon />;
   }
   return <FileIcon />;
 };
@@ -89,6 +93,7 @@ const List: FC<{
 }> = ({ isArchivedVisible, toggleArchived }) => {
   const { projectId } = useProjectParams();
   const { user } = useAuth();
+  const isMobile = useResponsive('down', 'sm');
 
   const files = useProjectFiles(projectId, isArchivedVisible);
 
@@ -225,6 +230,23 @@ const List: FC<{
       return <img src={useUrl} alt="File preview" />;
     } else if (useContentType.includes('pdf')) {
       return <iframe src={`${useUrl}#toolbar=0`} title="PDF preview" />;
+    } else if (useContentType.includes('video')) {
+      return (
+        <Box
+          sx={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
+        >
+          <video controls style={{ maxWidth: '100%', maxHeight: '100%' }} src={useUrl}>
+            <track kind="captions" src="" label="English" />
+            Your browser does not support the video tag.
+          </video>
+        </Box>
+      );
     }
     return (
       <Box sx={{ textAlign: 'center' }}>
@@ -394,18 +416,20 @@ const List: FC<{
                     />
                   )}
                 </span>
-                {previewDialog.file?.isOptimized && previewDialog.file?.originalUrl && (
-                  <Tooltip title="Toggle between optimized and original versions">
-                    <Button
-                      startIcon={<CompareIcon />}
-                      onClick={toggleFileVersion}
-                      variant="outlined"
-                      size="small"
-                    >
-                      {previewDialog.showOriginal ? 'View Optimized' : 'View Original'}
-                    </Button>
-                  </Tooltip>
-                )}
+                {!isMobile &&
+                  previewDialog.file?.isOptimized &&
+                  previewDialog.file?.originalUrl && (
+                    <Tooltip title="Toggle between optimized and original versions">
+                      <Button
+                        startIcon={<CompareIcon />}
+                        onClick={toggleFileVersion}
+                        variant="outlined"
+                        size="small"
+                      >
+                        {previewDialog.showOriginal ? 'View Optimized' : 'View Original'}
+                      </Button>
+                    </Tooltip>
+                  )}
               </Box>
             </DialogTitle>
             <DialogContent dividers>
@@ -421,44 +445,48 @@ const List: FC<{
               <Button onClick={closePreviewDialog}>Close</Button>
               {previewDialog.file && (
                 <>
-                  <Button
-                    variant="contained"
-                    startIcon={<DownloadIcon />}
-                    onClick={() => {
-                      if (previewDialog.file) {
-                        const url =
-                          previewDialog.showOriginal && previewDialog.file.originalUrl
-                            ? previewDialog.file.originalUrl
-                            : previewDialog.file.url;
-
-                        const fileName = previewDialog.showOriginal
-                          ? `${previewDialog.file.name} (original)`
-                          : previewDialog.file.name;
-
-                        handleDownload(url, fileName);
-                      }
-                    }}
-                  >
-                    Download {previewDialog.showOriginal ? 'Original' : 'File'}
-                  </Button>
-                  {previewDialog.file.isOptimized &&
-                    previewDialog.file.originalUrl &&
-                    !previewDialog.showOriginal && (
+                  {!isMobile && (
+                    <>
                       <Button
-                        variant="outlined"
+                        variant="contained"
                         startIcon={<DownloadIcon />}
                         onClick={() => {
-                          if (previewDialog.file?.originalUrl) {
-                            handleDownload(
-                              previewDialog.file.originalUrl,
-                              `${previewDialog.file.name} (original)`
-                            );
+                          if (previewDialog.file) {
+                            const url =
+                              previewDialog.showOriginal && previewDialog.file.originalUrl
+                                ? previewDialog.file.originalUrl
+                                : previewDialog.file.url;
+
+                            const fileName = previewDialog.showOriginal
+                              ? `${previewDialog.file.name} (original)`
+                              : previewDialog.file.name;
+
+                            handleDownload(url, fileName);
                           }
                         }}
                       >
-                        Download Original
+                        Download {previewDialog.showOriginal ? 'Original' : 'File'}
                       </Button>
-                    )}
+                      {previewDialog.file.isOptimized &&
+                        previewDialog.file.originalUrl &&
+                        !previewDialog.showOriginal && (
+                          <Button
+                            variant="outlined"
+                            startIcon={<DownloadIcon />}
+                            onClick={() => {
+                              if (previewDialog.file?.originalUrl) {
+                                handleDownload(
+                                  previewDialog.file.originalUrl,
+                                  `${previewDialog.file.name} (original)`
+                                );
+                              }
+                            }}
+                          >
+                            Download Original
+                          </Button>
+                        )}
+                    </>
+                  )}
                   <Button
                     variant="outlined"
                     startIcon={<VisibilityIcon />}

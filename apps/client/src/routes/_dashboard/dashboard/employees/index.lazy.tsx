@@ -120,7 +120,10 @@ const Page: FC = () => {
                 {user.role}
               </Tag>
             ),
-            lastActive: formatDate(user.lastActive, 'HH:mm - d/MM/yyyy'),
+            lastActive: formatDate({
+              date: user.lastActive,
+              format: 'HH:mm - d/MM/yyyy'
+            }),
             email: user.email,
             actions: [
               {

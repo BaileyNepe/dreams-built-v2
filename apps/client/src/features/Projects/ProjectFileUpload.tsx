@@ -145,7 +145,8 @@ export const ProjectFileUpload: FC<{
           'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [],
           'application/vnd.openxmlformats-officedocument.presentationml.presentation': [],
           'text/plain': [],
-          'application/zip': []
+          'application/zip': [],
+          'video/*': [] // Add support for video files
         }}
       />
 
