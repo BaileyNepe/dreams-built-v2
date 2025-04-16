@@ -20,7 +20,6 @@ export const TimesheetReport: FC<{ weekStart: string }> = ({ weekStart }) => {
   const weekStartDate = getDate(weekStart);
   const theme = useTheme();
 
-  const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedEntry, setSelectedEntry] = useState<Entry | null>(null);
 
   const [missingModalOpen, setMissingModalOpen] = useState(false);
@@ -106,7 +105,6 @@ export const TimesheetReport: FC<{ weekStart: string }> = ({ weekStart }) => {
                     icon: <EditRoundedIcon />,
                     onClick: () => {
                       setSelectedEntry(entry);
-                      setEditModalOpen(true);
                     },
                     label: 'Edit'
                   }
@@ -161,10 +159,10 @@ export const TimesheetReport: FC<{ weekStart: string }> = ({ weekStart }) => {
       )}
 
       {/* Modals */}
-      {selectedEntry && (
+      {!!selectedEntry && (
         <EditTimesheetEntryModal
-          open={editModalOpen}
-          onClose={() => setEditModalOpen(false)}
+          open={!!selectedEntry}
+          onClose={() => setSelectedEntry(null)}
           entry={selectedEntry}
         />
       )}
