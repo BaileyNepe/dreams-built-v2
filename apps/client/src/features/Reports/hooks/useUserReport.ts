@@ -59,7 +59,6 @@ export const useUsersReport = (week: string) => {
   report.sort((a, b) => a.userName.localeCompare(b.userName));
 
   report.forEach((user) => {
-    // if no user.userName try to find it based on the id
     if (!user.userName) {
       const userDetails = users.data?.find((u) => u.id === user.userId);
       if (userDetails) {
