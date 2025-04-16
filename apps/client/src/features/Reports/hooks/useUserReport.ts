@@ -1,8 +1,10 @@
 import { useReportData } from 'api/reports';
+import { useUsers } from 'api/user';
 import { getDayOrder } from 'utils/date';
 
 export const useUsersReport = (week: string) => {
   const { entries, notes, usersWithNoEntries } = useReportData(week);
+  const users = useUsers({ showAll: true });
 
   // Group data by userId. Types are inferred inline.
   const userReportMap: Record<
@@ -55,6 +57,17 @@ export const useUsersReport = (week: string) => {
   });
 
   report.sort((a, b) => a.userName.localeCompare(b.userName));
+
+  report.forEach((user) => {
+    // if no user.userName try to find it based on the id
+    if (!user.userName) {
+      const userDetails = users.data?.find((u) => u.id === user.userId);
+      if (userDetails) {
+        user.userName =
+          `${userDetails.firstName} ${userDetails.lastName}`.trim() ?? user.userId;
+      }
+    }
+  });
 
   return { users: report, usersWithNoEntries };
 };
