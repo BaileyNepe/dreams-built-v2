@@ -9,15 +9,21 @@ export const ReportBlock = styled.div<{ $isPrinted?: boolean; $isLast?: boolean 
     $isPrinted
       ? css`
           @media print {
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            page-break-inside: avoid;
+            break-inside: avoid;
+
+            /* Only add page break if this isn't the last block and there's not enough space */
             ${!$isLast &&
             css`
-              break-after: always;
-              page-break-after: always;
+              &:not(:last-child) {
+                @media print {
+                  page-break-after: auto;
+                  break-after: auto;
+                }
+              }
             `}
-            &:last-child {
-              break-after: auto;
-              page-break-after: auto;
-            }
           }
         `
       : css`
@@ -32,4 +38,8 @@ export const TotalRow = styled.div`
   font-weight: bold;
   justify-content: flex-end;
   margin-top: 1rem;
+
+  @media print {
+    margin-top: 0.5rem;
+  }
 `;

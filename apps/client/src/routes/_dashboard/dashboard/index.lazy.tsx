@@ -722,16 +722,27 @@ function DashboardContent() {
 
           <Items>
             {(upcomingSchedule?.schedule.length ?? 0) > 0 ? (
-              upcomingSchedule?.schedule.flatMap((scheduleItem) =>
-                scheduleItem.projectSchedule.map((item) => (
-                  <ScheduleItem key={`${scheduleItem.id}-${item.id}`} elevation={1}>
+              upcomingSchedule?.schedule
+                .flatMap((scheduleItem) =>
+                  scheduleItem.projectSchedule.map((item) => ({
+                    scheduleId: scheduleItem.id,
+                    id: item.id,
+                    startDate: new Date(item.startDate),
+                    endDate: new Date(item.endDate),
+                    project: item.project,
+                    notes: item.notes
+                  }))
+                )
+                .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
+                .map((item) => (
+                  <ScheduleItem key={`${item.scheduleId}-${item.id}`} elevation={1}>
                     <Box>
                       <Typography variant="subtitle1">
                         {item.project.jobNumber}: {item.project.address}
                       </Typography>
                       <Typography variant="body2" color="textSecondary">
-                        {new Date(item.startDate).toLocaleDateString()} -{' '}
-                        {new Date(item.endDate).toLocaleDateString()}
+                        {item.startDate.toLocaleDateString()} -{' '}
+                        {item.endDate.toLocaleDateString()}
                       </Typography>
                       {item.notes && (
                         <Typography variant="body2" sx={{ mt: 1 }}>
@@ -749,7 +760,6 @@ function DashboardContent() {
                     />
                   </ScheduleItem>
                 ))
-              )
             ) : (
               <Typography variant="body1">No upcoming scheduled projects.</Typography>
             )}

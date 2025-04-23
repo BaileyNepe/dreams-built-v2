@@ -1,15 +1,20 @@
 import { Box, Checkbox } from '@mui/material';
 import { useBlockMutation } from 'api/schedule';
-import { type DateTime } from 'luxon';
+import { DateTime } from 'luxon';
 import { type FC } from 'react';
 import styled from 'styled-components';
-import { formatDate, isMatchingDates } from 'utils/date';
+import { formatDate, isMatchingDate, isMatchingDates } from 'utils/date';
 import { projectPartWidth } from './components/constants';
 import { useScheduler } from './components/useSchedule';
 
-const DayCell = styled(Box)`
+const DayCell = styled(Box)<{ $isToday?: boolean }>`
   padding: 0.5rem;
   text-align: center;
+  ${({ $isToday, theme }) =>
+    $isToday &&
+    `
+    color: ${theme.palette.info.main};
+  `}
 `;
 
 const HeaderGrid = styled(Box)<{ $columns: number }>`
@@ -61,18 +66,22 @@ const DayCellContainer: FC<{
 
 export const ScheduleHeader: FC = () => {
   const { datesToShow, blockedDays } = useScheduler();
+  const today = DateTime.now();
 
   return (
     <HeaderGrid $columns={datesToShow.length}>
       <Box padding="0.5rem"></Box>
-      {datesToShow.map((day, i) => (
-        <DayCell key={i}>
-          <DayCellContainer
-            day={day}
-            isBlocked={blockedDays.some((bd) => isMatchingDates(bd.date, [day]))}
-          />
-        </DayCell>
-      ))}
+      {datesToShow.map((day, i) => {
+        const isToday = isMatchingDate({ date1: day, date2: today });
+        return (
+          <DayCell key={i} $isToday={isToday}>
+            <DayCellContainer
+              day={day}
+              isBlocked={blockedDays.some((bd) => isMatchingDates(bd.date, [day]))}
+            />
+          </DayCell>
+        );
+      })}
     </HeaderGrid>
   );
 };
