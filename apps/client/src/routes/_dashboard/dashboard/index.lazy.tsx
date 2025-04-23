@@ -681,92 +681,6 @@ function DashboardContent() {
 
   return (
     <>
-      <Board>
-        {/* Notices section */}
-        <BlockGrid>
-          <SectionTitle variant="h5">Notices</SectionTitle>
-
-          {hasNotEnteredTimesheet && (
-            <NoticeAlert
-              severity="warning"
-              sx={{
-                border: (theme) => `1px solid ${theme.palette.warning.main}`
-              }}
-            >
-              <Typography variant="body2" color="warning.main" fontStyle="italic">
-                You have not entered any timesheets for the last week.
-              </Typography>
-            </NoticeAlert>
-          )}
-
-          <NoticeBox>
-            <Typography variant="subtitle1" fontWeight="bold">
-              Closed Days
-            </Typography>
-            {upcomingSchedule?.blockedDays.map((day, index) => (
-              <Box key={index} sx={{ mt: 1 }}>
-                <Typography variant="body2">
-                  <strong>
-                    {formatDate({ date: getDate(day.date), format: 'ccc d LLL' })}
-                  </strong>
-                  : {day.details || 'Closed'}
-                </Typography>
-              </Box>
-            ))}
-          </NoticeBox>
-        </BlockGrid>
-
-        {/* Upcoming schedule section */}
-        <BlockGrid>
-          <SectionTitle variant="h5">Upcoming Schedule</SectionTitle>
-
-          <Items>
-            {(upcomingSchedule?.schedule.length ?? 0) > 0 ? (
-              upcomingSchedule?.schedule
-                .flatMap((scheduleItem) =>
-                  scheduleItem.projectSchedule.map((item) => ({
-                    scheduleId: scheduleItem.id,
-                    id: item.id,
-                    startDate: new Date(item.startDate),
-                    endDate: new Date(item.endDate),
-                    project: item.project,
-                    notes: item.notes
-                  }))
-                )
-                .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
-                .map((item) => (
-                  <ScheduleItem key={`${item.scheduleId}-${item.id}`} elevation={1}>
-                    <Box>
-                      <Typography variant="subtitle1">
-                        {item.project.jobNumber}: {item.project.address}
-                      </Typography>
-                      <Typography variant="body2" color="textSecondary">
-                        {item.startDate.toLocaleDateString()} -{' '}
-                        {item.endDate.toLocaleDateString()}
-                      </Typography>
-                      {item.notes && (
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          {item.notes}
-                        </Typography>
-                      )}
-                    </Box>
-                    <Box
-                      sx={{
-                        width: 16,
-                        height: 16,
-                        borderRadius: '50%',
-                        backgroundColor: item.project.color
-                      }}
-                    />
-                  </ScheduleItem>
-                ))
-            ) : (
-              <Typography variant="body1">No upcoming scheduled projects.</Typography>
-            )}
-          </Items>
-        </BlockGrid>
-      </Board>
-
       <SectionHeader>
         <SectionTitle variant="h5">Recent Forum Posts</SectionTitle>
         <CreatePostButton
@@ -893,6 +807,91 @@ function DashboardContent() {
           </Button>
         </DialogActions>
       </Dialog>
+      <Board>
+        {/* Notices section */}
+        <BlockGrid>
+          <SectionTitle variant="h5">Notices</SectionTitle>
+
+          {hasNotEnteredTimesheet && (
+            <NoticeAlert
+              severity="warning"
+              sx={{
+                border: (theme) => `1px solid ${theme.palette.warning.main}`
+              }}
+            >
+              <Typography variant="body2" color="warning.main" fontStyle="italic">
+                You have not entered any timesheets for the last week.
+              </Typography>
+            </NoticeAlert>
+          )}
+
+          <NoticeBox>
+            <Typography variant="subtitle1" fontWeight="bold">
+              Closed Days
+            </Typography>
+            {upcomingSchedule?.blockedDays.map((day, index) => (
+              <Box key={index} sx={{ mt: 1 }}>
+                <Typography variant="body2">
+                  <strong>
+                    {formatDate({ date: getDate(day.date), format: 'ccc d LLL' })}
+                  </strong>
+                  : {day.details || 'Closed'}
+                </Typography>
+              </Box>
+            ))}
+          </NoticeBox>
+        </BlockGrid>
+
+        {/* Upcoming schedule section */}
+        <BlockGrid>
+          <SectionTitle variant="h5">Upcoming Schedule</SectionTitle>
+
+          <Items>
+            {(upcomingSchedule?.schedule.length ?? 0) > 0 ? (
+              upcomingSchedule?.schedule
+                .flatMap((scheduleItem) =>
+                  scheduleItem.projectSchedule.map((item) => ({
+                    scheduleId: scheduleItem.id,
+                    id: item.id,
+                    startDate: new Date(item.startDate),
+                    endDate: new Date(item.endDate),
+                    project: item.project,
+                    notes: item.notes
+                  }))
+                )
+                .sort((a, b) => a.startDate.getTime() - b.startDate.getTime())
+                .map((item) => (
+                  <ScheduleItem key={`${item.scheduleId}-${item.id}`} elevation={1}>
+                    <Box>
+                      <Typography variant="subtitle1">
+                        {item.project.jobNumber}: {item.project.address}
+                      </Typography>
+                      <Typography variant="body2" color="textSecondary">
+                        {item.startDate.toLocaleDateString()} -{' '}
+                        {item.endDate.toLocaleDateString()}
+                      </Typography>
+                      {item.notes && (
+                        <Typography variant="body2" sx={{ mt: 1 }}>
+                          {item.notes}
+                        </Typography>
+                      )}
+                    </Box>
+                    <Box
+                      sx={{
+                        width: 16,
+                        height: 16,
+                        borderRadius: '50%',
+                        backgroundColor: item.project.color
+                      }}
+                    />
+                  </ScheduleItem>
+                ))
+            ) : (
+              <Typography variant="body1">No upcoming scheduled projects.</Typography>
+            )}
+          </Items>
+        </BlockGrid>
+      </Board>
     </>
   );
 }
