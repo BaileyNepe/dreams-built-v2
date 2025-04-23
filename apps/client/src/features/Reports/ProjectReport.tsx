@@ -1,5 +1,11 @@
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { Accordion, AccordionDetails, AccordionSummary, Typography } from '@mui/material';
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  Box,
+  Typography
+} from '@mui/material';
 import { EnhancedTable } from 'components/EnhancedTable';
 import { Fragment, type FC } from 'react';
 import styled from 'styled-components';
@@ -61,8 +67,15 @@ export const ProjectReport: FC<{ weekStart: string }> = ({ weekStart }) => {
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Container>
                   <StyledAccordionSummary>
-                    <Typography variant="h6">
-                      {project.jobNumber} - {project.projectAddress}
+                    <Typography variant="h6" fontSize={13}>
+                      {project.jobNumber} - {project.projectAddress} -
+                      <Box
+                        component="span"
+                        sx={{ fontWeight: 'bold', color: 'warning.main' }}
+                      >
+                        {' '}
+                        ${project.totalCost.toFixed(2)}
+                      </Box>
                     </Typography>
                     <Typography variant="caption">
                       {formatDate({ date: weekStartDate, format: 'dd/MM/yyyy' })} -{' '}

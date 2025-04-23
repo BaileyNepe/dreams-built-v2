@@ -85,7 +85,7 @@ export const Report: FC = () => {
 
       <Suspense
         fallback={Array(2).fill(
-          <Skeleton variant="rectangular" height={300} sx={{ m: 1, borderRadius: 1 }} />
+          <Skeleton variant="rectangular" height={200} sx={{ m: 1, borderRadius: 1 }} />
         )}
       >
         <ReportContainer>
