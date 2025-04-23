@@ -10,6 +10,7 @@ export const paths = {
   projectsCreate: '/dashboard/projects/create',
   projectsEdit: '/dashboard/projects/edit/$projectId',
   projectDetail: '/dashboard/projects/detail/$projectId',
+  projectsFoundation: '/dashboard/projects/foundation/$projectId',
 
   projectParts: '/dashboard/project-parts',
 

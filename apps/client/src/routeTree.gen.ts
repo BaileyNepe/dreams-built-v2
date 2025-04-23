@@ -15,6 +15,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { Route as rootRoute } from './routes/__root'
 import { Route as LogoutImport } from './routes/logout'
 import { Route as DashboardDashboardClientsIndexImport } from './routes/_dashboard/dashboard/clients/index'
+import { Route as DashboardDashboardProjectsFoundationProjectIdImport } from './routes/_dashboard/dashboard/projects/foundation.$projectId'
 import { Route as DashboardDashboardProjectsEditProjectIdImport } from './routes/_dashboard/dashboard/projects/edit.$projectId'
 import { Route as DashboardDashboardClientsEditClientIdImport } from './routes/_dashboard/dashboard/clients/edit.$clientId'
 
@@ -220,6 +221,17 @@ const DashboardDashboardClientsCreateLazyRoute =
     ),
   )
 
+const DashboardDashboardProjectsFoundationProjectIdRoute =
+  DashboardDashboardProjectsFoundationProjectIdImport.update({
+    id: '/dashboard/projects/foundation/$projectId',
+    path: '/dashboard/projects/foundation/$projectId',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import(
+      './routes/_dashboard/dashboard/projects/foundation.$projectId.lazy'
+    ).then((d) => d.Route),
+  )
+
 const DashboardDashboardProjectsEditProjectIdRoute =
   DashboardDashboardProjectsEditProjectIdImport.update({
     id: '/dashboard/projects/edit/$projectId',
@@ -386,6 +398,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardDashboardProjectsEditProjectIdImport
       parentRoute: typeof DashboardLazyImport
     }
+    '/_dashboard/dashboard/projects/foundation/$projectId': {
+      id: '/_dashboard/dashboard/projects/foundation/$projectId'
+      path: '/dashboard/projects/foundation/$projectId'
+      fullPath: '/dashboard/projects/foundation/$projectId'
+      preLoaderRoute: typeof DashboardDashboardProjectsFoundationProjectIdImport
+      parentRoute: typeof DashboardLazyImport
+    }
   }
 }
 
@@ -405,6 +424,7 @@ interface DashboardLazyRouteChildren {
   DashboardDashboardProjectsIndexLazyRoute: typeof DashboardDashboardProjectsIndexLazyRoute
   DashboardDashboardClientsEditClientIdRoute: typeof DashboardDashboardClientsEditClientIdRoute
   DashboardDashboardProjectsEditProjectIdRoute: typeof DashboardDashboardProjectsEditProjectIdRoute
+  DashboardDashboardProjectsFoundationProjectIdRoute: typeof DashboardDashboardProjectsFoundationProjectIdRoute
 }
 
 const DashboardLazyRouteChildren: DashboardLazyRouteChildren = {
@@ -429,6 +449,8 @@ const DashboardLazyRouteChildren: DashboardLazyRouteChildren = {
     DashboardDashboardClientsEditClientIdRoute,
   DashboardDashboardProjectsEditProjectIdRoute:
     DashboardDashboardProjectsEditProjectIdRoute,
+  DashboardDashboardProjectsFoundationProjectIdRoute:
+    DashboardDashboardProjectsFoundationProjectIdRoute,
 }
 
 const DashboardLazyRouteWithChildren = DashboardLazyRoute._addFileChildren(
@@ -473,6 +495,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/projects': typeof DashboardDashboardProjectsIndexLazyRoute
   '/dashboard/clients/edit/$clientId': typeof DashboardDashboardClientsEditClientIdRoute
   '/dashboard/projects/edit/$projectId': typeof DashboardDashboardProjectsEditProjectIdRoute
+  '/dashboard/projects/foundation/$projectId': typeof DashboardDashboardProjectsFoundationProjectIdRoute
 }
 
 export interface FileRoutesByTo {
@@ -495,6 +518,7 @@ export interface FileRoutesByTo {
   '/dashboard/projects': typeof DashboardDashboardProjectsIndexLazyRoute
   '/dashboard/clients/edit/$clientId': typeof DashboardDashboardClientsEditClientIdRoute
   '/dashboard/projects/edit/$projectId': typeof DashboardDashboardProjectsEditProjectIdRoute
+  '/dashboard/projects/foundation/$projectId': typeof DashboardDashboardProjectsFoundationProjectIdRoute
 }
 
 export interface FileRoutesById {
@@ -519,6 +543,7 @@ export interface FileRoutesById {
   '/_dashboard/dashboard/projects/': typeof DashboardDashboardProjectsIndexLazyRoute
   '/_dashboard/dashboard/clients/edit/$clientId': typeof DashboardDashboardClientsEditClientIdRoute
   '/_dashboard/dashboard/projects/edit/$projectId': typeof DashboardDashboardProjectsEditProjectIdRoute
+  '/_dashboard/dashboard/projects/foundation/$projectId': typeof DashboardDashboardProjectsFoundationProjectIdRoute
 }
 
 export interface FileRouteTypes {
@@ -543,6 +568,7 @@ export interface FileRouteTypes {
     | '/dashboard/projects'
     | '/dashboard/clients/edit/$clientId'
     | '/dashboard/projects/edit/$projectId'
+    | '/dashboard/projects/foundation/$projectId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/logout'
@@ -564,6 +590,7 @@ export interface FileRouteTypes {
     | '/dashboard/projects'
     | '/dashboard/clients/edit/$clientId'
     | '/dashboard/projects/edit/$projectId'
+    | '/dashboard/projects/foundation/$projectId'
   id:
     | '__root__'
     | '/logout'
@@ -586,6 +613,7 @@ export interface FileRouteTypes {
     | '/_dashboard/dashboard/projects/'
     | '/_dashboard/dashboard/clients/edit/$clientId'
     | '/_dashboard/dashboard/projects/edit/$projectId'
+    | '/_dashboard/dashboard/projects/foundation/$projectId'
   fileRoutesById: FileRoutesById
 }
 
@@ -634,7 +662,8 @@ export const routeTree = rootRoute
         "/_dashboard/dashboard/messages/",
         "/_dashboard/dashboard/projects/",
         "/_dashboard/dashboard/clients/edit/$clientId",
-        "/_dashboard/dashboard/projects/edit/$projectId"
+        "/_dashboard/dashboard/projects/edit/$projectId",
+        "/_dashboard/dashboard/projects/foundation/$projectId"
       ]
     },
     "/_landing": {
@@ -712,6 +741,10 @@ export const routeTree = rootRoute
     },
     "/_dashboard/dashboard/projects/edit/$projectId": {
       "filePath": "_dashboard/dashboard/projects/edit.$projectId.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/dashboard/projects/foundation/$projectId": {
+      "filePath": "_dashboard/dashboard/projects/foundation.$projectId.tsx",
       "parent": "/_dashboard"
     }
   }

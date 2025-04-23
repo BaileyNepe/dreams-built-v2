@@ -145,6 +145,7 @@ const ProjectFile: FC = () => {
 const ProjectDetailContent = () => {
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
+  const { projectId } = useProjectParams();
 
   const { user } = useAuth();
   const canEdit = user.permissions?.includes(authz.jobs_edit) || false;
@@ -171,9 +172,27 @@ const ProjectDetailContent = () => {
       </Box>
       <Divider sx={{ my: 2 }} />
 
-      <Typography variant="h5" sx={{ mb: 3 }}>
-        Project Details
-      </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          mb: 2
+        }}
+      >
+        <Typography variant="h5">Project Details</Typography>
+        {canEdit && (
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={() =>
+              navigate({ to: paths.projectsFoundation, params: { projectId } })
+            }
+          >
+            Foundation Calculator
+          </Button>
+        )}
+      </Box>
 
       <Suspense
         fallback={
