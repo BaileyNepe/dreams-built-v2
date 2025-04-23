@@ -96,6 +96,7 @@ const NoticeAlert = styled(Alert)`
 const Board = styled.div`
   display: grid;
   gap: 2rem;
+  margin-top: 2rem;
   @media (min-width: ${(props) => props.theme.breakpoints.values.md}px) {
     grid-template-columns: repeat(2, 1fr);
   }
