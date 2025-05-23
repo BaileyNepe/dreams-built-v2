@@ -667,7 +667,8 @@ function DashboardContent() {
 
   const userEntries = useTimesheetEntries({
     weekStart: getWeekStart(getEndOfWeek({ weeks: -1 }).toFormat('yyyy-MM-dd')),
-    userId: user.id
+    userId: user.id,
+    enabled: user.role === 'EMPLOYEE'
   });
 
   const upcomingSchedule = useScheduleQuery(

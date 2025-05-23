@@ -3,10 +3,12 @@ import { api } from './trpc';
 
 export const useTimesheetEntries = ({
   weekStart,
-  userId
+  userId,
+  enabled = true
 }: {
   weekStart: string;
   userId: string;
+  enabled?: boolean;
 }) =>
   api.timesheet.get.useQuery(
     {
@@ -14,6 +16,7 @@ export const useTimesheetEntries = ({
       userId
     },
     {
+      enabled,
       throwOnError: true
     }
   );

@@ -28,7 +28,7 @@ const AuthzSchema = z.enum([
   'forum:create:attachment'
 ]);
 
-export const RoleSchema = z.enum(['ADMIN', 'MANAGER', 'EMPLOYEE', 'USER']);
+export const RoleSchema = z.enum(['ADMIN', 'MANAGER', 'CONTRACTOR', 'EMPLOYEE', 'USER']);
 
 export const RolesSchema = z.array(
   z.object({

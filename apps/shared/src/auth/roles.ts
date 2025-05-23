@@ -13,6 +13,11 @@ const rolesRaw: Roles = [
     permissions: [authz.roles_view_all]
   },
   {
+    id: 'CONTRACTOR',
+    name: 'Contractor',
+    permissions: [authz.roles_view_all]
+  },
+  {
     id: 'EMPLOYEE',
     name: 'Employee',
     permissions: [authz.roles_view_all]
