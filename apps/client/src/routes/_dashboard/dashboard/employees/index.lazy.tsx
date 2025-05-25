@@ -20,6 +20,8 @@ const getColor = (role: Role) => {
       return 'info';
     case 'EMPLOYEE':
       return 'success';
+    case 'CONTRACTOR':
+      return 'warning';
     case 'USER':
       return 'error';
     default:
@@ -45,7 +47,11 @@ const Page: FC = () => {
 
   // For the role filter, default to showing only "EMPLOYEE" results.
   // Change this to include all roles if desired (e.g. ['ADMIN','MANAGER','EMPLOYEE','USER'])
-  const [roleFilter, setRoleFilter] = useState<Role[]>(['EMPLOYEE']);
+  const [roleFilter, setRoleFilter] = useState<Role[]>([
+    'EMPLOYEE',
+    'CONTRACTOR',
+    'MANAGER'
+  ]);
   const [isFilterActive, setIsFilterActive] = useState(true);
 
   // Extend the filter function to include role filtering.
@@ -85,7 +91,9 @@ const Page: FC = () => {
         active: isFilterActive,
         toggleActive: () => {
           setIsFilterActive((prev) => !prev);
-          setRoleFilter((prev) => (prev.length === 0 ? ['EMPLOYEE'] : []));
+          setRoleFilter((prev) =>
+            prev.length === 0 ? ['EMPLOYEE', 'CONTRACTOR', 'MANAGER'] : []
+          );
         }
       }
     ],

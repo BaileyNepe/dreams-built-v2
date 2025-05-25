@@ -1,19 +1,11 @@
+import { roles } from '@dreams-built/shared/src/auth/roles';
 import { MenuItem, Select, type SelectChangeEvent } from '@mui/material';
 import { type FC } from 'react';
 
-export type RoleFilterProps = {
+export const RoleFilter: FC<{
   value: string[];
   onChange: (value: string[]) => void;
-};
-
-const roles = [
-  { label: 'Admin', value: 'ADMIN' },
-  { label: 'Manager', value: 'MANAGER' },
-  { label: 'Employee', value: 'EMPLOYEE' },
-  { label: 'User', value: 'USER' }
-];
-
-export const RoleFilter: FC<RoleFilterProps> = ({ value, onChange }) => {
+}> = ({ value, onChange }) => {
   const handleChange = (e: SelectChangeEvent<string[]>) => {
     // e.target.value may be a string or a string array
     const newValue =
@@ -24,8 +16,8 @@ export const RoleFilter: FC<RoleFilterProps> = ({ value, onChange }) => {
   return (
     <Select multiple value={value} onChange={handleChange}>
       {roles.map((role) => (
-        <MenuItem key={role.value} value={role.value}>
-          {role.label}
+        <MenuItem key={role.id} value={role.id}>
+          {role.name}
         </MenuItem>
       ))}
     </Select>
