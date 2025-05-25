@@ -16,7 +16,9 @@ export const AuthButton: FC = () => {
         if (isAuthenticated) {
           logout();
         } else {
-          loginWithRedirect();
+          loginWithRedirect({
+            appState: { returnTo: window.location.pathname }
+          });
         }
       }}
       disabled={isLoading}

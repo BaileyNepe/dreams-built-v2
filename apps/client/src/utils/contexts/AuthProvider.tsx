@@ -70,6 +70,17 @@ export const AuthContext: FC<PropsWithChildren> = ({ children }) => (
       redirect_uri: window.location.origin,
       audience: env.auth0Audience
     }}
+    onRedirectCallback={(appState) => {
+      // Get the intended URL from appState or use current path
+      const targetUrl = appState?.returnTo || window.location.pathname;
+
+      // If user was redirected to root and is authenticated, go to dashboard
+      // Otherwise, go to their intended page
+      const finalUrl = targetUrl === '/' ? '/dashboard' : targetUrl;
+
+      window.history.replaceState({}, '', finalUrl);
+    }}
+    cacheLocation="localstorage" // This ensures auth state persists across page refreshes
   >
     <>{children}</>
   </Auth0Provider>

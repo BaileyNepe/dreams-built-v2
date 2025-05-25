@@ -39,7 +39,7 @@ export const Dashboard: FC = () => {
 
   if (!isLoading && !isAuthenticated) {
     loginWithRedirect({
-      appState: { returnTo: '/dashboard' }
+      appState: { returnTo: window.location.pathname }
     });
 
     return <Loader />;
