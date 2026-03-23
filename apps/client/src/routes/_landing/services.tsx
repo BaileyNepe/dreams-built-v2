@@ -1,16 +1,19 @@
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
+import Chip from '@mui/material/Chip';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import { createLazyFileRoute } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { Button } from 'components/Button';
+import { RouterLink } from 'components/Link';
+import { StyledCaption, StyledHeading } from 'components/styles';
 import styled from 'styled-components';
+import { bgBlur } from 'themes/css';
 import { paths } from 'utils/paths';
 
-// Import background images
 import Contact from 'assets/contact.webp';
 import DrivewayExposed from 'assets/driveway_2.webp';
 import Fence from 'assets/fence.webp';
@@ -20,33 +23,34 @@ import Landscape from 'assets/landscape.webp';
 import Patio from 'assets/patio.webp';
 import Repair from 'assets/repair.webp';
 import Repair2 from 'assets/repair_2.webp';
-import { RouterLink } from 'components/Link';
-import { StyledCaption, StyledHeading } from 'components/styles';
-import { bgBlur } from 'themes/css';
 
 const FOUNDATION_SERVICES = [
   {
     title: 'Residential Foundations',
+    tag: 'Residential',
     description:
-      'Custom designed residential foundations for new home builds, ensuring durability and stability that lasts for decades.',
+      'Engineered concrete slabs, strip footings, and raft foundations for new home builds across Waikato and Hamilton — built to last decades and meet all consent requirements.',
     backgroundImage: FoundationsComplete
   },
   {
     title: 'Commercial Foundations',
+    tag: 'Commercial',
     description:
-      'Expertly engineered commercial building foundations that meet all code requirements and support your business infrastructure.',
+      'Heavy-duty foundations for commercial and industrial builds. We work with engineers and project managers to meet code requirements and tight construction schedules.',
     backgroundImage: Contact
   },
   {
     title: 'Foundation Repair',
+    tag: 'Repair',
     description:
-      'Comprehensive repair services for cracked, settling, or damaged foundations, restoring structural integrity.',
+      'Cracked, settling, or subsiding foundations restored to full structural integrity. We diagnose the cause and apply lasting solutions, not just surface patches.',
     backgroundImage: Repair
   },
   {
     title: 'Concrete Slabs',
+    tag: 'Slabs',
     description:
-      'Precision-poured concrete slabs for garages, sheds, and other structures requiring a solid and level base.',
+      'Precision-poured slabs for garages, sheds, sleepouts, and outbuildings. Reinforced and finished to a high standard with proper drainage and moisture barriers.',
     backgroundImage: Foundations
   }
 ];
@@ -54,28 +58,38 @@ const FOUNDATION_SERVICES = [
 const ADDITIONAL_SERVICES = [
   {
     title: 'Driveways & Patios',
+    tag: 'Outdoor Living',
     description:
-      "Beautiful, durable concrete driveways and patios designed to enhance your property's curb appeal and outdoor living space.",
+      'Exposed aggregate, broom-finish, and coloured concrete driveways and patios designed to boost kerb appeal and withstand the Waikato climate year-round.',
     backgroundImage: DrivewayExposed
   },
   {
     title: 'Fencing Solutions',
+    tag: 'Fencing',
     description:
-      'Professional fence installation using quality materials for privacy, security, and aesthetic enhancement of your property.',
+      'Concrete and timber fence installations for privacy, security, and boundary definition. We handle everything from posts to panels with a clean, durable finish.',
     backgroundImage: Fence
   },
   {
     title: 'Landscaping',
+    tag: 'Landscaping',
     description:
-      'Comprehensive landscaping services to transform your outdoor areas into beautiful, functional spaces.',
+      'Retaining walls, garden borders, paths, and outdoor feature work that integrates with your property and stands up to everyday use.',
     backgroundImage: Landscape
   },
   {
     title: 'Project Consulting',
+    tag: 'Consulting',
     description:
-      'Expert consultation for your construction projects, helping you plan effectively and avoid costly mistakes.',
+      'Not sure where to start? We offer practical, no-nonsense advice on concrete specifications, consents, sequencing, and cost planning before a single shovel hits the ground.',
     backgroundImage: Repair2
   }
+];
+
+const WHY_HIGHLIGHTS = [
+  { stat: '600+', label: 'Projects completed', detail: 'Across Waikato and Hamilton' },
+  { stat: 'Free', label: 'No-obligation quotes', detail: 'On-site assessment at no cost' },
+  { stat: 'Local', label: 'Waikato-based team', detail: 'Hamilton, Morrinsville, Cambridge & beyond' }
 ];
 
 const PosterImage = styled.img`
@@ -139,7 +153,6 @@ const ServiceCard = styled(Card)<ServiceCardProps>`
     position: relative;
     transition: all 0.3s ease-in-out;
 
-    /* Background image setup */
     &::before {
       background-image: url(${(props) => props.backgroundImg});
       background-position: center;
@@ -149,11 +162,11 @@ const ServiceCard = styled(Card)<ServiceCardProps>`
       left: 0;
       position: absolute;
       top: 0;
+      transition: background-size 0.4s ease-in-out;
       width: 100%;
       z-index: -2;
     }
 
-    /* Dark overlay for improved text readability */
     &::after {
       background-color: rgba(0, 0, 0, 0.7);
       content: '';
@@ -170,6 +183,32 @@ const ServiceCard = styled(Card)<ServiceCardProps>`
     &:hover {
       box-shadow: ${({ theme }) => theme.customShadows.z20};
       transform: translateY(-5px);
+
+      &::before {
+        background-size: 110%;
+      }
+    }
+  }
+`;
+
+const HighlightBar = styled(Box)`
+  background-color: ${({ theme }) => theme.palette.primary.main};
+  padding: 2.5rem 0;
+`;
+
+const HighlightItem = styled(Box)`
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem 1.5rem;
+  text-align: center;
+
+  @media (min-width: 768px) {
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
+
+    &:last-child {
+      border-right: none;
     }
   }
 `;
@@ -213,32 +252,75 @@ function ServicesPage() {
   return (
     <>
       <HeroSection>
-        <PosterImage src={Patio} alt="Dreams Built Services" />
+        <PosterImage src={Patio} alt="Dreams Built concrete services in Waikato" />
         <HeroContent>
           <StyledHeading variant="h1" fontSize={{ xs: 30, md: 40 }}>
-            Building Dreams from the Ground Up
+            Expert Concrete & Construction Services in Waikato
           </StyledHeading>
           <StyledCaption variant="body1" sx={{ maxWidth: 700, mx: 'auto' }}>
-            At Dreams Built, we specialize in creating solid foundations for residential
-            and commercial buildings, along with complementary services that ensure your
-            property is beautiful, functional, and built to last.
+            From engineered foundations to exposed aggregate driveways, Dreams Built
+            delivers quality concrete work across Hamilton, Morrinsville, Cambridge, Te
+            Awamutu, and the wider Waikato region.
           </StyledCaption>
         </HeroContent>
       </HeroSection>
+
+      <HighlightBar>
+        <Container>
+          <Grid container>
+            {WHY_HIGHLIGHTS.map((item) => (
+              <Grid item xs={12} md={4} key={item.stat}>
+                <HighlightItem>
+                  <Typography
+                    variant="h3"
+                    fontWeight={800}
+                    sx={{ color: 'secondary.main', lineHeight: 1 }}
+                  >
+                    {item.stat}
+                  </Typography>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight={700}
+                    sx={{ color: 'common.white', mt: 0.5 }}
+                  >
+                    {item.label}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{ color: 'rgba(255,255,255,0.6)', mt: 0.25 }}
+                  >
+                    {item.detail}
+                  </Typography>
+                </HighlightItem>
+              </Grid>
+            ))}
+          </Grid>
+        </Container>
+      </HighlightBar>
 
       <SectionContainer>
         <Typography variant="h2" fontSize={40} mb={1}>
           Foundation Services
         </Typography>
         <Typography variant="body1" color="text.secondary" mb={5}>
-          Our core expertise is in creating solid, lasting foundations for all types of
-          structures.
+          Our core expertise — solid, lasting concrete foundations for every type of
+          structure and terrain across the Waikato.
         </Typography>
 
         <Grid container spacing={3}>
-          {FOUNDATION_SERVICES.map((service, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
+          {FOUNDATION_SERVICES.map((service) => (
+            <Grid item xs={12} sm={6} md={3} key={service.title}>
               <ServiceCard backgroundImg={service.backgroundImage}>
+                <Chip
+                  label={service.tag}
+                  size="small"
+                  sx={{
+                    mb: 1.5,
+                    bgcolor: 'rgba(255,255,255,0.15)',
+                    color: 'white',
+                    fontWeight: 600
+                  }}
+                />
                 <Typography variant="h6" mb={1} color="white" fontWeight={600}>
                   {service.title}
                 </Typography>
@@ -269,8 +351,8 @@ function ServicesPage() {
               How We Work
             </Typography>
             <Typography sx={{ color: 'text.secondary' }}>
-              Our streamlined process ensures quality, efficiency, and complete
-              satisfaction at every step of your project.
+              A clear, structured process means no surprises — just quality work delivered
+              on time and within budget.
             </Typography>
           </Stack>
 
@@ -282,8 +364,8 @@ function ServicesPage() {
                   Consultation & Quote
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  We meet to understand your needs, assess your property, and provide a
-                  detailed, transparent quote.
+                  We visit your site, understand your requirements, and provide a
+                  detailed, transparent quote — no hidden costs.
                 </Typography>
               </ProcessStep>
             </Grid>
@@ -291,11 +373,11 @@ function ServicesPage() {
               <ProcessStep>
                 <StepNumber>2</StepNumber>
                 <Typography variant="h6" mb={1}>
-                  Project Organisation
+                  Planning & Consent
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  We organise all aspects of your project, sourcing quality materials and
-                  preparing for efficient execution.
+                  We coordinate consents, engineer sign-offs, and material sourcing so
+                  everything is in place before work begins.
                 </Typography>
               </ProcessStep>
             </Grid>
@@ -306,8 +388,8 @@ function ServicesPage() {
                   Construction
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Our experienced team executes the project with precision, quality
-                  materials, and attention to detail.
+                  Our experienced crew gets to work with quality materials, correct
+                  techniques, and attention to every detail.
                 </Typography>
               </ProcessStep>
             </Grid>
@@ -315,11 +397,11 @@ function ServicesPage() {
               <ProcessStep>
                 <StepNumber>4</StepNumber>
                 <Typography variant="h6" mb={1}>
-                  Completion & Inspection
+                  Completion & Sign-off
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  We handle all required inspections and ensure that all work is completed
-                  to the highest standard before final walkthrough.
+                  We handle required inspections and walk through the finished work with
+                  you before calling the job done.
                 </Typography>
               </ProcessStep>
             </Grid>
@@ -332,14 +414,24 @@ function ServicesPage() {
           Additional Services
         </Typography>
         <Typography variant="body1" color="text.secondary" mb={5}>
-          Beyond foundations, we offer comprehensive solutions for all your property
-          needs.
+          Beyond foundations, we handle everything your property needs — driveways,
+          patios, fencing, landscaping, and more.
         </Typography>
 
         <Grid container spacing={3}>
-          {ADDITIONAL_SERVICES.map((service, index) => (
-            <Grid item xs={12} sm={6} md={3} key={index}>
+          {ADDITIONAL_SERVICES.map((service) => (
+            <Grid item xs={12} sm={6} md={3} key={service.title}>
               <ServiceCard backgroundImg={service.backgroundImage}>
+                <Chip
+                  label={service.tag}
+                  size="small"
+                  sx={{
+                    mb: 1.5,
+                    bgcolor: 'rgba(255,255,255,0.15)',
+                    color: 'white',
+                    fontWeight: 600
+                  }}
+                />
                 <Typography variant="h6" mb={1} color="white" fontWeight={600}>
                   {service.title}
                 </Typography>
@@ -369,8 +461,8 @@ function ServicesPage() {
             mb={4}
             sx={{ maxWidth: 600, mx: 'auto', color: 'grey.400' }}
           >
-            Contact us today for a free consultation and quote. Our team is ready to turn
-            your vision into reality.
+            Get in touch for a free, no-obligation quote. We work across Hamilton,
+            Morrinsville, Cambridge, Te Awamutu, and the wider Waikato.
           </Typography>
           <RouterLink to={paths.contact}>
             <Button
@@ -379,7 +471,7 @@ function ServicesPage() {
               size="large"
               endIcon={<ChevronRightIcon />}
             >
-              Contact Us Now
+              Get a Free Quote
             </Button>
           </RouterLink>
         </Container>
@@ -388,6 +480,19 @@ function ServicesPage() {
   );
 }
 
-export const Route = createLazyFileRoute('/_landing/services')({
+export const Route = createFileRoute('/_landing/services')({
+  head: () => ({
+    meta: [
+      {
+        title:
+          'Concrete & Construction Services | Dreams Built – Waikato & Hamilton, NZ'
+      },
+      {
+        name: 'description',
+        content:
+          'Expert concrete foundations, driveways, patios, fencing and landscaping in Waikato and Hamilton, NZ. Residential and commercial. Contact Dreams Built for a free quote.'
+      }
+    ]
+  }),
   component: ServicesPage
 });

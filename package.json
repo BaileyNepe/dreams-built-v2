@@ -79,6 +79,11 @@
   "workspaces": [
     "apps/*"
   ],
+  "overrides": {
+    "@tanstack/router-core": "1.112.18",
+    "@tanstack/router-generator": "1.112.19",
+    "@tanstack/router-utils": "1.112.18"
+  },
   "trustredDependencies": [
     "sharp"
   ],

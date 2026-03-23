@@ -1,4 +1,4 @@
-import { createLazyFileRoute } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import backgroundImage from 'assets/contact.webp';
 import ContactSection from 'features/Sections/Contact';
 import styled from 'styled-components';
@@ -31,7 +31,6 @@ const BackgroundImage = styled.div`
   z-index: -1;
 `;
 
-/* Wrapper to ensure content is above the background */
 const ContentWrapper = styled.div`
   display: flex;
   justify-content: center;
@@ -55,6 +54,16 @@ function RouteComponent() {
   );
 }
 
-export const Route = createLazyFileRoute('/_landing/contact')({
+export const Route = createFileRoute('/_landing/contact')({
+  head: () => ({
+    meta: [
+      { title: 'Get a Free Quote | Dreams Built – Hamilton & Waikato, NZ' },
+      {
+        name: 'description',
+        content:
+          'Contact Dreams Built for a free, no-obligation quote. We service Hamilton, Morrinsville, Cambridge, Te Awamutu and the wider Waikato region. Call or fill in our online form.'
+      }
+    ]
+  }),
   component: RouteComponent
 });

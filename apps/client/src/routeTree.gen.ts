@@ -14,6 +14,10 @@ import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as LogoutImport } from './routes/logout'
+import { Route as LandingIndexImport } from './routes/_landing/index'
+import { Route as LandingServicesImport } from './routes/_landing/services'
+import { Route as LandingContactImport } from './routes/_landing/contact'
+import { Route as LandingAboutImport } from './routes/_landing/about'
 import { Route as DashboardDashboardClientsIndexImport } from './routes/_dashboard/dashboard/clients/index'
 import { Route as DashboardDashboardProjectsEditProjectIdImport } from './routes/_dashboard/dashboard/projects/edit.$projectId'
 import { Route as DashboardDashboardClientsEditClientIdImport } from './routes/_dashboard/dashboard/clients/edit.$clientId'
@@ -22,10 +26,6 @@ import { Route as DashboardDashboardClientsEditClientIdImport } from './routes/_
 
 const LandingLazyImport = createFileRoute('/_landing')()
 const DashboardLazyImport = createFileRoute('/_dashboard')()
-const LandingIndexLazyImport = createFileRoute('/_landing/')()
-const LandingServicesLazyImport = createFileRoute('/_landing/services')()
-const LandingContactLazyImport = createFileRoute('/_landing/contact')()
-const LandingAboutLazyImport = createFileRoute('/_landing/about')()
 const DashboardDashboardIndexLazyImport = createFileRoute(
   '/_dashboard/dashboard/',
 )()
@@ -75,37 +75,29 @@ const LogoutRoute = LogoutImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const LandingIndexLazyRoute = LandingIndexLazyImport.update({
+const LandingIndexRoute = LandingIndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => LandingLazyRoute,
-} as any).lazy(() =>
-  import('./routes/_landing/index.lazy').then((d) => d.Route),
-)
+} as any)
 
-const LandingServicesLazyRoute = LandingServicesLazyImport.update({
+const LandingServicesRoute = LandingServicesImport.update({
   id: '/services',
   path: '/services',
   getParentRoute: () => LandingLazyRoute,
-} as any).lazy(() =>
-  import('./routes/_landing/services.lazy').then((d) => d.Route),
-)
+} as any)
 
-const LandingContactLazyRoute = LandingContactLazyImport.update({
+const LandingContactRoute = LandingContactImport.update({
   id: '/contact',
   path: '/contact',
   getParentRoute: () => LandingLazyRoute,
-} as any).lazy(() =>
-  import('./routes/_landing/contact.lazy').then((d) => d.Route),
-)
+} as any)
 
-const LandingAboutLazyRoute = LandingAboutLazyImport.update({
+const LandingAboutRoute = LandingAboutImport.update({
   id: '/about',
   path: '/about',
   getParentRoute: () => LandingLazyRoute,
-} as any).lazy(() =>
-  import('./routes/_landing/about.lazy').then((d) => d.Route),
-)
+} as any)
 
 const DashboardDashboardIndexLazyRoute =
   DashboardDashboardIndexLazyImport.update({
@@ -271,28 +263,28 @@ declare module '@tanstack/react-router' {
       id: '/_landing/about'
       path: '/about'
       fullPath: '/about'
-      preLoaderRoute: typeof LandingAboutLazyImport
+      preLoaderRoute: typeof LandingAboutImport
       parentRoute: typeof LandingLazyImport
     }
     '/_landing/contact': {
       id: '/_landing/contact'
       path: '/contact'
       fullPath: '/contact'
-      preLoaderRoute: typeof LandingContactLazyImport
+      preLoaderRoute: typeof LandingContactImport
       parentRoute: typeof LandingLazyImport
     }
     '/_landing/services': {
       id: '/_landing/services'
       path: '/services'
       fullPath: '/services'
-      preLoaderRoute: typeof LandingServicesLazyImport
+      preLoaderRoute: typeof LandingServicesImport
       parentRoute: typeof LandingLazyImport
     }
     '/_landing/': {
       id: '/_landing/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof LandingIndexLazyImport
+      preLoaderRoute: typeof LandingIndexImport
       parentRoute: typeof LandingLazyImport
     }
     '/_dashboard/dashboard/reports': {
@@ -436,17 +428,17 @@ const DashboardLazyRouteWithChildren = DashboardLazyRoute._addFileChildren(
 )
 
 interface LandingLazyRouteChildren {
-  LandingAboutLazyRoute: typeof LandingAboutLazyRoute
-  LandingContactLazyRoute: typeof LandingContactLazyRoute
-  LandingServicesLazyRoute: typeof LandingServicesLazyRoute
-  LandingIndexLazyRoute: typeof LandingIndexLazyRoute
+  LandingAboutRoute: typeof LandingAboutRoute
+  LandingContactRoute: typeof LandingContactRoute
+  LandingServicesRoute: typeof LandingServicesRoute
+  LandingIndexRoute: typeof LandingIndexRoute
 }
 
 const LandingLazyRouteChildren: LandingLazyRouteChildren = {
-  LandingAboutLazyRoute: LandingAboutLazyRoute,
-  LandingContactLazyRoute: LandingContactLazyRoute,
-  LandingServicesLazyRoute: LandingServicesLazyRoute,
-  LandingIndexLazyRoute: LandingIndexLazyRoute,
+  LandingAboutRoute: LandingAboutRoute,
+  LandingContactRoute: LandingContactRoute,
+  LandingServicesRoute: LandingServicesRoute,
+  LandingIndexRoute: LandingIndexRoute,
 }
 
 const LandingLazyRouteWithChildren = LandingLazyRoute._addFileChildren(
@@ -456,10 +448,10 @@ const LandingLazyRouteWithChildren = LandingLazyRoute._addFileChildren(
 export interface FileRoutesByFullPath {
   '/logout': typeof LogoutRoute
   '': typeof LandingLazyRouteWithChildren
-  '/about': typeof LandingAboutLazyRoute
-  '/contact': typeof LandingContactLazyRoute
-  '/services': typeof LandingServicesLazyRoute
-  '/': typeof LandingIndexLazyRoute
+  '/about': typeof LandingAboutRoute
+  '/contact': typeof LandingContactRoute
+  '/services': typeof LandingServicesRoute
+  '/': typeof LandingIndexRoute
   '/dashboard/reports': typeof DashboardDashboardReportsLazyRoute
   '/dashboard/schedule': typeof DashboardDashboardScheduleLazyRoute
   '/dashboard/timesheet': typeof DashboardDashboardTimesheetLazyRoute
@@ -478,10 +470,10 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/logout': typeof LogoutRoute
   '': typeof DashboardLazyRouteWithChildren
-  '/about': typeof LandingAboutLazyRoute
-  '/contact': typeof LandingContactLazyRoute
-  '/services': typeof LandingServicesLazyRoute
-  '/': typeof LandingIndexLazyRoute
+  '/about': typeof LandingAboutRoute
+  '/contact': typeof LandingContactRoute
+  '/services': typeof LandingServicesRoute
+  '/': typeof LandingIndexRoute
   '/dashboard/reports': typeof DashboardDashboardReportsLazyRoute
   '/dashboard/schedule': typeof DashboardDashboardScheduleLazyRoute
   '/dashboard/timesheet': typeof DashboardDashboardTimesheetLazyRoute
@@ -502,10 +494,10 @@ export interface FileRoutesById {
   '/logout': typeof LogoutRoute
   '/_dashboard': typeof DashboardLazyRouteWithChildren
   '/_landing': typeof LandingLazyRouteWithChildren
-  '/_landing/about': typeof LandingAboutLazyRoute
-  '/_landing/contact': typeof LandingContactLazyRoute
-  '/_landing/services': typeof LandingServicesLazyRoute
-  '/_landing/': typeof LandingIndexLazyRoute
+  '/_landing/about': typeof LandingAboutRoute
+  '/_landing/contact': typeof LandingContactRoute
+  '/_landing/services': typeof LandingServicesRoute
+  '/_landing/': typeof LandingIndexRoute
   '/_dashboard/dashboard/reports': typeof DashboardDashboardReportsLazyRoute
   '/_dashboard/dashboard/schedule': typeof DashboardDashboardScheduleLazyRoute
   '/_dashboard/dashboard/timesheet': typeof DashboardDashboardTimesheetLazyRoute
@@ -647,19 +639,19 @@ export const routeTree = rootRoute
       ]
     },
     "/_landing/about": {
-      "filePath": "_landing/about.lazy.tsx",
+      "filePath": "_landing/about.tsx",
       "parent": "/_landing"
     },
     "/_landing/contact": {
-      "filePath": "_landing/contact.lazy.tsx",
+      "filePath": "_landing/contact.tsx",
       "parent": "/_landing"
     },
     "/_landing/services": {
-      "filePath": "_landing/services.lazy.tsx",
+      "filePath": "_landing/services.tsx",
       "parent": "/_landing"
     },
     "/_landing/": {
-      "filePath": "_landing/index.lazy.tsx",
+      "filePath": "_landing/index.tsx",
       "parent": "/_landing"
     },
     "/_dashboard/dashboard/reports": {

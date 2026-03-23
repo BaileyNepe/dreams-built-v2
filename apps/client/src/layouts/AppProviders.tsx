@@ -1,4 +1,4 @@
-import { Outlet } from '@tanstack/react-router';
+import { HeadContent, Outlet } from '@tanstack/react-router';
 import { DefaultErrorBoundary } from 'components/ErrorBoundary/DefaultErrorScreen';
 import { ToastProvider } from 'libs/Notify';
 import { Suspense, type FC } from 'react';
@@ -11,6 +11,7 @@ export const AppProviders: FC = () => (
     <TRPCContext>
       <ThemeCustomization>
         <DefaultErrorBoundary>
+          <HeadContent />
           <Suspense>
             <ToastProvider />
             <Outlet />

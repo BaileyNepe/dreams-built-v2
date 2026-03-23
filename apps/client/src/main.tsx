@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client';
 import { routeTree } from './routeTree.gen';
 
 import 'main.css';
-import { isSafari } from 'utils/device';
 
 // Set up a Router instance
 const router = createRouter({
@@ -11,7 +10,7 @@ const router = createRouter({
   defaultPreload: 'intent',
   scrollRestoration: true,
   notFoundMode: 'fuzzy',
-  defaultViewTransition: !isSafari()
+  defaultViewTransition: false
 });
 
 // Register things for typesafety

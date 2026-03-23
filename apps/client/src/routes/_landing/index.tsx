@@ -1,4 +1,4 @@
-import { createLazyFileRoute } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import LandingAbout from 'features/Sections/About';
 import { FeatureSection } from 'features/Sections/Feature';
 import LandingServices from 'features/Sections/Services';
@@ -23,6 +23,19 @@ const HomePage: FC = () => (
   </>
 );
 
-export const Route = createLazyFileRoute('/_landing/')({
+export const Route = createFileRoute('/_landing/')({
+  head: () => ({
+    meta: [
+      {
+        title:
+          'Dreams Built | Concrete Foundations, Driveways & Landscaping – Waikato, NZ'
+      },
+      {
+        name: 'description',
+        content:
+          'Dreams Built specialises in expert concrete foundations, driveways, patios, fencing and landscaping for residential and commercial projects across Waikato and Hamilton, NZ.'
+      }
+    ]
+  }),
   component: HomePage
 });
