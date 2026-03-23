@@ -84,8 +84,9 @@
     "@tanstack/router-generator": "1.112.19",
     "@tanstack/router-utils": "1.112.18"
   },
-  "trustredDependencies": [
-    "sharp"
+  "trustedDependencies": [
+    "sharp",
+    "bun"
   ],
   "peerDependencies": {
     "typescript": "^5.0.0"
