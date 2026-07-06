@@ -3,6 +3,7 @@ import { existsSync, mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import sharp from 'sharp';
+import { createSemaphore } from './concurrency';
 import { generateOptimizedKey, getS3Object, uploadOptimizedFile } from './s3-utils';
 
 // Define optimization result interface
@@ -96,23 +97,36 @@ async function optimizePdf(
     // Write buffer to temp file
     await Bun.write(inputPath, fileBuffer);
 
-    // Use Bun to run ghostscript for PDF optimization with increased memory limits
-    const { success, stderr } = Bun.spawnSync([
-      'gs',
-      '-sDEVICE=pdfwrite',
-      '-dCompatibilityLevel=1.4',
-      '-dPDFSETTINGS=/ebook',
-      '-dNOPAUSE',
-      '-dQUIET',
-      '-dBATCH',
-      '-dMemoryLimit=1000000000', // Increased to 1GB
-      '-dBufferSize=100000000', // Increased to 100MB
-      `-sOutputFile=${outputPath}`,
-      inputPath
+    // Use Bun to run ghostscript for PDF optimization with increased memory limits.
+    // Use the async Bun.spawn (not spawnSync) so the event loop stays free while
+    // ghostscript runs on another core — spawnSync would freeze the whole server
+    // for the duration of a large PDF's compression.
+    const proc = Bun.spawn(
+      [
+        'gs',
+        '-sDEVICE=pdfwrite',
+        '-dCompatibilityLevel=1.4',
+        '-dPDFSETTINGS=/ebook',
+        '-dNOPAUSE',
+        '-dQUIET',
+        '-dBATCH',
+        '-dMemoryLimit=1000000000', // Increased to 1GB
+        '-dBufferSize=100000000', // Increased to 100MB
+        `-sOutputFile=${outputPath}`,
+        inputPath
+      ],
+      { stdout: 'ignore', stderr: 'pipe' }
+    );
+
+    // Drain stderr while awaiting exit — reading the pipe concurrently prevents a
+    // deadlock if ghostscript writes enough to stderr to fill the pipe buffer.
+    const [stderr, exitCode] = await Promise.all([
+      new Response(proc.stderr).text(),
+      proc.exited
     ]);
 
-    if (!success) {
-      console.error('PDF optimization failed:', stderr.toString());
+    if (exitCode !== 0) {
+      console.error('PDF optimization failed:', stderr);
       throw new Error('PDF optimization failed');
     }
 
@@ -181,10 +195,23 @@ async function optimizePdf(
   }
 }
 
+// Cap how many optimizations run at once so a burst of large uploads can't spawn
+// many memory-heavy ghostscript/sharp jobs in parallel and OOM the container.
+const MAX_CONCURRENT_OPTIMIZATIONS = 2;
+const limitOptimization = createSemaphore(MAX_CONCURRENT_OPTIMIZATIONS);
+
 /**
- * Optimize a file based on its content type
+ * Optimize a file based on its content type.
+ * Runs through a global semaphore so concurrency stays bounded across requests.
  */
 export async function optimizeFile(
+  key: string,
+  contentType: string
+): Promise<OptimizationResult> {
+  return limitOptimization(() => runOptimization(key, contentType));
+}
+
+async function runOptimization(
   key: string,
   contentType: string
 ): Promise<OptimizationResult> {
