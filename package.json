@@ -34,6 +34,10 @@
     "client:test": "cd apps/client && bun run test:coverage",
     "client:build": "cd apps/client && bun run build",
     "client:run": "cd apps/client && bun run start",
+    "web": "cd apps/web && bun run dev",
+    "web:build": "cd apps/web && bun run build",
+    "web:preview": "cd apps/web && bun run preview",
+    "web:test": "cd apps/web && bun run test",
     "server": "cd apps/server && bun run dev",
     "server:unit-ci": "cd apps/server && bun run test:unit",
     "server:unit": "cd apps/server && bun run test:unit:watch",
@@ -79,14 +83,12 @@
   "workspaces": [
     "apps/*"
   ],
-  "overrides": {
-    "@tanstack/router-core": "1.112.18",
-    "@tanstack/router-generator": "1.112.19",
-    "@tanstack/router-utils": "1.112.18"
-  },
   "trustredDependencies": [
     "sharp"
   ],
+  "overrides": {
+    "vite": "8.0.9"
+  },
   "peerDependencies": {
     "typescript": "^5.0.0"
   }
