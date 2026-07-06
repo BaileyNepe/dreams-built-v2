@@ -195,22 +195,10 @@ async function optimizePdf(
   }
 }
 
-// Cap how many optimizations run at once so a burst of large uploads can't spawn
-// many memory-heavy ghostscript/sharp jobs in parallel and OOM the container.
-const MAX_CONCURRENT_OPTIMIZATIONS = 2;
-const limitOptimization = createSemaphore(MAX_CONCURRENT_OPTIMIZATIONS);
-
 /**
  * Optimize a file based on its content type.
- * Runs through a global semaphore so concurrency stays bounded across requests.
+ * Wrapped by `optimizeFile` (below) so concurrency stays bounded via the semaphore.
  */
-export async function optimizeFile(
-  key: string,
-  contentType: string
-): Promise<OptimizationResult> {
-  return limitOptimization(() => runOptimization(key, contentType));
-}
-
 async function runOptimization(
   key: string,
   contentType: string
@@ -254,4 +242,20 @@ async function runOptimization(
       `File optimization failed: ${error instanceof Error ? error.message : 'Unknown error'}`
     );
   }
+}
+
+// Cap how many optimizations run at once so a burst of large uploads can't spawn
+// many memory-heavy ghostscript/sharp jobs in parallel and OOM the container.
+const MAX_CONCURRENT_OPTIMIZATIONS = 2;
+const limitOptimization = createSemaphore(MAX_CONCURRENT_OPTIMIZATIONS);
+
+/**
+ * Optimize a file based on its content type.
+ * Runs through a global semaphore so concurrency stays bounded across requests.
+ */
+export async function optimizeFile(
+  key: string,
+  contentType: string
+): Promise<OptimizationResult> {
+  return limitOptimization(() => runOptimization(key, contentType));
 }

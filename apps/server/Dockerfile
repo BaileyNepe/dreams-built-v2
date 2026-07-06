@@ -18,16 +18,6 @@ RUN apt update \
     g++ \
     make
 
-
-ARG NODE_VERSION=22.13
-
-RUN curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o n \
-    && bash n $NODE_VERSION \
-    && rm n \
-    && npm install -g n
-
-RUN npm rebuild argon2
-
 RUN bun install
 
 COPY . .

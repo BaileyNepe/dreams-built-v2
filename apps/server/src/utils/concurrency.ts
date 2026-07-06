@@ -20,7 +20,9 @@ export function createSemaphore(max: number) {
 
   return async function run<T>(fn: () => Promise<T>): Promise<T> {
     if (active >= max) {
-      await new Promise<void>((resolve) => queue.push(resolve));
+      await new Promise<void>((resolve) => {
+        queue.push(resolve);
+      });
     } else {
       active++;
     }
