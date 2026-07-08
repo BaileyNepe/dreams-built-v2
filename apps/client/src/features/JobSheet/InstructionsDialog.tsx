@@ -42,7 +42,10 @@ export const InstructionsDialog: FC<{ open: boolean; onClose: () => void }> = ({
         At an internal corner, the perpendicular wall&apos;s shutter sits inside the
         floor and eats one shutter width off the run. Only one of the two walls
         meeting at the corner absorbs it — tick &ldquo;Absorb at start/end&rdquo; on
-        whichever wall gives the tidier cut.
+        whichever wall gives the tidier cut. The floor plan flags any corner where
+        boards would overlap (neither wall absorbs) or leave a gap (both absorb):
+        concrete escapes through gaps, and two boards can&apos;t occupy the same
+        space. Rebate corners work the same way with the rebate offsets.
       </Section>
 
       <Section title='Polystyrene shorts ("p")'>

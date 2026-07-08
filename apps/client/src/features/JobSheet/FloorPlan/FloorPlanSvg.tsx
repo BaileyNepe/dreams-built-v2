@@ -4,26 +4,33 @@ import {
   type Point
 } from '@dreams-built/shared/src/jobsheet/engine/geometry';
 import { formatCut } from '@dreams-built/shared/src/jobsheet/engine/format';
+import { type JobSheetRules } from '@dreams-built/shared/src/jobsheet/types';
 import { type FC } from 'react';
 import { SECTION_COLORS, type SheetSection } from '../constants';
 
 /**
- * Scale-true SVG of the slab: the perimeter polygon, the shutter boxing as
- * a band outside it, the rebate boxing inside, every cut labelled with its
- * length (shorts bold in the section colour, BLK dashed), wall numbers at
- * midpoints and a dashed red gap when the measurements don't close.
+ * Scale-true SVG of the slab and its boxing, drawn the way it sits on site:
+ * the shutter band's inner face touches the slab edge (its thickness is the
+ * real board width from the rules), the rebate strip sits inside the
+ * perimeter at its real width, and cuts butt end-to-end with a tick mark at
+ * each joint — no gaps, no floating bands. Overhangs run past corners
+ * exactly as the boards do, and corners with an overlap/gap conflict are
+ * flagged with a red marker (see CornerIssue in the engine).
  *
  * All coordinates are millimetres; the viewBox does the scaling.
  */
 
-const BAND_OFFSET_MM = 260;
-const BAND_WIDTH_MM = 130;
-const CUT_GAP_MM = 30;
-const LABEL_OFFSET_MM = 620;
-const NUMBER_OFFSET_MM = 1150;
-const PADDING_MM = 1600;
+const LABEL_CLEARANCE_MM = 420;
+const NUMBER_CLEARANCE_MM = 1000;
+const PADDING_MM = 1800;
 
-const at = (start: Point, direction: Point, alongMm: number, normal: Point, offsetMm: number): Point => ({
+const at = (
+  start: Point,
+  direction: Point,
+  alongMm: number,
+  normal: Point,
+  offsetMm: number
+): Point => ({
   x: start.x + direction.x * alongMm + normal.x * offsetMm,
   y: start.y + direction.y * alongMm + normal.y * offsetMm
 });
@@ -38,23 +45,53 @@ const CutBand: FC<{
   wallStart: Point;
   direction: Point;
   normal: Point;
-  offsetMm: number;
+  /** Band centreline offset along the normal (signed). */
+  centreOffsetMm: number;
+  /** Physical band thickness (board / strip width). */
+  thicknessMm: number;
+  /** Where cut labels go, offset along the normal (signed). */
+  labelOffsetMm: number;
   cuts: PlacedCut[];
   section: SheetSection;
-  labelSide: 1 | -1;
-}> = ({ wallStart, direction, normal, offsetMm, cuts, section, labelSide }) => (
+}> = ({
+  wallStart,
+  direction,
+  normal,
+  centreOffsetMm,
+  thicknessMm,
+  labelOffsetMm,
+  cuts,
+  section
+}) => (
   <>
     {cuts.map((placed, index) => {
-      const from = at(wallStart, direction, placed.fromMm + CUT_GAP_MM, normal, offsetMm);
-      const to = at(wallStart, direction, placed.toMm - CUT_GAP_MM, normal, offsetMm);
+      const from = at(wallStart, direction, placed.fromMm, normal, centreOffsetMm);
+      const to = at(wallStart, direction, placed.toMm, normal, centreOffsetMm);
       const mid = at(
         wallStart,
         direction,
         (placed.fromMm + placed.toMm) / 2,
         normal,
-        offsetMm + labelSide * LABEL_OFFSET_MM
+        labelOffsetMm
       );
       const isShort = placed.cut.kind === 'short';
+
+      // Joint tick: a line across the band where this cut butts the next.
+      const jointInner = at(
+        wallStart,
+        direction,
+        placed.toMm,
+        normal,
+        centreOffsetMm - thicknessMm / 2
+      );
+      const jointOuter = at(
+        wallStart,
+        direction,
+        placed.toMm,
+        normal,
+        centreOffsetMm + thicknessMm / 2
+      );
+
       return (
         // Cuts are positional along the run.
         // eslint-disable-next-line react/no-array-index-key
@@ -65,10 +102,20 @@ const CutBand: FC<{
             x2={to.x}
             y2={to.y}
             stroke={cutColor(placed.cut, section)}
-            strokeWidth={BAND_WIDTH_MM}
+            strokeWidth={thicknessMm}
             strokeDasharray={placed.cut.kind === 'blk' ? '60 60' : undefined}
-            opacity={isShort ? 1 : 0.55}
+            opacity={isShort ? 0.95 : 0.7}
           />
+          {index < cuts.length - 1 && (
+            <line
+              x1={jointInner.x}
+              y1={jointInner.y}
+              x2={jointOuter.x}
+              y2={jointOuter.y}
+              stroke="#00000090"
+              strokeWidth={22}
+            />
+          )}
           <text
             x={mid.x}
             y={mid.y}
@@ -87,12 +134,16 @@ const CutBand: FC<{
 );
 
 // million-ignore -- Million compiles SVG children with createElement (not NS)
-export const FloorPlanSvg: FC<{ outline: FloorOutline; title?: string }> = ({
-  outline,
-  title = 'Floor plan'
-}) => {
-  const { bounds, walls, vertices, misclosureMm } = outline;
-  const pad = PADDING_MM + BAND_OFFSET_MM + LABEL_OFFSET_MM;
+export const FloorPlanSvg: FC<{
+  outline: FloorOutline;
+  rules: JobSheetRules;
+  title?: string;
+}> = ({ outline, rules, title = 'Floor plan' }) => {
+  const { bounds, walls, vertices, misclosureMm, cornerIssues } = outline;
+  const shutterThickness = rules.shutterThicknessMm;
+  const rebateWidth = rules.rebateWidthMm;
+
+  const pad = PADDING_MM + shutterThickness + LABEL_CLEARANCE_MM + NUMBER_CLEARANCE_MM;
   const viewBox = [
     bounds.minX - pad,
     bounds.minY - pad,
@@ -119,12 +170,7 @@ export const FloorPlanSvg: FC<{ outline: FloorOutline; title?: string }> = ({
       <title>{title}</title>
 
       {walls.length > 0 && (
-        <polygon
-          points={polygonPoints}
-          fill="#f2f0ec"
-          stroke="#555"
-          strokeWidth={25}
-        />
+        <polygon points={polygonPoints} fill="#f2f0ec" stroke="#555" strokeWidth={20} />
       )}
 
       {misclosureMm > 1 && (
@@ -141,26 +187,27 @@ export const FloorPlanSvg: FC<{ outline: FloorOutline; title?: string }> = ({
       )}
 
       {walls.map((wall) => {
-        const mid = at(
+        const numberPos = at(
           wall.start,
           wall.direction,
           wall.lengthMm / 2,
           wall.outwardNormal,
-          NUMBER_OFFSET_MM + BAND_OFFSET_MM
+          shutterThickness + LABEL_CLEARANCE_MM + NUMBER_CLEARANCE_MM
         );
         return (
           <g key={wall.id}>
-            {/* Shutter boxing outside the slab */}
+            {/* Shutter boxing: inner face in contact with the slab edge. */}
             <CutBand
               wallStart={wall.start}
               direction={wall.direction}
               normal={wall.outwardNormal}
-              offsetMm={BAND_OFFSET_MM}
+              centreOffsetMm={shutterThickness / 2}
+              thicknessMm={shutterThickness}
+              labelOffsetMm={shutterThickness + LABEL_CLEARANCE_MM}
               cuts={wall.shutterCuts}
               section="shutters"
-              labelSide={1}
             />
-            {/* Rebate boxing inside the slab */}
+            {/* Rebate strip: sits inside the perimeter against the edge. */}
             {wall.rebateSegments.map((segment, index) => (
               <CutBand
                 // Segments are positional.
@@ -168,16 +215,17 @@ export const FloorPlanSvg: FC<{ outline: FloorOutline; title?: string }> = ({
                 key={index}
                 wallStart={wall.start}
                 direction={wall.direction}
-                normal={{ x: -wall.outwardNormal.x, y: -wall.outwardNormal.y }}
-                offsetMm={BAND_OFFSET_MM}
+                normal={wall.outwardNormal}
+                centreOffsetMm={-rebateWidth / 2}
+                thicknessMm={rebateWidth}
+                labelOffsetMm={-(rebateWidth + LABEL_CLEARANCE_MM)}
                 cuts={segment.cuts}
                 section="rebate"
-                labelSide={1}
               />
             ))}
             <text
-              x={mid.x}
-              y={mid.y}
+              x={numberPos.x}
+              y={numberPos.y}
               fontSize={340}
               fontWeight={700}
               textAnchor="middle"
@@ -190,6 +238,21 @@ export const FloorPlanSvg: FC<{ outline: FloorOutline; title?: string }> = ({
           </g>
         );
       })}
+
+      {/* Corner conflicts: two boards in the same space, or a gap. */}
+      {cornerIssues.map((issue) => (
+        <g key={`${issue.kind}-${issue.wallNumber}`} data-testid="corner-issue-marker">
+          <circle
+            cx={issue.at.x}
+            cy={issue.at.y}
+            r={220}
+            fill="none"
+            stroke="#d32f2f"
+            strokeWidth={50}
+          />
+          <title>{issue.message}</title>
+        </g>
+      ))}
     </svg>
   );
 };

@@ -20,10 +20,54 @@ describe('jobSheetReducer: walls', () => {
     const state = jobSheetReducer(dataWithWalls('w1', 'w2'), {
       type: 'updateWall',
       id: 'w2',
-      patch: { lengthMm: 3380, cornerEnd: 'internal' }
+      patch: { lengthMm: 3380, notes: 'north face' }
     });
     expect(state.walls[0].lengthMm).toBe(0);
-    expect(state.walls[1]).toMatchObject({ lengthMm: 3380, cornerEnd: 'internal' });
+    expect(state.walls[1]).toMatchObject({ lengthMm: 3380, notes: 'north face' });
+  });
+
+  it('keeps the shared corner in sync between adjacent walls', () => {
+    // Changing wall 1's END corner is changing wall 2's START corner: it is
+    // the same physical corner of the foundation.
+    let state = jobSheetReducer(dataWithWalls('w1', 'w2', 'w3'), {
+      type: 'updateWall',
+      id: 'w1',
+      patch: { cornerEnd: 'internal' }
+    });
+    expect(state.walls[0].cornerEnd).toBe('internal');
+    expect(state.walls[1].cornerStart).toBe('internal');
+
+    // Flipping it back to external clears an absorb that no longer applies.
+    state = jobSheetReducer(state, {
+      type: 'updateWall',
+      id: 'w2',
+      patch: { absorbShutterAtStart: true }
+    });
+    state = jobSheetReducer(state, {
+      type: 'updateWall',
+      id: 'w1',
+      patch: { cornerEnd: 'external' }
+    });
+    expect(state.walls[1]).toMatchObject({
+      cornerStart: 'external',
+      absorbShutterAtStart: false
+    });
+
+    // The last wall's end corner wraps around to the first wall's start.
+    state = jobSheetReducer(state, {
+      type: 'updateWall',
+      id: 'w3',
+      patch: { cornerEnd: 'internal' }
+    });
+    expect(state.walls[0].cornerStart).toBe('internal');
+
+    // And editing a start corner syncs the previous wall's end corner.
+    state = jobSheetReducer(state, {
+      type: 'updateWall',
+      id: 'w3',
+      patch: { cornerStart: 'internal' }
+    });
+    expect(state.walls[1].cornerEnd).toBe('internal');
   });
 
   it('removeWall drops the wall; renumbering is implicit in array order', () => {

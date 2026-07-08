@@ -58,13 +58,40 @@ export const jobSheetReducer = (
     case 'addWall':
       return { ...state, walls: [...state.walls, emptyWall(action.id)] };
 
-    case 'updateWall':
-      return {
-        ...state,
-        walls: state.walls.map((wall) =>
-          wall.id === action.id ? { ...wall, ...action.patch } : wall
-        )
-      };
+    case 'updateWall': {
+      const index = state.walls.findIndex((wall) => wall.id === action.id);
+      if (index === -1) return state;
+      const walls = state.walls.map((wall, i) =>
+        i === index ? { ...wall, ...action.patch } : wall
+      );
+
+      // A corner is shared: wall i's end corner IS wall i+1's start corner
+      // (wrapping last -> first around the perimeter). Keep both sides in
+      // sync so the absorb toggles on either wall stay available, and drop
+      // an absorb flag that no longer applies at an external corner.
+      if (walls.length > 1 && action.patch.cornerEnd !== undefined) {
+        const next = (index + 1) % walls.length;
+        walls[next] = {
+          ...walls[next],
+          cornerStart: action.patch.cornerEnd,
+          ...(action.patch.cornerEnd === 'external' && {
+            absorbShutterAtStart: false
+          })
+        };
+      }
+      if (walls.length > 1 && action.patch.cornerStart !== undefined) {
+        const previous = (index - 1 + walls.length) % walls.length;
+        walls[previous] = {
+          ...walls[previous],
+          cornerEnd: action.patch.cornerStart,
+          ...(action.patch.cornerStart === 'external' && {
+            absorbShutterAtEnd: false
+          })
+        };
+      }
+
+      return { ...state, walls };
+    }
 
     case 'removeWall':
       return { ...state, walls: state.walls.filter((wall) => wall.id !== action.id) };

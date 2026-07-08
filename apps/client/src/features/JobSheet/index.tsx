@@ -58,6 +58,7 @@ const JobSheetEditor: FC = () => {
       <Box sx={{ mt: 2 }}>
         <FloorPlanPanel
           outline={outline}
+          rules={rules}
           includeInPrint={planInPrint}
           onIncludeInPrintChange={setPlanInPrint}
         />
@@ -100,7 +101,7 @@ const JobSheetEditor: FC = () => {
         />
         {planInPrint && outline.walls.length > 0 && (
           <div style={{ breakInside: 'avoid', paddingTop: '4mm' }}>
-            <FloorPlanSvg outline={outline} />
+            <FloorPlanSvg outline={outline} rules={rules} />
           </div>
         )}
       </PrintableContent>

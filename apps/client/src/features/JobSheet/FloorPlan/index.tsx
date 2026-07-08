@@ -1,5 +1,11 @@
-import { type FloorOutline } from '@dreams-built/shared/src/jobsheet/engine/geometry';
+import {
+  type CornerIssue,
+  type FloorOutline
+} from '@dreams-built/shared/src/jobsheet/engine/geometry';
+import { type JobSheetRules } from '@dreams-built/shared/src/jobsheet/types';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import JoinFullIcon from '@mui/icons-material/JoinFull';
+import SpaceBarIcon from '@mui/icons-material/SpaceBar';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import {
   Box,
@@ -15,22 +21,41 @@ import {
 import { useState, type FC } from 'react';
 import { FloorPlanSvg } from './FloorPlanSvg';
 
+const issueLabel = (issue: CornerIssue): string => {
+  const walls = `Walls ${issue.wallNumber}→${issue.nextWallNumber}`;
+  switch (issue.kind) {
+    case 'shutter-overlap':
+      return `${walls}: shutters overlap`;
+    case 'shutter-gap':
+      return `${walls}: shutter gap`;
+    case 'rebate-overlap':
+      return `${walls}: rebates overlap`;
+    default:
+      return `${walls}: rebate gap`;
+  }
+};
+
+const isOverlap = (issue: CornerIssue) => issue.kind.endsWith('overlap');
+
 /**
  * Collapsible floor-plan panel: a scale drawing of the slab with the
- * shutter and rebate boxing, doubling as validation — if the walls don't
- * close the perimeter, the gap is drawn and measured.
+ * shutter and rebate boxing in physical contact, doubling as validation —
+ * a perimeter that doesn't close, boards overlapping at a corner, or a
+ * corner gap are all flagged (concrete escapes through gaps; two boards
+ * can't occupy the same space).
  */
 export const FloorPlanPanel: FC<{
   outline: FloorOutline;
+  rules: JobSheetRules;
   includeInPrint: boolean;
   onIncludeInPrintChange: (value: boolean) => void;
-}> = ({ outline, includeInPrint, onIncludeInPrintChange }) => {
+}> = ({ outline, rules, includeInPrint, onIncludeInPrintChange }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const hasWalls = outline.walls.length > 0;
 
   return (
     <Paper variant="outlined" sx={{ p: 1.5 }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
         <Typography variant="subtitle2" fontWeight={700} sx={{ flex: 1 }}>
           Floor plan
         </Typography>
@@ -46,6 +71,18 @@ export const FloorPlanPanel: FC<{
             />
           </Tooltip>
         )}
+
+        {outline.cornerIssues.map((issue) => (
+          <Tooltip key={`${issue.kind}-${issue.wallNumber}`} title={issue.message}>
+            <Chip
+              icon={isOverlap(issue) ? <JoinFullIcon /> : <SpaceBarIcon />}
+              size="small"
+              color={isOverlap(issue) ? 'error' : 'warning'}
+              label={issueLabel(issue)}
+              data-testid="corner-issue-chip"
+            />
+          </Tooltip>
+        ))}
 
         <FormControlLabel
           control={
@@ -76,7 +113,7 @@ export const FloorPlanPanel: FC<{
       <Collapse in={isExpanded} unmountOnExit>
         {hasWalls ? (
           <Box sx={{ maxWidth: '52rem', mx: 'auto' }}>
-            <FloorPlanSvg outline={outline} />
+            <FloorPlanSvg outline={outline} rules={rules} />
           </Box>
         ) : (
           <Typography color="text.secondary" sx={{ p: 2, textAlign: 'center' }}>

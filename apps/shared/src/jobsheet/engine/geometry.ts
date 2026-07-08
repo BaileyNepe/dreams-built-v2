@@ -55,12 +55,35 @@ export type PlacedWall = {
   rebateSegments: PlacedRebateSegment[];
 };
 
+/**
+ * A physical conflict where two walls' boxing meets at a corner.
+ *
+ * Boxing must tile the perimeter with no overlap and no gap — a gap lets
+ * concrete escape, an overlap puts two boards in the same space:
+ * - At an INTERNAL corner, the perpendicular shutter sits inside the floor,
+ *   so exactly ONE of the two walls must absorb the board thickness.
+ * - At an EXTERNAL corner, the two rebate strips (which run inside the
+ *   perimeter) cross, so exactly ONE wall needs the rebate offset there.
+ */
+export type CornerIssue = {
+  /** 1-based number of the wall before the corner. */
+  wallNumber: number;
+  /** 1-based number of the wall after the corner. */
+  nextWallNumber: number;
+  kind: 'shutter-overlap' | 'shutter-gap' | 'rebate-overlap' | 'rebate-gap';
+  message: string;
+  /** Corner vertex, for drawing a marker. */
+  at: Point;
+};
+
 export type FloorOutline = {
   walls: PlacedWall[];
   /** Polygon vertices (wall start points, plus the final walk end point). */
   vertices: Point[];
   /** Gap between where the walk ended and where it started. */
   misclosureMm: number;
+  /** Corner overlap/gap conflicts in the boxing (see CornerIssue). */
+  cornerIssues: CornerIssue[];
   bounds: { minX: number; minY: number; maxX: number; maxY: number };
 };
 
@@ -107,6 +130,93 @@ const placeRebate = (
     const toMm = segment?.endMm ?? fromMm + run.effectiveLengthMm;
     return { fromMm, toMm, cuts: placeCuts(run.cuts, fromMm) };
   });
+};
+
+/**
+ * Check every corner for boxing conflicts. The corner between wall i and
+ * wall i+1 is governed by wall i's end-corner kind; the closing corner
+ * (last wall back to wall 1) only exists when the perimeter closes.
+ */
+const computeCornerIssues = (
+  data: JobSheetData,
+  rules: JobSheetRules,
+  vertices: Point[],
+  perimeterCloses: boolean
+): CornerIssue[] => {
+  const issues: CornerIssue[] = [];
+  const { walls } = data;
+
+  walls.forEach((wall, i) => {
+    const j = (i + 1) % walls.length;
+    if (j === 0 && !perimeterCloses) return;
+    const next = walls[j];
+    if (wall.lengthMm === 0 || next.lengthMm === 0) return;
+
+    const at = vertices[i + 1] ?? vertices[0];
+    const wallNumber = i + 1;
+    const nextWallNumber = j + 1;
+
+    if (wall.cornerEnd === 'internal') {
+      // The perpendicular shutter consumes one board thickness inside the
+      // floor: exactly one of the two walls must absorb it.
+      const absorbs =
+        Number(wall.absorbShutterAtEnd) + Number(next.absorbShutterAtStart);
+      if (absorbs === 0) {
+        issues.push({
+          wallNumber,
+          nextWallNumber,
+          kind: 'shutter-overlap',
+          message: `Walls ${wallNumber}→${nextWallNumber}: shutter boards overlap at the internal corner — tick "Absorb ${rules.shutterThicknessMm}mm" on one of the two walls.`,
+          at
+        });
+      } else if (absorbs === 2) {
+        issues.push({
+          wallNumber,
+          nextWallNumber,
+          kind: 'shutter-gap',
+          message: `Walls ${wallNumber}→${nextWallNumber}: both walls absorb at the same corner, leaving a ${rules.shutterThicknessMm}mm gap — untick one.`,
+          at
+        });
+      }
+    } else {
+      // External corner: the two rebate strips run inside the perimeter and
+      // cross each other unless exactly one wall carries the offset. Actual
+      // segment geometry is used so openings at the corner don't flag.
+      const endSegments = computeRebateSegments(wall, rules);
+      const startSegments = computeRebateSegments(next, rules);
+      const lastSegment = endSegments[endSegments.length - 1];
+      const [firstSegment] = startSegments;
+      const reachesCorner =
+        wall.hasRebate && lastSegment !== undefined && lastSegment.endMm >= wall.lengthMm;
+      const startsAtCorner =
+        next.hasRebate && firstSegment !== undefined && firstSegment.startMm <= 0;
+
+      if (reachesCorner && startsAtCorner) {
+        issues.push({
+          wallNumber,
+          nextWallNumber,
+          kind: 'rebate-overlap',
+          message: `Walls ${wallNumber}→${nextWallNumber}: rebate strips overlap at the corner — tick a −${rules.rebateWidthMm} rebate offset on one of the two walls.`,
+          at
+        });
+      } else if (
+        wall.hasRebate &&
+        next.hasRebate &&
+        wall.rebateOffsetAtEnd &&
+        next.rebateOffsetAtStart
+      ) {
+        issues.push({
+          wallNumber,
+          nextWallNumber,
+          kind: 'rebate-gap',
+          message: `Walls ${wallNumber}→${nextWallNumber}: both walls offset the rebate at the same corner, leaving a ${rules.rebateWidthMm}mm gap — untick one.`,
+          at
+        });
+      }
+    }
+  });
+
+  return issues;
 };
 
 export const computeFloorOutline = (
@@ -156,7 +266,7 @@ export const computeFloorOutline = (
     heading = rotate(heading, wall.cornerEnd === 'external' ? turn : -turn);
   });
 
-  const misclosureMm = Math.hypot(position.x, position.y);
+  const misclosureMm = Math.round(Math.hypot(position.x, position.y));
 
   const xs = vertices.map((v) => v.x);
   const ys = vertices.map((v) => v.y);
@@ -167,5 +277,7 @@ export const computeFloorOutline = (
     maxY: Math.max(...ys, 0)
   };
 
-  return { walls, vertices, misclosureMm: Math.round(misclosureMm), bounds };
+  const cornerIssues = computeCornerIssues(data, rules, vertices, misclosureMm <= 1);
+
+  return { walls, vertices, misclosureMm, cornerIssues, bounds };
 };
