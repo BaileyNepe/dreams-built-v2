@@ -1,6 +1,7 @@
 import { authz } from '@dreams-built/shared/src/auth/permissions';
 import { projectSchema } from '@dreams-built/shared/src/schemas';
 import { ChevronLeft } from '@mui/icons-material';
+import DescriptionIcon from '@mui/icons-material/Description';
 import EditIcon from '@mui/icons-material/Edit';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import {
@@ -144,6 +145,7 @@ const ProjectFile: FC = () => {
 
 const ProjectDetailContent = () => {
   const navigate = useNavigate();
+  const { projectId } = useProjectParams();
   const [isEditing, setIsEditing] = useState(false);
 
   const { user } = useAuth();
@@ -158,16 +160,27 @@ const ProjectDetailContent = () => {
         >
           Back to Projects
         </Button>
-        {canEdit && (
+        <Box sx={{ display: 'flex', gap: 1 }}>
           <Button
-            variant="contained"
-            color="primary"
-            startIcon={isEditing ? <VisibilityIcon /> : <EditIcon />}
-            onClick={() => setIsEditing((prev) => !prev)}
+            variant="outlined"
+            startIcon={<DescriptionIcon />}
+            onClick={() =>
+              navigate({ to: paths.projectJobSheet, params: { projectId } })
+            }
           >
-            {isEditing ? 'View Project' : 'Edit Project'}
+            Job Sheet
           </Button>
-        )}
+          {canEdit && (
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={isEditing ? <VisibilityIcon /> : <EditIcon />}
+              onClick={() => setIsEditing((prev) => !prev)}
+            >
+              {isEditing ? 'View Project' : 'Edit Project'}
+            </Button>
+          )}
+        </Box>
       </Box>
       <Divider sx={{ my: 2 }} />
 
