@@ -21,9 +21,13 @@
 import type { JobSheetRules, PackedRun, Wall } from '../types';
 import { packRun } from './packRun';
 
-type RebateSegment = { startMm: number; endMm: number };
+export type RebateSegment = { startMm: number; endMm: number };
 
-const computeRebateSegments = (wall: Wall, rules: JobSheetRules): RebateSegment[] => {
+/** Where along the wall the rebate runs sit — also used by the floor-plan visual. */
+export const computeRebateSegments = (
+  wall: Wall,
+  rules: JobSheetRules
+): RebateSegment[] => {
   const start = wall.rebateOffsetAtStart ? rules.rebateWidthMm : 0;
   const end = wall.lengthMm - (wall.rebateOffsetAtEnd ? rules.rebateWidthMm : 0);
   if (end <= start) {

@@ -1,4 +1,5 @@
 import { authz } from '@dreams-built/shared/src/auth/permissions';
+import { computeFloorOutline } from '@dreams-built/shared/src/jobsheet/engine/geometry';
 import DescriptionIcon from '@mui/icons-material/Description';
 import { ChevronLeft } from '@mui/icons-material';
 import {
@@ -16,11 +17,13 @@ import { useCreateJobSheetMutation, useJobSheet } from 'api/jobsheets';
 import { useProject } from 'api/projects';
 import { PrintableContent } from 'components/PrintableContent';
 import { usePrint } from 'components/PrintableContent/hooks';
-import { Suspense, type FC } from 'react';
+import { Suspense, useMemo, useState, type FC } from 'react';
 import { useAuth } from 'utils/contexts/AuthProvider';
 import { useNavigate } from 'utils/hooks/useNavigate';
 import { paths } from 'utils/paths';
 import { useJobSheetParams } from '../../routes/_dashboard/dashboard/projects/jobsheet.$projectId';
+import { FloorPlanPanel } from './FloorPlan';
+import { FloorPlanSvg } from './FloorPlan/FloorPlanSvg';
 import { JobSheetHeader } from './JobSheetHeader';
 import { JobSheetToolbar } from './JobSheetToolbar';
 import { SectionItems } from './SectionItems';
@@ -38,6 +41,12 @@ const JobSheetEditor: FC = () => {
     isPrimaryContent: true
   });
 
+  const outline = useMemo(
+    () => computeFloorOutline(data, computed, rules),
+    [data, computed, rules]
+  );
+  const [planInPrint, setPlanInPrint] = useState(false);
+
   return (
     <>
       <JobSheetToolbar onPrint={handlePrint} />
@@ -45,6 +54,14 @@ const JobSheetEditor: FC = () => {
       <Divider sx={{ my: 2 }} />
 
       <WallTable />
+
+      <Box sx={{ mt: 2 }}>
+        <FloorPlanPanel
+          outline={outline}
+          includeInPrint={planInPrint}
+          onIncludeInPrintChange={setPlanInPrint}
+        />
+      </Box>
 
       <Grid container spacing={2} sx={{ mt: 1 }}>
         <Grid item xs={6} sm={3} md={2}>
@@ -81,6 +98,11 @@ const JobSheetEditor: FC = () => {
           rules={rules}
           computed={computed}
         />
+        {planInPrint && outline.walls.length > 0 && (
+          <div style={{ breakInside: 'avoid', paddingTop: '4mm' }}>
+            <FloorPlanSvg outline={outline} />
+          </div>
+        )}
       </PrintableContent>
     </>
   );
