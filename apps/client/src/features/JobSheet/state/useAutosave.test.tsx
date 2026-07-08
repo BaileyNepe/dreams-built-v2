@@ -11,11 +11,18 @@ vi.mock('api/jobsheets', () => ({
 
 const emptyData = jobSheetDataSchema.parse({});
 const editedData = { ...emptyData, notes: 'edited' };
+const DRAFT_KEY = 'jobsheet:draft:sheet1';
 
-const renderAutosave = () =>
+const renderAutosave = (initialDirty = false) =>
   renderHook(
     ({ data }) =>
-      useAutosave({ sheetId: 'sheet1', initialRevision: 3, data, enabled: true }),
+      useAutosave({
+        sheetId: 'sheet1',
+        initialRevision: 3,
+        data,
+        enabled: true,
+        initialDirty
+      }),
     { initialProps: { data: emptyData } }
   );
 
@@ -23,9 +30,11 @@ describe('useAutosave', () => {
   beforeEach(() => {
     vi.useFakeTimers();
     mockMutate.mockReset();
+    window.localStorage.clear();
   });
   afterEach(() => {
     vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it('does not save on mount', () => {
@@ -116,5 +125,59 @@ describe('useAutosave', () => {
     rerender({ data: editedData });
     act(() => vi.advanceTimersByTime(1600));
     expect(mockMutate.mock.calls[0][0].revision).toBe(9);
+  });
+
+  it('mirrors edits into a localStorage draft and clears it after a save', () => {
+    const { rerender } = renderAutosave();
+    rerender({ data: editedData });
+
+    const draft = JSON.parse(window.localStorage.getItem(DRAFT_KEY) ?? 'null');
+    expect(draft).toMatchObject({ revision: 3, data: editedData });
+
+    act(() => vi.advanceTimersByTime(1600));
+    act(() => mockMutate.mock.calls[0][1].onSuccess({ revision: 4 }));
+    expect(window.localStorage.getItem(DRAFT_KEY)).toBeNull();
+  });
+
+  it('holds saves while offline and syncs when connectivity returns', () => {
+    const onLine = vi.spyOn(window.navigator, 'onLine', 'get');
+    onLine.mockReturnValue(false);
+
+    const { result, rerender } = renderAutosave();
+    rerender({ data: editedData });
+    act(() => vi.advanceTimersByTime(1600));
+
+    expect(result.current.status).toBe('offline');
+    expect(mockMutate).not.toHaveBeenCalled();
+    // The edit is safe on disk while offline.
+    expect(window.localStorage.getItem(DRAFT_KEY)).not.toBeNull();
+
+    onLine.mockReturnValue(true);
+    act(() => {
+      window.dispatchEvent(new Event('online'));
+    });
+    expect(mockMutate).toHaveBeenCalledTimes(1);
+    expect(mockMutate.mock.calls[0][0].data).toEqual(editedData);
+  });
+
+  it('auto-retries a failed save after the retry interval', () => {
+    const { rerender } = renderAutosave();
+    rerender({ data: editedData });
+    act(() => vi.advanceTimersByTime(1600));
+    act(() =>
+      mockMutate.mock.calls[0][1].onError({ data: { code: 'INTERNAL_SERVER_ERROR' } })
+    );
+    expect(mockMutate).toHaveBeenCalledTimes(1);
+
+    act(() => vi.advanceTimersByTime(15_100));
+    expect(mockMutate).toHaveBeenCalledTimes(2);
+  });
+
+  it('saves a restored draft on mount without requiring new edits (initialDirty)', () => {
+    const { result } = renderAutosave(true);
+    expect(result.current.status).toBe('pending');
+    act(() => vi.advanceTimersByTime(1600));
+    expect(mockMutate).toHaveBeenCalledTimes(1);
+    expect(mockMutate.mock.calls[0][0]).toMatchObject({ revision: 3 });
   });
 });

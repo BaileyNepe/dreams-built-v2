@@ -6,9 +6,11 @@ import {
   type JobSheetData,
   type JobSheetRules
 } from '@dreams-built/shared/src/jobsheet/types';
+import { notify } from 'libs/Notify';
 import {
   createContext,
   useContext,
+  useEffect,
   useMemo,
   useReducer,
   useState,
@@ -16,6 +18,7 @@ import {
   type FC,
   type PropsWithChildren
 } from 'react';
+import { readDraft } from './draftStorage';
 import { jobSheetReducer, type JobSheetAction } from './jobSheetReducer';
 import { useAutosave, type SaveStatus } from './useAutosave';
 
@@ -62,13 +65,34 @@ export const JobSheetProvider: FC<
   }>
 > = ({ sheet, projectId, canEdit, children }) => {
   // Zod-parse the Json documents: acts as a lenient migration layer, so a
-  // sheet saved before a schema gained a defaulted field still loads.
-  const [data, dispatch] = useReducer(jobSheetReducer, sheet.data, (raw) =>
-    jobSheetDataSchema.parse(raw)
-  );
+  // sheet saved before a schema gained a defaulted field still loads. An
+  // unsaved local draft (edits made during an internet outage, then a
+  // refresh) takes precedence when it was based on the server's current
+  // revision — it is strictly newer work from this device.
+  const [initial] = useState(() => {
+    const serverData = jobSheetDataSchema.parse(sheet.data);
+    const draft = canEdit ? readDraft(sheet.id) : null;
+    if (
+      draft &&
+      draft.revision === sheet.revision &&
+      JSON.stringify(draft.data) !== JSON.stringify(serverData)
+    ) {
+      return { data: draft.data, fromDraft: true };
+    }
+    return { data: serverData, fromDraft: false };
+  });
+
+  const [data, dispatch] = useReducer(jobSheetReducer, initial.data);
   const [rules, setRules] = useState<JobSheetRules>(() =>
     jobSheetRulesSchema.parse(sheet.rules)
   );
+
+  useEffect(() => {
+    if (initial.fromDraft) {
+      notify('Restored unsaved changes from this device', { type: 'info' });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const computed = useMemo(() => computeJobSheet(data, rules), [data, rules]);
 
@@ -76,7 +100,8 @@ export const JobSheetProvider: FC<
     sheetId: sheet.id,
     initialRevision: sheet.revision,
     data,
-    enabled: canEdit
+    enabled: canEdit,
+    initialDirty: initial.fromDraft
   });
 
   const value = useMemo<JobSheetContextValue>(

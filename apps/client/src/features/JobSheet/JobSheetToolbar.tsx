@@ -30,6 +30,12 @@ const SaveChip: FC<{ status: SaveStatus; onRetry: () => void }> = ({
       );
     case 'pending':
       return <Chip size="small" label="Unsaved changes" variant="outlined" />;
+    case 'offline':
+      return (
+        <Tooltip title="No connection — changes are stored on this device and will sync automatically when you're back online.">
+          <Chip size="small" color="warning" label="Offline — saved locally" />
+        </Tooltip>
+      );
     case 'error':
       return (
         <Chip
