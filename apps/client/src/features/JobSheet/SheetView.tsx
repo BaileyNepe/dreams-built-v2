@@ -138,6 +138,7 @@ const ItemsBox = styled.table`
 `;
 
 /** Render a run with shorts/BLK visually highlighted like the paper sheet. */
+// million-ignore -- fragments inside table cells; Million's <slot> wrapper breaks table nesting
 const RunText: FC<{
   cuts: ComputedWall['shutters']['cuts'];
   section: 'shutters' | 'rebate';
@@ -158,6 +159,7 @@ const RunText: FC<{
   </>
 );
 
+// million-ignore -- Million wraps this in a <slot>, which is invalid inside <table>
 const TallyRows: FC<{ tally: Tally; rules: JobSheetRules }> = ({ tally, rules }) => (
   <tbody>
     {[...rules.standardSizesMm]
@@ -179,6 +181,7 @@ const TallyRows: FC<{ tally: Tally; rules: JobSheetRules }> = ({ tally, rules })
   </tbody>
 );
 
+// million-ignore -- table-heavy layout; Million's <slot> wrappers corrupt the print DOM
 export const SheetView: FC<{
   headerText: string;
   jobNumber: number | string;

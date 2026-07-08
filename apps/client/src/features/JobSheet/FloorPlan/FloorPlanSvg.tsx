@@ -33,6 +33,7 @@ const cutColor = (cut: PlacedCut['cut'], section: SheetSection): string => {
   return SECTION_COLORS[section].header;
 };
 
+// million-ignore -- Million compiles SVG children with createElement (not NS)
 const CutBand: FC<{
   wallStart: Point;
   direction: Point;
@@ -85,6 +86,7 @@ const CutBand: FC<{
   </>
 );
 
+// million-ignore -- Million compiles SVG children with createElement (not NS)
 export const FloorPlanSvg: FC<{ outline: FloorOutline; title?: string }> = ({
   outline,
   title = 'Floor plan'
