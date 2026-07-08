@@ -196,6 +196,33 @@ export type ComputedSheet = {
 };
 
 /* ------------------------------------------------------------------ */
+/* API input schemas (shared by server routers and client forms)        */
+/* ------------------------------------------------------------------ */
+
+export const saveJobSheetInputSchema = z.object({
+  sheetId: z.string(),
+  /** Optimistic-lock revision the client last saw. */
+  revision: z.number().int().nonnegative(),
+  data: jobSheetDataSchema
+});
+export type SaveJobSheetInput = z.infer<typeof saveJobSheetInputSchema>;
+
+export const updateJobSheetRulesInputSchema = z.object({
+  id: z.string(),
+  name: z.string().min(1).max(80).optional(),
+  data: jobSheetRulesSchema
+});
+export type UpdateJobSheetRulesInput = z.infer<typeof updateJobSheetRulesInputSchema>;
+
+export const createJobSheetSnapshotInputSchema = z.object({
+  sheetId: z.string(),
+  label: z.string().max(120).optional()
+});
+export type CreateJobSheetSnapshotInput = z.infer<
+  typeof createJobSheetSnapshotInputSchema
+>;
+
+/* ------------------------------------------------------------------ */
 /* Snapshots                                                            */
 /* ------------------------------------------------------------------ */
 
