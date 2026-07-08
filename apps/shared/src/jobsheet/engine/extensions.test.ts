@@ -1,0 +1,229 @@
+/**
+ * Tests for the engine features layered on top of the prototype port:
+ * BLK insets, manual override layering, cut formatting, and snapshot diffs.
+ */
+
+import { describe, expect, it } from 'bun:test';
+
+import { DEFAULT_JOBSHEET_RULES } from '../defaults';
+import { nineWarrenLaneData } from '../fixtures/nineWarrenLane';
+import type { Cut, SnapshotBlob, Wall } from '../types';
+import { computeJobSheet, computeWall } from './computeSheet';
+import { diffSheets } from './diff';
+import { formatCut, formatCuts, formatRebateRuns } from './format';
+
+const rules = DEFAULT_JOBSHEET_RULES;
+
+const baseWall: Wall = {
+  id: 'w1',
+  lengthMm: 3000,
+  cornerStart: 'external',
+  cornerEnd: 'external',
+  absorbShutterAtStart: false,
+  absorbShutterAtEnd: false,
+  hasRebate: true,
+  rebateOffsetAtStart: false,
+  rebateOffsetAtEnd: false,
+  blkAtStart: false,
+  blkAtEnd: false,
+  openings: [],
+  polystyreneOverride: null,
+  angledCornerDeg: null,
+  isGarageDoorWall: false,
+  notes: '',
+  override: null
+};
+
+describe('BLK insets', () => {
+  it('emits a BLK marker piece at the flagged end of the shutter run', () => {
+    const w = computeWall({ ...baseWall, blkAtEnd: true }, 0, rules);
+    expect(w.shutters.cuts.map((c) => c.kind)).toEqual(['standard', 'blk']);
+    expect(w.shutters.cuts[1].lengthMm).toBe(rules.blkLengthMm);
+  });
+
+  it('emits BLK at both ends when both flags are set', () => {
+    const w = computeWall({ ...baseWall, blkAtStart: true, blkAtEnd: true }, 0, rules);
+    expect(w.shutters.cuts.map((c) => c.kind)).toEqual(['blk', 'standard', 'blk']);
+  });
+
+  it('tallies BLK pieces under the blk key, not shorts', () => {
+    const sheet = computeJobSheet(
+      { ...nineWarrenLaneData, walls: [{ ...baseWall, blkAtEnd: true }] },
+      rules
+    );
+    expect(sheet.tallies.shutters.blk).toBe(1);
+    expect(sheet.tallies.shutters.shorts).toBe(0);
+  });
+});
+
+describe('manual override layering', () => {
+  const overriddenWall: Wall = {
+    ...baseWall,
+    lengthMm: 3380,
+    override: {
+      shutterCuts: [
+        { kind: 'standard', lengthMm: 3000, polystyrene: false },
+        { kind: 'short', lengthMm: 380, polystyrene: true }
+      ],
+      rebateRuns: [[{ kind: 'standard', lengthMm: 3000, polystyrene: false }]],
+      note: 'QS wants the short padded here'
+    }
+  };
+
+  it('uses the override cuts verbatim instead of recomputing', () => {
+    const w = computeWall(overriddenWall, 0, rules);
+    expect(w.isOverridden).toBe(true);
+    // Without the override, 3380 with external end would promote to [3600].
+    expect(w.shutters.cuts.map((c) => c.lengthMm)).toEqual([3000, 380]);
+    expect(w.rebate).toHaveLength(1);
+    expect(w.rebate[0].cuts[0].lengthMm).toBe(3000);
+  });
+
+  it('survives input changes that would otherwise recompute (measurement edit)', () => {
+    const w = computeWall({ ...overriddenWall, lengthMm: 9999 }, 0, rules);
+    expect(w.shutters.cuts.map((c) => c.lengthMm)).toEqual([3000, 380]);
+  });
+
+  it('feeds overridden cuts into the tallies', () => {
+    const sheet = computeJobSheet(
+      { ...nineWarrenLaneData, walls: [overriddenWall] },
+      rules
+    );
+    expect(sheet.tallies.shutters['3000']).toBe(1);
+    expect(sheet.tallies.shutters.shorts).toBe(1);
+    expect(sheet.tallies.rebate['3000']).toBe(1);
+  });
+
+  it('recomputes normally once the override is cleared', () => {
+    const w = computeWall({ ...overriddenWall, override: null }, 0, rules);
+    expect(w.isOverridden).toBe(false);
+    expect(w.shutters.cuts.map((c) => c.lengthMm)).toEqual([3600]);
+  });
+});
+
+describe('formatCut / formatCuts / formatRebateRuns', () => {
+  it('formats the trade notation', () => {
+    const cuts: Cut[] = [
+      { kind: 'standard', lengthMm: 4800, polystyrene: false },
+      { kind: 'short', lengthMm: 355, polystyrene: true },
+      { kind: 'blk', lengthMm: 120, polystyrene: false },
+      { kind: 'short', lengthMm: 420, polystyrene: false, angleDeg: 45 }
+    ];
+    expect(cuts.map(formatCut)).toEqual(['4800', '355p', 'BLK', '420 @45°']);
+    expect(formatCuts(cuts)).toBe('4800 355p BLK 420 @45°');
+  });
+
+  it('renders an empty rebate as "-" and joins segments with a pipe', () => {
+    expect(formatRebateRuns([])).toBe('-');
+    expect(
+      formatRebateRuns([
+        {
+          effectiveLengthMm: 785,
+          cuts: [
+            { kind: 'standard', lengthMm: 600, polystyrene: false },
+            { kind: 'short', lengthMm: 185, polystyrene: false }
+          ],
+          overhangMm: 0
+        },
+        {
+          effectiveLengthMm: 600,
+          cuts: [{ kind: 'standard', lengthMm: 600, polystyrene: false }],
+          overhangMm: 0
+        }
+      ])
+    ).toBe('600 185 | 600');
+  });
+});
+
+describe('diffSheets', () => {
+  const blobOf = (data: typeof nineWarrenLaneData): SnapshotBlob => ({
+    data,
+    rules,
+    computed: undefined
+  });
+
+  it('reports an empty diff for identical blobs', () => {
+    const diff = diffSheets(blobOf(nineWarrenLaneData), blobOf(nineWarrenLaneData));
+    expect(diff.isEmpty).toBe(true);
+    expect(diff.walls).toEqual([]);
+  });
+
+  it('reports a changed wall with old and new breakdowns and tally deltas', () => {
+    const after = {
+      ...nineWarrenLaneData,
+      walls: nineWarrenLaneData.walls.map((w) =>
+        w.id === 'w03' ? { ...w, lengthMm: 2660 } : w
+      )
+    };
+    const diff = diffSheets(blobOf(nineWarrenLaneData), blobOf(after));
+    expect(diff.isEmpty).toBe(false);
+    expect(diff.walls).toHaveLength(1);
+    expect(diff.walls[0]).toMatchObject({
+      id: 'w03',
+      status: 'changed',
+      before: { shutters: '1800 260' },
+      after: { shutters: '2400 260' }
+    });
+    expect(diff.walls[0].changedFields).toContain('measurement');
+    // 2060 -> 2660: shutter 1800 becomes 2400; rebate 1800 becomes 2400 too.
+    expect(diff.tallies.shutters).toEqual({ 2400: 1, 1800: -1 });
+    expect(diff.tallies.rebate).toEqual({ 2400: 1, 1800: -1 });
+  });
+
+  it('reports added and removed walls', () => {
+    const after = {
+      ...nineWarrenLaneData,
+      walls: [
+        ...nineWarrenLaneData.walls.filter((w) => w.id !== 'w14'),
+        { ...baseWall, id: 'w99', lengthMm: 1200 }
+      ]
+    };
+    const diff = diffSheets(blobOf(nineWarrenLaneData), blobOf(after));
+    const byId = Object.fromEntries(diff.walls.map((w) => [w.id, w.status]));
+    expect(byId.w14).toBe('removed');
+    expect(byId.w99).toBe('added');
+  });
+
+  it('reports a pure reorder as position changes, not add/remove', () => {
+    const walls = [...nineWarrenLaneData.walls];
+    const [first] = walls.splice(0, 1);
+    walls.push(first);
+    const diff = diffSheets(
+      blobOf(nineWarrenLaneData),
+      blobOf({ ...nineWarrenLaneData, walls })
+    );
+    expect(diff.walls.every((w) => w.status === 'changed')).toBe(true);
+    expect(diff.walls.every((w) => w.changedFields.includes('position'))).toBe(true);
+    expect(diff.tallies.shutters).toEqual({});
+  });
+
+  it('diffs section items by id with labels', () => {
+    const after = {
+      ...nineWarrenLaneData,
+      joinery: [
+        { id: 'j01', text: 'Garage Door 4850mm', qty: 2 },
+        { id: 'j02', text: 'Entry door', qty: null }
+      ],
+      showerBoxes: nineWarrenLaneData.showerBoxes.filter((i) => i.id !== 's02'),
+      garage: nineWarrenLaneData.garage
+    };
+    const diff = diffSheets(blobOf(nineWarrenLaneData), blobOf(after));
+    expect(diff.items.joinery.added).toEqual(['Entry door']);
+    expect(diff.items.joinery.changed).toEqual([
+      'Garage Door 4850mm ×1 → Garage Door 4850mm ×2'
+    ]);
+    expect(diff.items.showerBoxes.removed).toEqual(['Main bathroom 900mm ×1']);
+  });
+
+  it('reflects rule changes between snapshots (same data, different rules)', () => {
+    const after: SnapshotBlob = {
+      data: nineWarrenLaneData,
+      rules: { ...rules, shutterThicknessMm: 100 },
+      computed: undefined
+    };
+    // Wall 13 absorbs at the end: 1620 - 100 = 1520 -> short becomes 320p.
+    const diff = diffSheets(blobOf(nineWarrenLaneData), after);
+    const w13 = diff.walls.find((w) => w.id === 'w13');
+    expect(w13?.after?.shutters).toBe('1200 320p');
+  });
+});
