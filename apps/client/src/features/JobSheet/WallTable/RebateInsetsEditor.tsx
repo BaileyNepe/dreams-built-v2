@@ -27,7 +27,7 @@ export const RebateInsetsEditor: FC<{ wall: Wall }> = ({ wall }) => {
 
   return (
     <Box sx={{ display: 'grid', gap: 1, width: '100%' }}>
-      <Tooltip title="Where the brick stops along this wall and the slab edge steps back to the frame line. BLK insets cap each mid-wall transition.">
+      <Tooltip title="Where the brick stops along this wall and the slab edge steps back to the frame line. BLK insets cap each mid-wall transition. Tip: typing the measurement as segments (e.g. 4200/810b, b = brick) fills these in automatically.">
         <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
           Rebate insets (brick stops)
         </Typography>

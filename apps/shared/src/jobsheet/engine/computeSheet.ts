@@ -31,8 +31,38 @@ export const resolvePolystyrene = (wall: Wall, rules: JobSheetRules): boolean =>
   wall.polystyreneOverride ?? isPolystyreneAuto(wall, rules);
 
 /**
- * Corner adjustments resolved from the auto convention (the wall arriving
- * at a corner handles it at its end) plus any per-wall overrides.
+ * Whether the wall's brick shelf actually reaches its start/end corner —
+ * false when the wall has no rebate or a rebate inset covers that corner
+ * (brick stops before it and the slab edge steps to the frame line).
+ */
+export const rebateReachesStart = (wall: Wall): boolean =>
+  wall.hasRebate &&
+  !wall.rebateInsets.some(
+    (inset) =>
+      inset.widthMm > 0 &&
+      inset.offsetFromStartMm <= 0 &&
+      inset.offsetFromStartMm + inset.widthMm > 0
+  );
+
+export const rebateReachesEnd = (wall: Wall): boolean =>
+  wall.hasRebate &&
+  !wall.rebateInsets.some(
+    (inset) =>
+      inset.widthMm > 0 &&
+      inset.offsetFromStartMm < wall.lengthMm &&
+      inset.offsetFromStartMm + inset.widthMm >= wall.lengthMm
+  );
+
+/**
+ * Corner adjustments resolved from the auto convention plus any per-wall
+ * overrides. Shutters: a run goes until it hits the next wall (internal
+ * end — exact) or overflows past it (external end — overhang cap); the
+ * wall LEAVING an internal corner starts one board thickness in, because
+ * the previous wall's board already sits against its face. Exception:
+ * wall 1 is boxed first — nothing is there yet, so it always starts from
+ * the very beginning of its face, and the LAST wall accounts for wall 1's
+ * board at the closing corner instead. Rebate joints stay with the
+ * arriving wall (offset/extend at its end by corner kind).
  */
 export type ResolvedEnds = {
   absorbAtStart: boolean;
@@ -43,26 +73,30 @@ export type ResolvedEnds = {
 
 export const resolveEnds = (
   wall: Wall,
-  neighbours: { prev?: Wall; next?: Wall }
+  neighbours: { prev?: Wall; next?: Wall; isFirst?: boolean; isLast?: boolean }
 ): ResolvedEnds => {
-  const prevHasRebate = neighbours.prev?.hasRebate ?? false;
-  const nextHasRebate = neighbours.next?.hasRebate ?? false;
+  // Corner rebate joints only exist where BOTH strips reach the corner —
+  // a neighbour whose brick stops before the corner never crosses it.
+  const prevReaches = neighbours.prev ? rebateReachesEnd(neighbours.prev) : false;
+  const nextReaches = neighbours.next ? rebateReachesStart(neighbours.next) : false;
   const endInternal = wall.cornerEnd === 'internal';
 
   return {
-    absorbAtStart: wall.absorbShutterAtStart ?? false,
-    absorbAtEnd: wall.absorbShutterAtEnd ?? endInternal,
+    absorbAtStart:
+      wall.absorbShutterAtStart ??
+      (!(neighbours.isFirst ?? false) && wall.cornerStart === 'internal'),
+    absorbAtEnd: wall.absorbShutterAtEnd ?? ((neighbours.isLast ?? false) && endInternal),
     overhangCapAtEnd: wall.overhangCapAtEnd ?? wall.cornerEnd === 'external',
     rebate: {
       // The departing wall's strip gives way where the previous wall's
       // rebate crosses the corner ("1800 − previous wall").
       offsetAtStart:
         wall.rebateOffsetAtStart ??
-        (wall.cornerStart === 'external' && wall.hasRebate && prevHasRebate),
+        (wall.cornerStart === 'external' && rebateReachesStart(wall) && prevReaches),
       offsetAtEnd: wall.rebateOffsetAtEnd ?? false,
       extendAtStart: wall.rebateExtendAtStart ?? false,
       extendAtEnd:
-        wall.rebateExtendAtEnd ?? (endInternal && wall.hasRebate && nextHasRebate)
+        wall.rebateExtendAtEnd ?? (endInternal && rebateReachesEnd(wall) && nextReaches)
     }
   };
 };
@@ -94,7 +128,7 @@ export const computeWall = (
   wall: Wall,
   index: number,
   rules: JobSheetRules,
-  neighbours: { prev?: Wall; next?: Wall } = {}
+  neighbours: { prev?: Wall; next?: Wall; isFirst?: boolean; isLast?: boolean } = {}
 ): ComputedWall => {
   const number = index + 1;
   const polystyreneAuto = isPolystyreneAuto(wall, rules);
@@ -146,6 +180,7 @@ export const computeWall = (
     const thickness = rules.shutterThicknessMm;
     const cuts: Cut[] = [];
     let cursor = ends.absorbAtStart ? thickness : 0;
+    let endOverhang = 0;
     blkSpans.forEach((span) => {
       const spanStart = Math.max(0, span.offsetFromStartMm);
       const spanEnd = Math.min(wall.lengthMm, span.offsetFromStartMm + span.widthMm);
@@ -160,15 +195,18 @@ export const computeWall = (
         );
         cuts.push(...board.cuts, blkCut(rules));
       }
-      // Inset run along the frame line; enclosed ends get poly shorts. A
-      // span running to the wall end is open at the corner instead.
-      const insetLength =
-        spanEnd -
-        spanStart -
-        (leadingBlk ? thickness : 0) -
-        (trailingBlk ? thickness : 0);
+      // Inset run along the frame line; enclosed ends get poly shorts. The
+      // entering BLK sits inside the channel and consumes one board
+      // thickness; the outset BLK stands above the shutter at the step, so
+      // the run goes all the way to the outset line. A span reaching a
+      // wall end is open at the corner instead, so the usual corner rules
+      // apply there (absorb, overhang, cap).
+      const insetStart = leadingBlk ? spanStart + thickness : cursor;
+      const insetEnd = trailingBlk
+        ? spanEnd
+        : spanEnd - (ends.absorbAtEnd ? thickness : 0);
       const inset = packRun(
-        Math.max(0, insetLength),
+        Math.max(0, insetEnd - insetStart + (trailingBlk ? 0 : capExtra)),
         {
           overhangAtEnd: !trailingBlk && wall.cornerEnd === 'external',
           polystyreneShort: true,
@@ -178,7 +216,10 @@ export const computeWall = (
       );
       cuts.push(...inset.cuts);
       if (trailingBlk) cuts.push(blkCut(rules));
-      cursor = spanEnd - (trailingBlk ? thickness : 0);
+      else endOverhang = inset.overhangMm + capExtra;
+      // The board after the step starts clear of the BLK at the brick
+      // line — no overlap (the BLK fills shutter-to-brick-line itself).
+      cursor = spanEnd;
     });
     if (cursor < wall.lengthMm) {
       const lastBoard = packRun(
@@ -200,7 +241,7 @@ export const computeWall = (
         overhangMm: lastBoard.overhangMm + capExtra
       };
     } else {
-      shutters = { effectiveLengthMm: effective, cuts, overhangMm: 0 };
+      shutters = { effectiveLengthMm: effective, cuts, overhangMm: endOverhang };
     }
   } else {
     const packed = packRun(
@@ -292,7 +333,9 @@ export const computeJobSheet = (
   const walls = sourceWalls.map((wall, index) =>
     computeWall(wall, index, rules, {
       prev: sourceWalls[(index - 1 + sourceWalls.length) % sourceWalls.length],
-      next: sourceWalls[(index + 1) % sourceWalls.length]
+      next: sourceWalls[(index + 1) % sourceWalls.length],
+      isFirst: index === 0,
+      isLast: index === sourceWalls.length - 1
     })
   );
   const perimeterMm = data.walls.reduce((acc, w) => acc + w.lengthMm, 0);

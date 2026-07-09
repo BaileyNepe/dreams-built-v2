@@ -233,6 +233,33 @@ describe('diffSheets', () => {
   });
 });
 
+describe('absorb convention: departing wall starts 65 in, wall 1 excepted', () => {
+  // Four-wall loop, every corner internal, all tri-states on auto.
+  const loop = {
+    ...nineWarrenLaneData,
+    walls: (['a', 'b', 'c', 'd'] as const).map((id) => ({
+      ...baseWall,
+      id,
+      lengthMm: 2400,
+      cornerStart: 'internal' as const,
+      cornerEnd: 'internal' as const,
+      absorbShutterAtStart: null,
+      absorbShutterAtEnd: null,
+      overhangCapAtEnd: null,
+      hasRebate: false
+    }))
+  };
+
+  it('wall 1 runs full from its very start; the last wall accounts for it', () => {
+    const sheet = computeJobSheet(loop, rules);
+    const runs = sheet.walls.map((w) => w.shutters.effectiveLengthMm);
+    // Wall 1: boxed first, nothing there yet — full length, no absorbs.
+    // Walls 2-3: start 65 in behind the previous wall's board.
+    // Wall 4: starts 65 in AND absorbs at its end against wall 1's board.
+    expect(runs).toEqual([2400, 2335, 2335, 2270]);
+  });
+});
+
 describe('partial-rebate wall (Bailey wall-5 diagram)', () => {
   // 6000 wall: brick 1800 | bare 2400 (BLK caps) | brick 1800; the previous
   // wall carries rebate across the external start corner.
@@ -255,12 +282,12 @@ describe('partial-rebate wall (Bailey wall-5 diagram)', () => {
   it('steps the shutter run: boards over the BLKs, exact poly inset between', () => {
     const w = computeWall(wall5, 4, rules, { prev, next });
     expect(w.shutters.cuts.map(formatCut)).toEqual([
-      '2400', // covers 1800 + 65 (over the BLK), overhang allowed
+      '2400', // covers 1800 + 65 (over the entering BLK), overhang allowed
       'BLK',
       '1800',
-      '470p', // inset run 2400 − 2×65 = 2270, exact, polystyrene
+      '535p', // channel = BLK(65) + 2335 exact; the outset BLK sits above
       'BLK',
-      '2400' // covers 65 + 1800 + corner cap, overhang allowed
+      '2400' // follows the perimeter from the outset line + corner cap
     ]);
   });
 
@@ -297,5 +324,134 @@ describe('brick terminating mid-wall (inset to the frame line at the corner)', (
     expect(w.rebate.map((run) => run.cuts.map(formatCut))).toEqual([
       ['3000', '480']
     ]);
+  });
+});
+
+describe('brick starting mid-wall (bare at the start, brick to the end)', () => {
+  const autoFlags = {
+    absorbShutterAtStart: null,
+    absorbShutterAtEnd: null,
+    rebateOffsetAtStart: null,
+    rebateOffsetAtEnd: null,
+    rebateExtendAtStart: null,
+    rebateExtendAtEnd: null,
+    overhangCapAtEnd: null
+  };
+  // Bare for the first 3000 (inset to the frame line), brick 3000 to 6000.
+  const wall: Wall = {
+    ...baseWall,
+    ...autoFlags,
+    id: 'w9',
+    lengthMm: 6000,
+    rebateInsets: [{ offsetFromStartMm: 0, widthMm: 3000 }]
+  };
+
+  it('inset run from the corner, one BLK at the transition, outer board to the end', () => {
+    const w = computeWall(wall, 0, rules, { prev: baseWall, next: baseWall });
+    // Inset run goes all the way to the outset line (3000 exact); the
+    // outset BLK stands above the shutter; the outer board follows the
+    // perimeter from the outset + corner cap.
+    expect(w.shutters.cuts.map(formatCut)).toEqual(['3000', 'BLK', '3600']);
+  });
+
+  it('rebate covers only the brick stretch with no crossing-strip deduction', () => {
+    const w = computeWall(wall, 0, rules, { prev: baseWall, next: baseWall });
+    // The wall's own strip starts at the brick line, not the corner, so the
+    // previous wall's strip never crosses it: 3000 exact.
+    expect(w.rebate.map((run) => run.cuts.map(formatCut))).toEqual([['3000']]);
+  });
+
+  it('respects an absorb override at the start of the inset run', () => {
+    const w = computeWall({ ...wall, absorbShutterAtStart: true }, 0, rules, {
+      prev: baseWall,
+      next: baseWall
+    });
+    // 3000 − 65 absorbed = 2935.
+    expect(w.shutters.cuts.map(formatCut)).toEqual(['2400', '535p', 'BLK', '3600']);
+  });
+
+  it('Auburn wall 9: entering BLK consumes 65, the outset BLK sits above', () => {
+    // 680 brick | 1300 bare | 2250 brick: channel = BLK(65) + 1200 + 35p.
+    const w = computeWall(
+      {
+        ...baseWall,
+        ...{
+          absorbShutterAtStart: null,
+          absorbShutterAtEnd: null,
+          rebateOffsetAtStart: null,
+          rebateOffsetAtEnd: null,
+          rebateExtendAtStart: null,
+          rebateExtendAtEnd: null,
+          overhangCapAtEnd: null
+        },
+        id: 'w9a',
+        lengthMm: 4230,
+        rebateInsets: [{ offsetFromStartMm: 680, widthMm: 1300 }]
+      },
+      0,
+      rules,
+      { prev: baseWall, next: baseWall }
+    );
+    expect(w.shutters.cuts.map(formatCut)).toEqual([
+      '1200', // 680 + 65 over the entering BLK
+      'BLK',
+      '1200',
+      '35p', // 1300 − 65 consumed by the entering BLK
+      'BLK', // outset — above the shutter, consumes nothing
+      '2400' // 2250 + corner cap from the outset line
+    ]);
+  });
+});
+
+describe('corner rules skip neighbours whose brick stops before the corner', () => {
+  const autoFlags = {
+    absorbShutterAtStart: null,
+    absorbShutterAtEnd: null,
+    rebateOffsetAtStart: null,
+    rebateOffsetAtEnd: null,
+    rebateExtendAtStart: null,
+    rebateExtendAtEnd: null,
+    overhangCapAtEnd: null
+  };
+
+  it('no −120 give-way after a wall whose brick terminated mid-wall', () => {
+    // prev's brick stops 2400 before the shared corner; its strip never
+    // crosses, so this wall's rebate runs the full 3000.
+    const prev: Wall = {
+      ...baseWall,
+      id: 'w9',
+      lengthMm: 6000,
+      rebateInsets: [{ offsetFromStartMm: 3600, widthMm: 2400 }]
+    };
+    const w = computeWall({ ...baseWall, ...autoFlags, id: 'w10' }, 0, rules, {
+      prev,
+      next: baseWall
+    });
+    expect(w.rebate.map((run) => run.cuts.map(formatCut))).toEqual([['3000']]);
+  });
+
+  it('no +120 extension into a corner the next wall’s brick never reaches', () => {
+    // Internal end corner, but the next wall is bare at its start — there
+    // is no brick shelf to extend into, so the strip stays exact.
+    const next: Wall = {
+      ...baseWall,
+      id: 'w11',
+      lengthMm: 6000,
+      rebateInsets: [{ offsetFromStartMm: 0, widthMm: 3000 }]
+    };
+    const w = computeWall(
+      // Offset pinned off so the test isolates the end extension.
+      {
+        ...baseWall,
+        ...autoFlags,
+        rebateOffsetAtStart: false,
+        id: 'w10',
+        cornerEnd: 'internal'
+      },
+      0,
+      rules,
+      { prev: baseWall, next }
+    );
+    expect(w.rebate.map((run) => run.cuts.map(formatCut))).toEqual([['3000']]);
   });
 });

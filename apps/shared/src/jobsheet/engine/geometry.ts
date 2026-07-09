@@ -23,7 +23,7 @@ import type {
   JobSheetRules,
   Wall
 } from '../types';
-import { resolveEnds } from './computeSheet';
+import { rebateReachesEnd, rebateReachesStart, resolveEnds } from './computeSheet';
 import { computeRebateSegments } from './packRebate';
 
 export type Point = { x: number; y: number };
@@ -99,6 +99,12 @@ export type FloorOutline = {
   /** Corner overlap/gap conflicts in the boxing (see CornerIssue). */
   cornerIssues: CornerIssue[];
   bounds: { minX: number; minY: number; maxX: number; maxY: number };
+  /**
+   * Slab area in m²: shoelace over the walked polygon minus the strips
+   * shaved off by rebate insets. Null when the perimeter doesn't close —
+   * a broken polygon has no meaningful area.
+   */
+  areaM2: number | null;
 };
 
 const DEGREES_TO_RADIANS = Math.PI / 180;
@@ -134,11 +140,11 @@ const BLK_THICKNESS_MM = 65;
 
 const placeRebate = (
   wall: Wall,
-  next: Wall | undefined,
+  neighbours: { prev?: Wall; next?: Wall },
   computedWall: ComputedWall,
   rules: JobSheetRules
 ): PlacedRebateSegment[] => {
-  const geometric = computeRebateSegments(wall, rules, resolveEnds(wall, { next }).rebate);
+  const geometric = computeRebateSegments(wall, rules, resolveEnds(wall, neighbours).rebate);
   // Overridden walls may have a different number of runs than the geometric
   // segmentation suggests; align what we can and lay the rest sequentially.
   const segments = computedWall.rebate.map((run, index) => {
@@ -202,8 +208,18 @@ const computeCornerIssues = (
     const wallNumber = i + 1;
     const nextWallNumber = j + 1;
 
-    const wallEnds = resolveEnds(wall, { prev: walls[(i - 1 + walls.length) % walls.length], next });
-    const nextEnds = resolveEnds(next, { prev: wall, next: walls[(j + 1) % walls.length] });
+    const wallEnds = resolveEnds(wall, {
+      prev: walls[(i - 1 + walls.length) % walls.length],
+      next,
+      isFirst: i === 0,
+      isLast: i === walls.length - 1
+    });
+    const nextEnds = resolveEnds(next, {
+      prev: wall,
+      next: walls[(j + 1) % walls.length],
+      isFirst: j === 0,
+      isLast: j === walls.length - 1
+    });
 
     if (wall.cornerEnd === 'internal') {
       // The perpendicular shutter consumes one board thickness inside the
@@ -284,6 +300,9 @@ export const computeFloorOutline = (
 
   const walls: PlacedWall[] = [];
   const vertices: Point[] = [{ ...position }];
+  // The full boundary path for the area shoelace — includes the jog
+  // points at displaced corners, which `vertices` (one per corner) skips.
+  const boundary: Point[] = [{ ...position }];
 
   data.walls.forEach((wall, index) => {
     const computedWall = computed.walls[index];
@@ -299,7 +318,9 @@ export const computeFloorOutline = (
     // so the offset only applies to the packed run itself.
     const ends = resolveEnds(wall, {
       prev: data.walls[(index - 1 + data.walls.length) % data.walls.length],
-      next: data.walls[(index + 1) % data.walls.length]
+      next: data.walls[(index + 1) % data.walls.length],
+      isFirst: index === 0,
+      isLast: index === data.walls.length - 1
     });
     const absorbOffset = ends.absorbAtStart ? rules.shutterThicknessMm : 0;
 
@@ -346,7 +367,9 @@ export const computeFloorOutline = (
         shutterCuts.push(
           ...placeCuts(
             groups[groupIndex] ?? [],
-            spanStart + (leadingBlk ? thickness : 0)
+            // A span reaching the wall start lays from the absorb cursor,
+            // matching the engine's inset-run start.
+            leadingBlk ? spanStart + thickness : cursor
           ).map((placed) => ({ ...placed, insetMm: rules.rebateWidthMm }))
         );
         groupIndex += 1;
@@ -357,10 +380,9 @@ export const computeFloorOutline = (
             toMm: spanEnd,
             perpendicular: true
           });
-          cursor = spanEnd - thickness;
-        } else {
-          cursor = spanEnd;
         }
+        // Post-step boards start clear of the BLK at the brick line.
+        cursor = spanEnd;
       });
       if (cursor < wall.lengthMm) {
         shutterCuts.push(...placeCuts(groups[groupIndex] ?? [], cursor));
@@ -385,20 +407,45 @@ export const computeFloorOutline = (
       shutterCuts,
       rebateSegments: placeRebate(
         wall,
-        data.walls[(index + 1) % data.walls.length],
+        {
+          prev: data.walls[(index - 1 + data.walls.length) % data.walls.length],
+          next: data.walls[(index + 1) % data.walls.length]
+        },
         computedWall,
         rules
       ),
       insets: wallInsets
     });
 
-    position = end;
-    vertices.push({ ...position });
+    // The true corner sits off the nominal (brick-line) walk wherever a
+    // bare stretch meets it: a wall whose inset runs to this end meets its
+    // neighbour on the frame line, one rebate width inside its own nominal
+    // line — and the next wall's nominal line sits one width outside the
+    // corner when ITS start stretch is bare. Measurements follow the
+    // actual slab faces, so without these jogs partial-brick floors would
+    // report a phantom misclosure.
+    const corner = { ...end };
+    if (wall.hasRebate && !rebateReachesEnd(wall)) {
+      corner.x -= outwardNormal.x * rules.rebateWidthMm;
+      corner.y -= outwardNormal.y * rules.rebateWidthMm;
+    }
+    vertices.push({ ...corner });
+    boundary.push({ ...corner });
 
     // Turn at this wall's end corner: right at external, left at internal,
     // by the wall's angled override when set (degrees of turn; 90 = square).
     const turn = wall.angledCornerDeg ?? 90;
     heading = rotate(heading, wall.cornerEnd === 'external' ? turn : -turn);
+
+    position = corner;
+    const nextWall = data.walls[(index + 1) % data.walls.length];
+    if (nextWall.hasRebate && !rebateReachesStart(nextWall)) {
+      position = {
+        x: position.x + heading.y * rules.rebateWidthMm,
+        y: position.y - heading.x * rules.rebateWidthMm
+      };
+      boundary.push({ ...position });
+    }
   });
 
   const misclosureMm = Math.round(Math.hypot(position.x, position.y));
@@ -414,5 +461,23 @@ export const computeFloorOutline = (
 
   const cornerIssues = computeCornerIssues(data, rules, vertices, misclosureMm <= 1);
 
-  return { walls, vertices, misclosureMm, cornerIssues, bounds };
+  let areaM2: number | null = null;
+  if (misclosureMm <= 10 && boundary.length >= 4) {
+    let doubled = 0;
+    for (let i = 0; i < boundary.length; i += 1) {
+      const a = boundary[i];
+      const b = boundary[(i + 1) % boundary.length];
+      doubled += a.x * b.y - b.x * a.y;
+    }
+    let areaMm2 = Math.abs(doubled) / 2;
+    // Bare stretches sit one rebate width inside the walked line.
+    for (const placed of walls) {
+      for (const inset of placed.insets) {
+        areaMm2 -= (inset.toMm - inset.fromMm) * rules.rebateWidthMm;
+      }
+    }
+    areaM2 = areaMm2 / 1_000_000;
+  }
+
+  return { walls, vertices, misclosureMm, cornerIssues, bounds, areaM2 };
 };

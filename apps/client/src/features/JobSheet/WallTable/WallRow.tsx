@@ -1,5 +1,9 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import {
+  formatCompoundLength,
+  parseCompoundLength
+} from '@dreams-built/shared/src/jobsheet/engine/compound';
 import { resolveEnds } from '@dreams-built/shared/src/jobsheet/engine/computeSheet';
 import {
   type ComputedWall,
@@ -95,7 +99,9 @@ export const WallRow: FC<{
   const index = data.walls.findIndex((w) => w.id === wall.id);
   const ends = resolveEnds(wall, {
     prev: data.walls[(index - 1 + data.walls.length) % data.walls.length],
-    next: data.walls[(index + 1) % data.walls.length]
+    next: data.walls[(index + 1) % data.walls.length],
+    isFirst: index === 0,
+    isLast: index === data.walls.length - 1
   });
   const auto = (flag: boolean | null) => (flag === null ? ' (auto)' : '');
   const [isExpanded, setIsExpanded] = useState(false);
@@ -117,6 +123,31 @@ export const WallRow: FC<{
 
   const polystyreneValue =
     wall.polystyreneOverride === null ? 'auto' : String(wall.polystyreneOverride);
+
+  // The measurement accepts compound notation — `4200/810b` = 4200 bare
+  // then 810 of brick (b or r) — which sets the length AND the rebate
+  // insets in one go. While the field is focused the raw text is kept;
+  // on blur it reverts to the canonical form derived from state.
+  const canonicalLength =
+    wall.hasRebate && wall.rebateInsets.some((inset) => inset.widthMm > 0)
+      ? formatCompoundLength(wall.lengthMm, wall.rebateInsets)
+      : `${wall.lengthMm === 0 ? '' : wall.lengthMm}`;
+  const [lengthDraft, setLengthDraft] = useState<string | null>(null);
+  const onLengthChange = (raw: string) => {
+    setLengthDraft(raw);
+    if (raw.trim() === '') {
+      patch({ lengthMm: 0, rebateInsets: [] });
+      return;
+    }
+    const parsed = parseCompoundLength(raw);
+    // Mid-typing states ("4200/") just don't dispatch yet.
+    if (!parsed) return;
+    patch({
+      lengthMm: parsed.lengthMm,
+      rebateInsets: parsed.rebateInsets,
+      ...(parsed.hasBrick && { hasRebate: true })
+    });
+  };
 
   const row = index;
   const isLastRow = index === data.walls.length - 1;
@@ -166,27 +197,25 @@ export const WallRow: FC<{
           {computed.number}
         </Typography>
 
-        <TextField
-          size="small"
-          label="mm"
-          value={wall.lengthMm === 0 ? '' : wall.lengthMm}
-          disabled={!canEdit}
-          inputRef={lengthInputRef}
-          inputProps={{
-            inputMode: 'numeric',
-            pattern: '[0-9]*',
-            'aria-label': `Wall ${computed.number} measurement`,
-            'data-nav': navId(row, 0),
-            onKeyDown: onMeasurementKeyDown
-          }}
-          onChange={(event) => {
-            const value = Math.max(
-              0,
-              Math.floor(Number(event.target.value.replace(/[^0-9]/g, '')) || 0)
-            );
-            patch({ lengthMm: value });
-          }}
-        />
+        <Tooltip
+          title="Length in mm, or segments: 4200/810b = 4200 bare, 810 brick (b/r = brick rebate)"
+          enterDelay={800}
+        >
+          <TextField
+            size="small"
+            label="mm"
+            value={lengthDraft ?? canonicalLength}
+            disabled={!canEdit}
+            inputRef={lengthInputRef}
+            inputProps={{
+              'aria-label': `Wall ${computed.number} measurement`,
+              'data-nav': navId(row, 0),
+              onKeyDown: onMeasurementKeyDown
+            }}
+            onChange={(event) => onLengthChange(event.target.value)}
+            onBlur={() => setLengthDraft(null)}
+          />
+        </Tooltip>
 
         <CornerSelect
           label="Start corner"

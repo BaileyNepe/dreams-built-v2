@@ -83,6 +83,38 @@ describe('computeFloorOutline: closure', () => {
     expect(outline.misclosureMm).toBe(0);
   });
 
+  it('closes when a bare-started wall displaces a corner (face measurements)', () => {
+    // Measurements follow the actual slab faces. w2 is bare (inset) at its
+    // start, so its brick line sits one rebate width outside the corner it
+    // shares with w1 — and the far wall w3, measured face to face, carries
+    // that extra 120. The jogged walk must still close exactly.
+    const outline = outlineOf([
+      wall('w1', 6000, { hasRebate: false }),
+      wall('w2', 4000, { rebateInsets: [{ offsetFromStartMm: 0, widthMm: 1000 }] }),
+      wall('w3', 6120),
+      wall('w4', 4000, { hasRebate: false })
+    ]);
+    expect(outline.misclosureMm).toBe(0);
+    // w2's nominal (brick) line starts one rebate width past w1's end.
+    expect(outline.walls[1].start).toEqual({ x: 6120, y: 0 });
+  });
+
+  it('computes the slab area of a closed floor, minus inset strips', () => {
+    // Plain 6×4m rectangle.
+    expect(outlineOf(cleanRectangle()).areaM2).toBeCloseTo(24, 3);
+    // The jogged bare-start shape: 6.12×4m minus the 1000×120 inset strip.
+    const jogged = [
+      wall('w1', 6000, { hasRebate: false }),
+      wall('w2', 4000, { rebateInsets: [{ offsetFromStartMm: 0, widthMm: 1000 }] }),
+      wall('w3', 6120),
+      wall('w4', 4000, { hasRebate: false })
+    ];
+    expect(outlineOf(jogged).areaM2).toBeCloseTo(6.12 * 4 - 0.12, 3);
+    // No area for a floor that doesn't close.
+    const open = [wall('w1', 6000), wall('w2', 4000), wall('w3', 5000), wall('w4', 4000)];
+    expect(outlineOf(open).areaM2).toBeNull();
+  });
+
   it('reports the misclosure when a wall is measured short', () => {
     const outline = outlineOf([
       wall('w1', 6000),

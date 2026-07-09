@@ -201,7 +201,9 @@ export const FloorPlanSvg: FC<{
     if (!svg) return undefined;
     const onWheel = (event: WheelEvent) => {
       event.preventDefault();
-      setZoom((z) => Math.min(10, Math.max(1, z * (event.deltaY < 0 ? 1.15 : 1 / 1.15))));
+      setZoom((z) =>
+        Math.min(10, Math.max(0.2, z * (event.deltaY < 0 ? 1.15 : 1 / 1.15)))
+      );
     };
     svg.addEventListener('wheel', onWheel, { passive: false });
     return () => svg.removeEventListener('wheel', onWheel);
@@ -220,6 +222,10 @@ export const FloorPlanSvg: FC<{
   const viewY = centreY + pan.y - viewHeight / 2;
   const viewBox = [viewX, viewY, viewWidth, viewHeight].join(' ');
 
+  /** Pixels per mm under preserveAspectRatio "meet" (letterboxed when capped). */
+  const pxPerMm = (rect: DOMRect): number =>
+    Math.min(rect.width / viewWidth, rect.height / viewHeight);
+
   /** Project a pointer event onto a wall, in mm from its start (10mm snap). */
   const toWallMm = (
     wall: FloorOutline['walls'][number],
@@ -228,8 +234,11 @@ export const FloorPlanSvg: FC<{
     const svg = svgRef.current;
     if (!svg) return 0;
     const rect = svg.getBoundingClientRect();
-    const x = viewX + ((event.clientX - rect.left) / rect.width) * viewWidth;
-    const y = viewY + ((event.clientY - rect.top) / rect.height) * viewHeight;
+    const scale = pxPerMm(rect);
+    const x =
+      viewX + (event.clientX - rect.left - (rect.width - viewWidth * scale) / 2) / scale;
+    const y =
+      viewY + (event.clientY - rect.top - (rect.height - viewHeight * scale) / 2) / scale;
     const t =
       (x - wall.start.x) * wall.direction.x + (y - wall.start.y) * wall.direction.y;
     return Math.max(0, Math.min(wall.lengthMm, Math.round(t / 10) * 10));
@@ -251,7 +260,7 @@ export const FloorPlanSvg: FC<{
     const drag = dragRef.current;
     const svg = svgRef.current;
     if (!drag || !svg) return;
-    const mmPerPx = viewWidth / svg.clientWidth;
+    const mmPerPx = 1 / pxPerMm(svg.getBoundingClientRect());
     setPan({
       x: drag.panX - (event.clientX - drag.x) * mmPerPx,
       y: drag.panY - (event.clientY - drag.y) * mmPerPx
@@ -302,6 +311,9 @@ export const FloorPlanSvg: FC<{
       style={{
         width: '100%',
         height: 'auto',
+        // Tall floors otherwise render taller than the screen with no way
+        // to fit them: cap to the viewport and letterbox.
+        maxHeight: '75vh',
         display: 'block',
         cursor: dragRef.current ? 'grabbing' : 'grab',
         touchAction: 'none',

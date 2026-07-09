@@ -209,9 +209,15 @@ describe('computeShutterRunLength', () => {
     expect(computeShutterRunLength(both, rules, endsFor(both))).toBe(1490);
   });
 
-  it('absorbs automatically at an internal end corner when unset (auto)', () => {
-    const wall = { ...baseWall, absorbShutterAtEnd: null };
-    expect(computeShutterRunLength(wall, rules, endsFor(wall))).toBe(1555);
+  it('absorbs automatically at an internal START corner when unset (auto)', () => {
+    // The run goes until it hits the next wall; the wall LEAVING an
+    // internal corner starts one board thickness in, because the previous
+    // wall's board already sits against its face.
+    const departing = { ...baseWall, cornerStart: 'internal' as const, absorbShutterAtStart: null };
+    expect(computeShutterRunLength(departing, rules, endsFor(departing))).toBe(1555);
+    // The arriving wall no longer absorbs at its internal end by default.
+    const arriving = { ...baseWall, absorbShutterAtEnd: null };
+    expect(computeShutterRunLength(arriving, rules, endsFor(arriving))).toBe(1620);
   });
 
   it('goes negative (not throwing) when allowances exceed the length', () => {
