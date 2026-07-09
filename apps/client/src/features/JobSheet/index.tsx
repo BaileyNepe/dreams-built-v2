@@ -93,9 +93,32 @@ const JobSheetEditor: FC = () => {
     );
   };
 
+  const handleExportPdf = async () => {
+    try {
+      const { exportJobSheetPdf } = await import('./Print/exportPdf');
+      await exportJobSheetPdf({
+        headerText: `${client.name} - ${project.address}, ${project.city}`,
+        jobNumber: project.jobNumber,
+        data,
+        rules,
+        computed,
+        outline: data.mode === 'manual' ? undefined : outline,
+        fileName: `Job ${project.jobNumber} - ${project.address} - job sheet.pdf`
+      });
+    } catch (error) {
+      // eslint-disable-next-line no-console -- surfaced for support/debugging
+      console.error('[jobsheet] PDF export failed', error);
+      notify('PDF export failed', { type: 'error' });
+    }
+  };
+
   return (
     <>
-      <JobSheetToolbar onPrint={handlePrint} onPrintBlank={printBlank} />
+      <JobSheetToolbar
+        onPrint={handlePrint}
+        onPrintBlank={printBlank}
+        onExportPdf={handleExportPdf}
+      />
       <JobSheetHeader />
       <Divider sx={{ my: 2 }} />
 
@@ -211,7 +234,9 @@ const JobSheetContent: FC = () => {
                 display: 'flex',
                 gap: 1.5,
                 justifyContent: 'center',
-                alignItems: 'center'
+                // Align the button with the input box itself — the helper
+                // text below the field would otherwise skew centring.
+                alignItems: 'flex-start'
               }}
             >
               <TextField
@@ -227,7 +252,7 @@ const JobSheetContent: FC = () => {
               <Button
                 variant="contained"
                 disabled={createSheet.isPending}
-                sx={{ alignSelf: 'flex-start', mt: 0.25 }}
+                sx={{ height: 40 }}
                 onClick={() =>
                   createSheet.mutate({
                     projectId,

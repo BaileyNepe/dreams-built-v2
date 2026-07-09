@@ -5,6 +5,7 @@ import RedoIcon from '@mui/icons-material/Redo';
 import UndoIcon from '@mui/icons-material/Undo';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import HistoryIcon from '@mui/icons-material/History';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import PrintIcon from '@mui/icons-material/Print';
 import SyncIcon from '@mui/icons-material/Sync';
 import TuneIcon from '@mui/icons-material/Tune';
@@ -81,10 +82,20 @@ const SaveChip: FC<{ status: SaveStatus; onRetry: () => void }> = ({
   }
 };
 
-export const JobSheetToolbar: FC<{ onPrint: () => void; onPrintBlank: () => void }> = ({
-  onPrint,
-  onPrintBlank
-}) => {
+export const JobSheetToolbar: FC<{
+  onPrint: () => void;
+  onPrintBlank: () => void;
+  onExportPdf: () => Promise<void>;
+}> = ({ onPrint, onPrintBlank, onExportPdf }) => {
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const exportPdf = async () => {
+    setIsExportingPdf(true);
+    try {
+      await onExportPdf();
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
   const {
     canEdit,
     saveStatus,
@@ -220,6 +231,16 @@ export const JobSheetToolbar: FC<{ onPrint: () => void; onPrintBlank: () => void
       <Button size="small" startIcon={<PrintIcon />} onClick={onPrint}>
         Print
       </Button>
+      <Tooltip title="Download the sheet (and floor plan) as a PDF">
+        <Button
+          size="small"
+          startIcon={<PictureAsPdfIcon />}
+          disabled={isExportingPdf}
+          onClick={exportPdf}
+        >
+          PDF
+        </Button>
+      </Tooltip>
       <Tooltip title="Print an empty sheet to fill in by hand">
         <Button size="small" startIcon={<GridOnIcon />} onClick={onPrintBlank}>
           Blank

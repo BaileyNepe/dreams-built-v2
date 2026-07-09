@@ -68,7 +68,7 @@ const ColumnLabel = styled(Typography)`
  * arrows to move, Space to drop); order defines the wall numbers.
  */
 export const WallTable: FC = () => {
-  const { data, computed, dispatch, canEdit } = useJobSheetContext();
+  const { data, computed, dispatch, canEdit, rules } = useJobSheetContext();
   const [lastAddedId, setLastAddedId] = useState<string | null>(null);
 
   const sensors = useSensors(
@@ -101,9 +101,11 @@ export const WallTable: FC = () => {
           <ColumnLabel>#</ColumnLabel>
           <ColumnLabel>Measurement</ColumnLabel>
           <SectionHeader $color={SECTION_COLORS.shutters.header}>
-            300 Shutters
+            {rules.shutterLabel}
           </SectionHeader>
-          <SectionHeader $color={SECTION_COLORS.rebate.header}>Rebate</SectionHeader>
+          <SectionHeader $color={SECTION_COLORS.rebate.header}>
+            {rules.rebateLabel}
+          </SectionHeader>
           {manualColumns === 3 && (
             <SectionHeader $color="#e0e0e0">{data.thirdColumnLabel}</SectionHeader>
           )}
@@ -118,9 +120,11 @@ export const WallTable: FC = () => {
             <span />
             <span />
             <SectionHeader $color={SECTION_COLORS.shutters.header}>
-              300 Shutters
+              {rules.shutterLabel}
             </SectionHeader>
-            <SectionHeader $color={SECTION_COLORS.rebate.header}>Rebate</SectionHeader>
+            <SectionHeader $color={SECTION_COLORS.rebate.header}>
+              {rules.rebateLabel}
+            </SectionHeader>
             <span />
           </HeaderRow>
           <HeaderRow>

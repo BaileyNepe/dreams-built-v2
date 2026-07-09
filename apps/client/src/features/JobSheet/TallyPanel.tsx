@@ -13,11 +13,6 @@ import { type FC } from 'react';
 import { SECTION_COLORS, type SheetSection } from './constants';
 import { useJobSheetContext } from './state/JobSheetProvider';
 
-const TITLES: Record<SheetSection, string> = {
-  shutters: '300 Shutters',
-  rebate: 'Rebate Shutters'
-};
-
 /** Live totals for one section: each standard size, shorts, and BLKs. */
 export const TallyPanel: FC<{ section: SheetSection | 'extra' }> = ({ section }) => {
   const { computed, rules, data } = useJobSheetContext();
@@ -25,6 +20,10 @@ export const TallyPanel: FC<{ section: SheetSection | 'extra' }> = ({ section })
     section === 'extra' ? computed.tallies.extra : computed.tallies[section];
   if (!tally) return null;
 
+  const titles: Record<SheetSection, string> = {
+    shutters: rules.shutterLabel,
+    rebate: `${rules.rebateLabel} Shutters`
+  };
   const sizes = [...rules.standardSizesMm].sort((a, b) => b - a);
 
   return (
@@ -39,7 +38,7 @@ export const TallyPanel: FC<{ section: SheetSection | 'extra' }> = ({ section })
           py: 0.5
         }}
       >
-        {section === 'extra' ? data.thirdColumnLabel : TITLES[section]}
+        {section === 'extra' ? data.thirdColumnLabel : titles[section]}
       </Typography>
       <Table size="small" data-testid={`tally-${section}`}>
         <TableHead>

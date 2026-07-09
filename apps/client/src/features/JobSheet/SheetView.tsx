@@ -209,9 +209,9 @@ export const SheetView: FC<{
           <tr>
             <th>mm</th>
             <th aria-label="wall number (300)" />
-            <th className="shutters">300 Shutters</th>
+            <th className="shutters">{rules.shutterLabel}</th>
             <th aria-label="wall number (rebate)" />
-            <th className="rebate">REBATE</th>
+            <th className="rebate">{rules.rebateLabel.toUpperCase()}</th>
             {hasThirdColumn && <th aria-label="wall number (third)" />}
             {hasThirdColumn && <th>{data.thirdColumnLabel.toUpperCase()}</th>}
           </tr>
@@ -258,7 +258,7 @@ export const SheetView: FC<{
           <thead>
             <tr>
               <th className="shutters" colSpan={2}>
-                300 SHUTTERS
+                {rules.shutterLabel.toUpperCase()}
               </th>
             </tr>
           </thead>
@@ -269,7 +269,7 @@ export const SheetView: FC<{
           <thead>
             <tr>
               <th className="rebate" colSpan={2}>
-                REBATE SHUTTERS
+                {`${rules.rebateLabel} Shutters`.toUpperCase()}
               </th>
             </tr>
           </thead>
