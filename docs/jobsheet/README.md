@@ -1,6 +1,6 @@
 # Job Sheet Builder
 
-Replaces the Google-Sheets workflow for ProBase foundation job sheets. A job
+Replaces the Google-Sheets workflow for DREAMSBUILT foundation job sheets. A job
 sheet attaches to a `Project` (one live sheet per project), lists the
 foundation perimeter walls, auto-computes the **300 Shutters** and **Rebate**
 cut lists per wall, keeps live tallies, prints on A4 in the paper layout, and
@@ -11,12 +11,12 @@ Open it from a project's detail page → **Job Sheet**.
 ## Domain conventions
 
 - **Wall numbering**: wall 1 is the wall containing the garage door; walls
-  proceed clockwise around the perimeter. In the app, list order *is* the
+  proceed clockwise around the perimeter. In the app, list order _is_ the
   numbering (drag rows to renumber). A floor can have multiple garage walls;
   numbering just starts at whichever you put first.
 - **Corners** (each wall end):
   - **External** (exposed) — the shutter may overhang past the corner. The
-    packer uses *promotion*: the last greedy piece is replaced by the next
+    packer uses _promotion_: the last greedy piece is replaced by the next
     standard size that covers the remainder (`3380 → [3600]`,
     `5940 → [4800, 1200]`); a piece is only added when the last is already
     the largest (`5010 → [4800, 600]`).
@@ -68,13 +68,13 @@ snapshots embed the rule set they were computed with.
 > **TODO(bailey): confirm the real-world defaults** (all seeded in
 > `apps/shared/src/jobsheet/defaults.ts` and editable in-app):
 >
-> | Value | Seeded default |
-> |---|---|
-> | Standard sizes | 4800, 4200, 3600, 3000, 2400, 1800, 1200, 600 |
-> | Shutter width (absorb) | 65mm |
-> | Rebate width (offset) | 120mm |
-> | BLK length | 120mm |
-> | Auto-polystyrene | on (both ends internal) |
+> | Value                   | Seeded default                                                                   |
+> | ----------------------- | -------------------------------------------------------------------------------- |
+> | Standard sizes          | 4800, 4200, 3600, 3000, 2400, 1800, 1200, 600                                    |
+> | Shutter width (absorb)  | 65mm                                                                             |
+> | Rebate width (offset)   | 120mm                                                                            |
+> | BLK length              | 120mm                                                                            |
+> | Auto-polystyrene        | on (both ends internal)                                                          |
 > | BLK placement semantics | additive marker in the 300 run (`BLK_CONSUMES_LENGTH` flag in `computeSheet.ts`) |
 
 ## Architecture
@@ -120,7 +120,7 @@ combinations clamp to zero with a per-wall warning).
 - **Autosave** debounces 1.5s and saves the whole document with an
   optimistic-lock `revision` (server applies via an atomic compare-and-swap;
   a stale revision returns CONFLICT and the editor asks for a reload).
-- **Offline**: every edit is mirrored to a localStorage draft *before* the
+- **Offline**: every edit is mirrored to a localStorage draft _before_ the
   debounce. If the connection is down the toolbar shows "Offline — saved
   locally", the browser's `online` event flushes immediately, transient
   failures auto-retry every 15s, and after a refresh the provider restores

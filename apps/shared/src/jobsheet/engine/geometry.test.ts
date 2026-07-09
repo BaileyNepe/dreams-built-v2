@@ -34,7 +34,7 @@ const wall = (id: string, lengthMm: number, patch: Partial<Wall> = {}): Wall => 
 });
 
 const sheetOf = (walls: Wall[]): JobSheetData => ({
-  system: 'PROBASE',
+  system: 'DREAMSBUILT',
   rebatesEnabled: true,
   mode: 'auto',
   manualThirdColumn: false,
@@ -146,8 +146,16 @@ describe('computeFloorOutline: placements', () => {
     ]);
     // 6000 -> [4800, 1200]
     expect(outline.walls[0].shutterCuts).toEqual([
-      { cut: { kind: 'standard', lengthMm: 4800, polystyrene: false }, fromMm: 0, toMm: 4800 },
-      { cut: { kind: 'standard', lengthMm: 1200, polystyrene: false }, fromMm: 4800, toMm: 6000 }
+      {
+        cut: { kind: 'standard', lengthMm: 4800, polystyrene: false },
+        fromMm: 0,
+        toMm: 4800
+      },
+      {
+        cut: { kind: 'standard', lengthMm: 1200, polystyrene: false },
+        fromMm: 4800,
+        toMm: 6000
+      }
     ]);
   });
 
@@ -221,7 +229,9 @@ describe('computeFloorOutline: corner seal analysis', () => {
 
   it('flags a shutter overlap at an internal corner where neither wall absorbs', () => {
     const outline = outlineOf(lShape());
-    const shutterIssues = outline.cornerIssues.filter((i) => i.kind.startsWith('shutter'));
+    const shutterIssues = outline.cornerIssues.filter((i) =>
+      i.kind.startsWith('shutter')
+    );
     expect(shutterIssues).toHaveLength(1);
     expect(shutterIssues[0]).toMatchObject({
       kind: 'shutter-overlap',
@@ -238,9 +248,9 @@ describe('computeFloorOutline: corner seal analysis', () => {
       []
     );
     const otherAbsorbs = outlineOf(lShape({}, { absorbShutterAtStart: true }));
-    expect(
-      otherAbsorbs.cornerIssues.filter((i) => i.kind.startsWith('shutter'))
-    ).toEqual([]);
+    expect(otherAbsorbs.cornerIssues.filter((i) => i.kind.startsWith('shutter'))).toEqual(
+      []
+    );
   });
 
   it('flags a shutter gap when both walls absorb at the same corner', () => {
@@ -269,9 +279,7 @@ describe('computeFloorOutline: corner seal analysis', () => {
     ]);
 
     const doubleOffset = outlineOf(
-      cleanRectangle().map((w) =>
-        w.id === 'w1' ? { ...w, rebateOffsetAtEnd: true } : w
-      )
+      cleanRectangle().map((w) => (w.id === 'w1' ? { ...w, rebateOffsetAtEnd: true } : w))
     );
     expect(doubleOffset.cornerIssues).toEqual([
       expect.objectContaining({ kind: 'rebate-gap', wallNumber: 1, nextWallNumber: 2 })
