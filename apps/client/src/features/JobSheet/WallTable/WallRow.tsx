@@ -15,6 +15,7 @@ import {
   Button,
   Checkbox,
   Collapse,
+  Divider,
   FormControlLabel,
   IconButton,
   MenuItem,
@@ -41,13 +42,11 @@ const Row = styled.div`
 `;
 
 const DetailPanel = styled.div`
-  align-items: center;
   background: ${(p) => p.theme.palette.action.hover};
   border-bottom: 1px solid ${(p) => p.theme.palette.divider};
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 1.5rem;
-  padding: 0.5rem 0.5rem 0.75rem 4.5rem;
+  display: grid;
+  gap: 0.9rem;
+  padding: 0.75rem 1rem 1rem 5.5rem;
 `;
 
 const CornerSelect: FC<{
@@ -226,6 +225,14 @@ export const WallRow: FC<{
 
       <Collapse in={isExpanded} unmountOnExit>
         <DetailPanel>
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: 2,
+              alignItems: 'center'
+            }}
+          >
           <TextField
             select
             size="small"
@@ -266,14 +273,33 @@ export const WallRow: FC<{
             onOpen={() => setIsOverrideOpen(true)}
             onClose={() => setIsOverrideOpen(false)}
           />
+          </Box>
 
+          <Divider />
           <RebateInsetsEditor wall={wall} />
 
+          <Divider />
           <OpeningsEditor wall={wall} />
 
+          <Divider />
+
           <Box sx={{ width: '100%' }}>
-            <Button size="small" onClick={() => setShowAdvanced((prev) => !prev)}>
-              {showAdvanced ? 'Hide' : 'Show'} advanced corner adjustments (auto-managed)
+            <Button
+              size="small"
+              color="inherit"
+              sx={{ color: 'text.secondary', textTransform: 'none' }}
+              startIcon={
+                <ExpandMoreIcon
+                  fontSize="small"
+                  sx={{
+                    transform: showAdvanced ? 'rotate(180deg)' : 'none',
+                    transition: 'transform 150ms'
+                  }}
+                />
+              }
+              onClick={() => setShowAdvanced((prev) => !prev)}
+            >
+              Advanced corner adjustments (auto-managed)
             </Button>
             <Collapse in={showAdvanced} unmountOnExit>
               <Box

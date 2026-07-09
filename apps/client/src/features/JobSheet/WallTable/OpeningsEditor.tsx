@@ -57,7 +57,9 @@ export const OpeningsEditor: FC<{ wall: Wall }> = ({ wall }) => {
 
   return (
     <Box sx={{ display: 'grid', gap: 1, width: '100%' }}>
-      <Typography variant="subtitle2">Openings</Typography>
+      <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'text.primary' }}>
+        Openings (joinery)
+      </Typography>
 
       {wall.openings.map((opening, index) => (
         <Box
