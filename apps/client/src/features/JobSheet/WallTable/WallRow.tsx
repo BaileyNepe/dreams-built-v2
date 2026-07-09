@@ -27,6 +27,7 @@ import { memo, useEffect, useRef, useState, type FC } from 'react';
 import { styled } from 'styled-components';
 import { useJobSheetContext } from '../state/JobSheetProvider';
 import { BreakdownCell } from './BreakdownCell';
+import { focusNav, navId } from './nav';
 import { OpeningsEditor } from './OpeningsEditor';
 import { OverrideEditor } from './OverrideEditor';
 import { RebateInsetsEditor } from './RebateInsetsEditor';
@@ -54,7 +55,9 @@ const CornerSelect: FC<{
   value: CornerKind;
   disabled: boolean;
   onChange: (value: CornerKind) => void;
-}> = ({ label, value, disabled, onChange }) => (
+  row: number;
+  col: number;
+}> = ({ label, value, disabled, onChange, row, col }) => (
   <TextField
     select
     size="small"
@@ -63,6 +66,16 @@ const CornerSelect: FC<{
     disabled={disabled}
     onChange={(event) => onChange(event.target.value as CornerKind)}
     fullWidth
+    SelectProps={{
+      SelectDisplayProps: {
+        // @ts-expect-error data attribute for grid navigation
+        'data-nav': navId(row, col),
+        onKeyDown: (event: React.KeyboardEvent) => {
+          if (event.key === 'ArrowLeft' && focusNav(row, col - 1)) event.preventDefault();
+          if (event.key === 'ArrowRight' && focusNav(row, col + 1)) event.preventDefault();
+        }
+      }
+    }}
   >
     <MenuItem value="external">External</MenuItem>
     <MenuItem value="internal">Internal</MenuItem>
@@ -73,7 +86,8 @@ export const WallRow: FC<{
   wall: Wall;
   computed: ComputedWall;
   isNewlyAdded?: boolean;
-}> = memo(({ wall, computed, isNewlyAdded = false }) => {
+  onAddWall?: () => void;
+}> = memo(({ wall, computed, isNewlyAdded = false, onAddWall }) => {
   const { dispatch, canEdit, rules, data } = useJobSheetContext();
 
   // Corner adjustments resolve automatically from the corner kinds; the
@@ -104,6 +118,29 @@ export const WallRow: FC<{
   const polystyreneValue =
     wall.polystyreneOverride === null ? 'auto' : String(wall.polystyreneOverride);
 
+  const row = index;
+  const isLastRow = index === data.walls.length - 1;
+  const onMeasurementKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    const input = event.target as HTMLInputElement;
+    if (event.key === 'Tab' && !event.shiftKey) {
+      if (focusNav(row + 1, 0)) event.preventDefault();
+      else if (isLastRow && canEdit && onAddWall) {
+        event.preventDefault();
+        onAddWall();
+      }
+    } else if (event.key === 'Tab' && event.shiftKey) {
+      if (focusNav(row - 1, 0)) event.preventDefault();
+    } else if (event.key === 'ArrowDown') {
+      if (focusNav(row + 1, 0)) event.preventDefault();
+    } else if (event.key === 'ArrowUp') {
+      if (focusNav(row - 1, 0)) event.preventDefault();
+    } else if (event.key === 'ArrowRight') {
+      if (input.selectionStart === input.value.length && focusNav(row, 1)) {
+        event.preventDefault();
+      }
+    }
+  };
+
   return (
     <div
       ref={setNodeRef}
@@ -131,15 +168,22 @@ export const WallRow: FC<{
 
         <TextField
           size="small"
-          type="number"
           label="mm"
           value={wall.lengthMm === 0 ? '' : wall.lengthMm}
           disabled={!canEdit}
           inputRef={lengthInputRef}
-          inputProps={{ min: 0, 'aria-label': `Wall ${computed.number} measurement` }}
-          error={wall.lengthMm < 0}
+          inputProps={{
+            inputMode: 'numeric',
+            pattern: '[0-9]*',
+            'aria-label': `Wall ${computed.number} measurement`,
+            'data-nav': navId(row, 0),
+            onKeyDown: onMeasurementKeyDown
+          }}
           onChange={(event) => {
-            const value = Math.max(0, Math.floor(Number(event.target.value) || 0));
+            const value = Math.max(
+              0,
+              Math.floor(Number(event.target.value.replace(/[^0-9]/g, '')) || 0)
+            );
             patch({ lengthMm: value });
           }}
         />
@@ -148,6 +192,8 @@ export const WallRow: FC<{
           label="Start corner"
           value={wall.cornerStart}
           disabled={!canEdit}
+          row={row}
+          col={1}
           onChange={(cornerStart) =>
             patch({
               cornerStart,
@@ -160,6 +206,8 @@ export const WallRow: FC<{
           label="End corner"
           value={wall.cornerEnd}
           disabled={!canEdit}
+          row={row}
+          col={2}
           onChange={(cornerEnd) =>
             patch({
               cornerEnd,

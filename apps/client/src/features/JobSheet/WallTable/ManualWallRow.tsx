@@ -23,6 +23,7 @@ import { memo, useEffect, useRef, useState, type FC } from 'react';
 import { styled } from 'styled-components';
 import { SECTION_COLORS } from '../constants';
 import { useJobSheetContext } from '../state/JobSheetProvider';
+import { focusNav, navId } from './nav';
 
 const Row = styled.div<{ $columns: number }>`
   align-items: center;
@@ -177,8 +178,26 @@ export const ManualWallRow: FC<{
   number: number;
   columns: number;
   isNewlyAdded?: boolean;
-}> = memo(({ wall, number, columns, isNewlyAdded = false }) => {
+  isLastRow?: boolean;
+  onAddWall?: () => void;
+}> = memo(({ wall, number, columns, isNewlyAdded = false, isLastRow = false, onAddWall }) => {
   const { dispatch, canEdit } = useJobSheetContext();
+  const row = number - 1;
+  const onMeasurementKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Tab' && !event.shiftKey) {
+      if (focusNav(row + 1, 0)) event.preventDefault();
+      else if (isLastRow && canEdit && onAddWall) {
+        event.preventDefault();
+        onAddWall();
+      }
+    } else if (event.key === 'Tab' && event.shiftKey) {
+      if (focusNav(row - 1, 0)) event.preventDefault();
+    } else if (event.key === 'ArrowDown') {
+      if (focusNav(row + 1, 0)) event.preventDefault();
+    } else if (event.key === 'ArrowUp') {
+      if (focusNav(row - 1, 0)) event.preventDefault();
+    }
+  };
 
   const lengthInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
@@ -215,14 +234,22 @@ export const ManualWallRow: FC<{
 
         <TextField
           size="small"
-          type="number"
           label="mm"
           value={wall.lengthMm === 0 ? '' : wall.lengthMm}
           disabled={!canEdit}
           inputRef={lengthInputRef}
-          inputProps={{ min: 0, 'aria-label': `Wall ${number} measurement` }}
+          inputProps={{
+            inputMode: 'numeric',
+            pattern: '[0-9]*',
+            'aria-label': `Wall ${number} measurement`,
+            'data-nav': navId(row, 0),
+            onKeyDown: onMeasurementKeyDown
+          }}
           onChange={(event) => {
-            const value = Math.max(0, Math.floor(Number(event.target.value) || 0));
+            const value = Math.max(
+              0,
+              Math.floor(Number(event.target.value.replace(/[^0-9]/g, '')) || 0)
+            );
             dispatch({ type: 'updateWall', id: wall.id, patch: { lengthMm: value } });
           }}
         />

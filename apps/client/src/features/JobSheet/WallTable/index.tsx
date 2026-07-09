@@ -154,6 +154,8 @@ export const WallTable: FC = () => {
                 number={index + 1}
                 columns={manualColumns}
                 isNewlyAdded={wall.id === lastAddedId}
+                isLastRow={index === data.walls.length - 1}
+                onAddWall={addWall}
               />
             ) : (
               <WallRow
@@ -161,6 +163,7 @@ export const WallTable: FC = () => {
                 wall={wall}
                 computed={computed.walls[index]}
                 isNewlyAdded={wall.id === lastAddedId}
+                onAddWall={addWall}
               />
             )
           )}
