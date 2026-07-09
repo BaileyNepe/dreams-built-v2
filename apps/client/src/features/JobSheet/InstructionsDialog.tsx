@@ -62,9 +62,23 @@ export const InstructionsDialog: FC<{ open: boolean; onClose: () => void }> = ({
         &ldquo;Has rebate&rdquo; and the row shows &ldquo;-&rdquo;.
       </Section>
 
+      <Section title="Partial brick: type the wall in segments">
+        When brick covers only part of a wall, type the measurement as
+        slash-separated segments with <strong>b</strong> (or <strong>r</strong>) on
+        the brick stretches: <strong>4200/810b</strong> = 4200 bare then 810 of
+        brick; <strong>3600b/2500/300b</strong> = brick, bare, brick. The wall
+        length becomes the total and the bare stretches inset to the frame line
+        automatically — stepped shutter runs, BLKs at the transitions and the
+        matching rebate segments are computed for you. A plain number (or a
+        suffix-free sum like 11610/1960) clears the segmentation. The same
+        stretches can be edited under the wall&apos;s &ldquo;Rebate insets&rdquo;
+        panel.
+      </Section>
+
       <Section title="BLK insets">
         Where a wall has brick rebate over only part of its length, a BLK inset (a
-        rebate-width × shutter-width block) marks the transition. Tick BLK at the
+        rebate-width × shutter-width block) marks the transition. These come from
+        the segments above automatically; for one-off cases tick BLK at the
         relevant end, or place BLK pieces exactly where they belong with
         &ldquo;Override breakdown&rdquo;.
       </Section>

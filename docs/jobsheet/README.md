@@ -37,6 +37,17 @@ Open it from a project's detail page → **Job Sheet**.
 - **BLK**: an inset piece (≈120×65) marking where rebate coverage starts or
   stops mid-wall. Tick BLK at a wall end, or place BLK pieces exactly where
   they belong via a manual override.
+- **Partial brick — compound measurements**: type the wall as
+  slash-separated segments with `b` (or `r`) on the brick stretches:
+  `4200/810b` = 4200 bare then 810 brick; `3600b/2500/300b` = brick, bare,
+  brick. The total becomes the wall length; the bare stretches become
+  rebate insets (slab edge steps to the frame line, stepped shutter run,
+  BLKs at the transitions, rebate only over the brick). A plain number or a
+  suffix-free sum (`11610/1960` = 13570) clears the segmentation. The same
+  stretches are editable in the wall panel under "Rebate insets". When brick
+  stops at (or starts from) a corner, corner joints resolve against the
+  neighbour's actual brick reach — no −120/+120 for a strip that never
+  crosses.
 - **Angled corners** (≠90°): enter the angle on the wall; shorts print with
   the annotation (`420 @45°`) and the floor plan turns by that angle. The
   app does not compute mitre trigonometry — annotation only.
