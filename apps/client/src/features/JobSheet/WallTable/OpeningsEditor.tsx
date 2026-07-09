@@ -92,7 +92,7 @@ export const OpeningsEditor: FC<{ wall: Wall }> = ({ wall }) => {
             value={opening.widthMm === 0 ? '' : opening.widthMm}
             disabled={!canEdit}
             sx={{ width: '7.5rem' }}
-            error={opening.widthMm <= 0}
+            placeholder="required"
             onChange={(event) =>
               updateOpening(index, {
                 widthMm: Math.max(0, Math.floor(Number(event.target.value) || 0))

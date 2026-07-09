@@ -177,7 +177,9 @@ export const FloorPlanSvg: FC<{
   outline: FloorOutline;
   rules: JobSheetRules;
   title?: string;
-}> = ({ outline, rules, title = 'Floor plan' }) => {
+  /** Drag along a wall to add an opening spanning the dragged range. */
+  onDrawSpan?: (wallId: string, fromMm: number, toMm: number) => void;
+}> = ({ outline, rules, title = 'Floor plan', onDrawSpan }) => {
   const { bounds, walls, vertices, misclosureMm, cornerIssues } = outline;
 
   // Scroll to zoom (non-passive listener so the page doesn't scroll too).
@@ -187,6 +189,11 @@ export const FloorPlanSvg: FC<{
   const dragRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(
     null
   );
+  const [spanDraw, setSpanDraw] = useState<{
+    wallId: string;
+    startMm: number;
+    currentMm: number;
+  } | null>(null);
   // Click a wall number to spotlight that wall's shutters and rebates.
   const [focusWallId, setFocusWallId] = useState<string | null>(null);
   useEffect(() => {
@@ -209,12 +216,24 @@ export const FloorPlanSvg: FC<{
   const centreY = (bounds.minY + bounds.maxY) / 2;
   const viewWidth = fullWidth / zoom;
   const viewHeight = fullHeight / zoom;
-  const viewBox = [
-    centreX + pan.x - viewWidth / 2,
-    centreY + pan.y - viewHeight / 2,
-    viewWidth,
-    viewHeight
-  ].join(' ');
+  const viewX = centreX + pan.x - viewWidth / 2;
+  const viewY = centreY + pan.y - viewHeight / 2;
+  const viewBox = [viewX, viewY, viewWidth, viewHeight].join(' ');
+
+  /** Project a pointer event onto a wall, in mm from its start (10mm snap). */
+  const toWallMm = (
+    wall: FloorOutline['walls'][number],
+    event: React.PointerEvent
+  ): number => {
+    const svg = svgRef.current;
+    if (!svg) return 0;
+    const rect = svg.getBoundingClientRect();
+    const x = viewX + ((event.clientX - rect.left) / rect.width) * viewWidth;
+    const y = viewY + ((event.clientY - rect.top) / rect.height) * viewHeight;
+    const t =
+      (x - wall.start.x) * wall.direction.x + (y - wall.start.y) * wall.direction.y;
+    return Math.max(0, Math.min(wall.lengthMm, Math.round(t / 10) * 10));
+  };
 
   // Drag to pan (mm per pixel derives from the current viewBox).
   const onPointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
@@ -224,6 +243,11 @@ export const FloorPlanSvg: FC<{
     event.currentTarget.setPointerCapture(event.pointerId);
   };
   const onPointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
+    if (spanDraw) {
+      const wall = walls.find((w) => w.id === spanDraw.wallId);
+      if (wall) setSpanDraw({ ...spanDraw, currentMm: toWallMm(wall, event) });
+      return;
+    }
     const drag = dragRef.current;
     const svg = svgRef.current;
     if (!drag || !svg) return;
@@ -234,6 +258,12 @@ export const FloorPlanSvg: FC<{
     });
   };
   const onPointerUp = () => {
+    if (spanDraw && onDrawSpan) {
+      const fromMm = Math.min(spanDraw.startMm, spanDraw.currentMm);
+      const toMm = Math.max(spanDraw.startMm, spanDraw.currentMm);
+      if (toMm - fromMm >= 100) onDrawSpan(spanDraw.wallId, fromMm, toMm);
+    }
+    setSpanDraw(null);
     dragRef.current = null;
   };
 
@@ -310,8 +340,60 @@ export const FloorPlanSvg: FC<{
           shutterThickness + LABEL_CLEARANCE_MM + NUMBER_CLEARANCE_MM
         );
         const isDimmed = focusWallId !== null && focusWallId !== wall.id;
+        const preview =
+          spanDraw && spanDraw.wallId === wall.id
+            ? {
+                fromMm: Math.min(spanDraw.startMm, spanDraw.currentMm),
+                toMm: Math.max(spanDraw.startMm, spanDraw.currentMm)
+              }
+            : null;
         return (
           <g key={wall.id} opacity={isDimmed ? 0.12 : 1}>
+            {onDrawSpan && (
+              /* Wide invisible hit-line: drag along the wall to add an opening. */
+              <line
+                x1={wall.start.x}
+                y1={wall.start.y}
+                x2={wall.end.x}
+                y2={wall.end.y}
+                stroke="transparent"
+                strokeWidth={520}
+                style={{ cursor: 'crosshair' }}
+                onPointerDown={(event) => {
+                  event.stopPropagation();
+                  setSpanDraw({
+                    wallId: wall.id,
+                    startMm: toWallMm(wall, event),
+                    currentMm: toWallMm(wall, event)
+                  });
+                }}
+              >
+                <title>Drag along this wall to add an opening</title>
+              </line>
+            )}
+            {preview && (
+              <>
+                <line
+                  x1={at(wall.start, wall.direction, preview.fromMm, wall.outwardNormal, 0).x}
+                  y1={at(wall.start, wall.direction, preview.fromMm, wall.outwardNormal, 0).y}
+                  x2={at(wall.start, wall.direction, preview.toMm, wall.outwardNormal, 0).x}
+                  y2={at(wall.start, wall.direction, preview.toMm, wall.outwardNormal, 0).y}
+                  stroke="#ff9800"
+                  strokeWidth={160}
+                  opacity={0.8}
+                />
+                <text
+                  x={at(wall.start, wall.direction, (preview.fromMm + preview.toMm) / 2, wall.outwardNormal, -520).x}
+                  y={at(wall.start, wall.direction, (preview.fromMm + preview.toMm) / 2, wall.outwardNormal, -520).y}
+                  fontSize={260}
+                  fontWeight={700}
+                  textAnchor="middle"
+                  fill="#e65100"
+                >
+                  {preview.toMm - preview.fromMm}
+                </text>
+              </>
+            )}
             {/* Shutter boxing: inner face in contact with the slab edge. */}
             <CutBand
               wallStart={wall.start}

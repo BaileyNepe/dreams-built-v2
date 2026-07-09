@@ -60,7 +60,7 @@ export const RebateInsetsEditor: FC<{ wall: Wall }> = ({ wall }) => {
             value={inset.widthMm === 0 ? '' : inset.widthMm}
             disabled={!canEdit}
             sx={{ width: '7.5rem' }}
-            error={inset.widthMm <= 0}
+            placeholder="required"
             onChange={(event) =>
               update(index, {
                 widthMm: Math.max(0, Math.floor(Number(event.target.value) || 0))

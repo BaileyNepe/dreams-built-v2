@@ -49,7 +49,8 @@ export const FloorPlanPanel: FC<{
   rules: JobSheetRules;
   includeInPrint: boolean;
   onIncludeInPrintChange: (value: boolean) => void;
-}> = ({ outline, rules, includeInPrint, onIncludeInPrintChange }) => {
+  onDrawSpan?: (wallId: string, fromMm: number, toMm: number) => void;
+}> = ({ outline, rules, includeInPrint, onIncludeInPrintChange, onDrawSpan }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const hasWalls = outline.walls.length > 0;
 
@@ -113,7 +114,7 @@ export const FloorPlanPanel: FC<{
       <Collapse in={isExpanded} unmountOnExit>
         {hasWalls ? (
           <Box sx={{ width: '100%' }}>
-            <FloorPlanSvg outline={outline} rules={rules} />
+            <FloorPlanSvg outline={outline} rules={rules} onDrawSpan={onDrawSpan} />
           </Box>
         ) : (
           <Typography color="text.secondary" sx={{ p: 2, textAlign: 'center' }}>

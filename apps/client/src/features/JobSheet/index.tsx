@@ -15,6 +15,7 @@ import {
   Typography
 } from '@mui/material';
 import { useClient } from 'api/clients';
+import { notify } from 'libs/Notify';
 import { useCreateJobSheetMutation, useJobSheet } from 'api/jobsheets';
 import { useProject } from 'api/projects';
 import { PrintableContent } from 'components/PrintableContent';
@@ -65,6 +66,33 @@ const JobSheetEditor: FC = () => {
   );
   const [planInPrint, setPlanInPrint] = useState(false);
 
+  // Drag along a wall in the plan to add an opening spanning that range.
+  const handleDrawSpan = (wallId: string, fromMm: number, toMm: number) => {
+    const wall = data.walls.find((w) => w.id === wallId);
+    if (!wall) return;
+    dispatch({
+      type: 'updateWall',
+      id: wallId,
+      patch: {
+        openings: [
+          ...wall.openings,
+          {
+            kind: 'garage_door',
+            widthMm: toMm - fromMm,
+            offsetFromStartMm: fromMm,
+            hasRebate: false,
+            blk: false
+          }
+        ]
+      }
+    });
+    const number = data.walls.findIndex((w) => w.id === wallId) + 1;
+    notify(
+      `Opening added to wall ${number} (${toMm - fromMm}mm) — set its type in the wall panel`,
+      { type: 'success' }
+    );
+  };
+
   return (
     <>
       <JobSheetToolbar onPrint={handlePrint} onPrintBlank={printBlank} />
@@ -79,6 +107,7 @@ const JobSheetEditor: FC = () => {
           rules={rules}
           includeInPrint={planInPrint}
           onIncludeInPrintChange={setPlanInPrint}
+          onDrawSpan={canEdit ? handleDrawSpan : undefined}
         />
       </Box>
 
