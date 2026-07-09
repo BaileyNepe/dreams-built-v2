@@ -37,10 +37,10 @@ const newOpening = (): Opening => ({
 });
 
 /**
- * Openings along a wall (garage doors, sliders, entry doors…). An opening
- * with "Has rebate" unticked splits the wall's rebate run around it — e.g.
- * a rebate wall with a garage door gets no rebate across the door's width.
- * A wall can hold any number of openings (floors with multiple garages).
+ * Openings along a wall (garage doors, sliders, entry doors…). Regular
+ * joinery does NOT stop the brick rebate — the shelf runs through under
+ * it — so "Has rebate" defaults on. Only a garage door breaks the run
+ * (unticked by default). A wall can hold any number of openings.
  */
 export const OpeningsEditor: FC<{ wall: Wall }> = ({ wall }) => {
   const { dispatch, canEdit } = useJobSheetContext();
@@ -75,9 +75,11 @@ export const OpeningsEditor: FC<{ wall: Wall }> = ({ wall }) => {
             value={opening.kind}
             disabled={!canEdit}
             sx={{ width: '9.5rem' }}
-            onChange={(event) =>
-              updateOpening(index, { kind: event.target.value as OpeningKind })
-            }
+            onChange={(event) => {
+              const kind = event.target.value as OpeningKind;
+              // Only garage doors stop the brick rebate.
+              updateOpening(index, { kind, hasRebate: kind !== 'garage_door' });
+            }}
           >
             {Object.entries(KIND_LABELS).map(([value, label]) => (
               <MenuItem key={value} value={value}>

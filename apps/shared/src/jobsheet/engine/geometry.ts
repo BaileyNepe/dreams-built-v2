@@ -140,7 +140,7 @@ const BLK_THICKNESS_MM = 65;
 
 const placeRebate = (
   wall: Wall,
-  neighbours: { prev?: Wall; next?: Wall },
+  neighbours: { prev?: Wall; next?: Wall; isFirst?: boolean; isLast?: boolean },
   computedWall: ComputedWall,
   rules: JobSheetRules
 ): PlacedRebateSegment[] => {
@@ -409,7 +409,9 @@ export const computeFloorOutline = (
         wall,
         {
           prev: data.walls[(index - 1 + data.walls.length) % data.walls.length],
-          next: data.walls[(index + 1) % data.walls.length]
+          next: data.walls[(index + 1) % data.walls.length],
+          isFirst: index === 0,
+          isLast: index === data.walls.length - 1
         },
         computedWall,
         rules
