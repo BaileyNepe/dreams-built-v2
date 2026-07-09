@@ -84,10 +84,10 @@ const CutBand: FC<{
       // spanning the band width at the step face.
       if (placed.perpendicular) {
         const station = (placed.fromMm + placed.toMm) / 2;
-        // The BLK spans the slab step: from the outer band's face down to
-        // the inset line.
-        const inner = at(wallStart, direction, station, normal, centreOffsetMm + thicknessMm / 2 - stepDepthMm - thicknessMm);
-        const outer = at(wallStart, direction, station, normal, centreOffsetMm + thicknessMm / 2);
+        // The BLK is a rebate-width block: it spans exactly the slab step,
+        // from the outer edge line down to the inset line.
+        const inner = at(wallStart, direction, station, normal, -stepDepthMm);
+        const outer = at(wallStart, direction, station, normal, 0);
         const labelAt = at(wallStart, direction, station, normal, labelOffsetMm);
         return (
           // eslint-disable-next-line react/no-array-index-key
@@ -218,6 +218,8 @@ export const FloorPlanSvg: FC<{
 
   // Drag to pan (mm per pixel derives from the current viewBox).
   const onPointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
+    // Text elements (wall numbers) keep their click behaviour.
+    if ((event.target as Element).tagName === 'text') return;
     dragRef.current = { x: event.clientX, y: event.clientY, panX: pan.x, panY: pan.y };
     event.currentTarget.setPointerCapture(event.pointerId);
   };

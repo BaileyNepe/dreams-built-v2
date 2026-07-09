@@ -32,6 +32,7 @@ export const emptyWall = (id: string): Wall => ({
   blkAtStart: false,
   blkAtEnd: false,
   openings: [],
+  rebateInsets: [],
   polystyreneOverride: null,
   angledCornerDeg: null,
   isGarageDoorWall: false,
@@ -51,6 +52,7 @@ export type JobSheetAction =
   | { type: 'updateItem'; section: SectionKey; id: string; patch: Partial<SheetItem> }
   | { type: 'removeItem'; section: SectionKey; id: string }
   | { type: 'setNotes'; notes: string }
+  | { type: 'setRebatesEnabled'; value: boolean }
   | { type: 'replaceAll'; data: JobSheetData };
 
 export const jobSheetReducer = (
@@ -149,10 +151,90 @@ export const jobSheetReducer = (
     case 'setNotes':
       return { ...state, notes: action.notes };
 
+    case 'setRebatesEnabled':
+      return { ...state, rebatesEnabled: action.value };
+
     case 'replaceAll':
       return action.data;
 
     default:
       return state;
   }
+};
+
+
+/* ------------------------------------------------------------------ */
+/* Undo / redo                                                          */
+/* ------------------------------------------------------------------ */
+
+export type HistoryAction = JobSheetAction | { type: 'undo' } | { type: 'redo' };
+
+export type SheetHistory = {
+  past: JobSheetData[];
+  present: JobSheetData;
+  future: JobSheetData[];
+  /** Merge key of the previous edit, so typing coalesces into one step. */
+  lastEdit: string | null;
+};
+
+const HISTORY_LIMIT = 50;
+
+/** Consecutive edits with the same key merge into a single undo step. */
+const editKey = (action: JobSheetAction): string | null => {
+  switch (action.type) {
+    case 'updateWall':
+      return `updateWall:${action.id}:${Object.keys(action.patch).sort().join(',')}`;
+    case 'updateItem':
+      return `updateItem:${action.section}:${action.id}:${Object.keys(action.patch)
+        .sort()
+        .join(',')}`;
+    case 'setNotes':
+      return 'setNotes';
+    default:
+      return null;
+  }
+};
+
+export const initialHistory = (present: JobSheetData): SheetHistory => ({
+  past: [],
+  present,
+  future: [],
+  lastEdit: null
+});
+
+export const historyReducer = (
+  state: SheetHistory,
+  action: HistoryAction
+): SheetHistory => {
+  if (action.type === 'undo') {
+    if (state.past.length === 0) return state;
+    const previous = state.past[state.past.length - 1];
+    return {
+      past: state.past.slice(0, -1),
+      present: previous,
+      future: [state.present, ...state.future],
+      lastEdit: null
+    };
+  }
+  if (action.type === 'redo') {
+    if (state.future.length === 0) return state;
+    const [next, ...rest] = state.future;
+    return {
+      past: [...state.past, state.present],
+      present: next,
+      future: rest,
+      lastEdit: null
+    };
+  }
+
+  const present = jobSheetReducer(state.present, action);
+  if (present === state.present) return state;
+  const key = editKey(action);
+  const merge = key !== null && key === state.lastEdit;
+  return {
+    past: merge ? state.past : [...state.past.slice(-(HISTORY_LIMIT - 1)), state.present],
+    present,
+    future: [],
+    lastEdit: key
+  };
 };

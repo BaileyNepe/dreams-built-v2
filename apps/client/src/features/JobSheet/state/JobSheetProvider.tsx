@@ -19,7 +19,11 @@ import {
   type PropsWithChildren
 } from 'react';
 import { readDraft } from './draftStorage';
-import { jobSheetReducer, type JobSheetAction } from './jobSheetReducer';
+import {
+  historyReducer,
+  initialHistory,
+  type JobSheetAction
+} from './jobSheetReducer';
 import { useAutosave, type SaveStatus } from './useAutosave';
 
 /** The sheet row as served by jobSheets.getByProject / restoreSnapshot. */
@@ -40,6 +44,10 @@ type JobSheetContextValue = {
   canEdit: boolean;
   saveStatus: SaveStatus;
   retrySave: () => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
   /**
    * Adopt a sheet state the server just produced (snapshot restore, rules
    * refresh) without remounting the editor.
@@ -82,7 +90,8 @@ export const JobSheetProvider: FC<
     return { data: serverData, fromDraft: false };
   });
 
-  const [data, dispatch] = useReducer(jobSheetReducer, initial.data);
+  const [history, dispatch] = useReducer(historyReducer, initial.data, initialHistory);
+  const data = history.present;
   const [rules, setRules] = useState<JobSheetRules>(() =>
     jobSheetRulesSchema.parse(sheet.rules)
   );
@@ -115,6 +124,10 @@ export const JobSheetProvider: FC<
       canEdit,
       saveStatus: status,
       retrySave: retry,
+      undo: () => dispatch({ type: 'undo' }),
+      redo: () => dispatch({ type: 'redo' }),
+      canUndo: history.past.length > 0,
+      canRedo: history.future.length > 0,
       applyServerSheet: (serverSheet) => {
         setRevision(serverSheet.revision);
         setRules(jobSheetRulesSchema.parse(serverSheet.rules));
@@ -125,8 +138,30 @@ export const JobSheetProvider: FC<
       }
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [sheet.id, projectId, data, rules, computed, canEdit, status]
+    [
+      sheet.id,
+      projectId,
+      data,
+      rules,
+      computed,
+      canEdit,
+      status,
+      history.past.length,
+      history.future.length
+    ]
   );
+
+  // Cmd/Ctrl+Z to undo, Shift+Cmd/Ctrl+Z to redo.
+  useEffect(() => {
+    if (!canEdit) return undefined;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 'z') return;
+      event.preventDefault();
+      dispatch({ type: event.shiftKey ? 'redo' : 'undo' });
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [canEdit]);
 
   return <JobSheetContext.Provider value={value}>{children}</JobSheetContext.Provider>;
 };

@@ -187,6 +187,7 @@ describe('computeShutterRunLength', () => {
     blkAtStart: false,
     blkAtEnd: false,
     openings: [],
+    rebateInsets: [],
     polystyreneOverride: null,
     angledCornerDeg: null,
     isGarageDoorWall: false,

@@ -23,6 +23,7 @@ const wall = (id: string, lengthMm: number, patch: Partial<Wall> = {}): Wall => 
   blkAtStart: false,
   blkAtEnd: false,
   openings: [],
+  rebateInsets: [],
   polystyreneOverride: null,
   angledCornerDeg: null,
   isGarageDoorWall: false,
@@ -33,6 +34,7 @@ const wall = (id: string, lengthMm: number, patch: Partial<Wall> = {}): Wall => 
 
 const sheetOf = (walls: Wall[]): JobSheetData => ({
   system: 'PROBASE',
+  rebatesEnabled: true,
   walls,
   joinery: [],
   showerBoxes: [],

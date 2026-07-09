@@ -44,7 +44,9 @@ export const BreakdownCell: FC<{
   shutters?: PackedRun;
   rebateRuns?: PackedRun[];
   isOverridden?: boolean;
-}> = ({ section, shutters, rebateRuns, isOverridden = false }) => {
+  /** Click-to-edit: opens the manual override editor. */
+  onEdit?: () => void;
+}> = ({ section, shutters, rebateRuns, isOverridden = false, onEdit }) => {
   const isEmpty =
     section === 'shutters'
       ? (shutters?.cuts.length ?? 0) === 0
@@ -53,12 +55,17 @@ export const BreakdownCell: FC<{
   return (
     <Box
       data-testid={`breakdown-${section}`}
+      onClick={onEdit}
+      title={onEdit ? 'Click to edit this breakdown by hand' : undefined}
       sx={{
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
         gap: 0.5,
-        minHeight: 32
+        minHeight: 32,
+        cursor: onEdit ? 'pointer' : undefined,
+        borderRadius: 1,
+        '&:hover': onEdit ? { outline: '1px dashed', outlineColor: 'divider' } : undefined
       }}
     >
       {isOverridden && (

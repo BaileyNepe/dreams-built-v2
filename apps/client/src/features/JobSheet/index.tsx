@@ -1,5 +1,7 @@
 import { authz } from '@dreams-built/shared/src/auth/permissions';
+import { computeJobSheet } from '@dreams-built/shared/src/jobsheet/engine/computeSheet';
 import { computeFloorOutline } from '@dreams-built/shared/src/jobsheet/engine/geometry';
+import { jobSheetDataSchema } from '@dreams-built/shared/src/jobsheet/types';
 import DescriptionIcon from '@mui/icons-material/Description';
 import { ChevronLeft } from '@mui/icons-material';
 import {
@@ -28,6 +30,7 @@ import { JobSheetHeader } from './JobSheetHeader';
 import { JobSheetToolbar } from './JobSheetToolbar';
 import { SectionItems } from './SectionItems';
 import { SheetView } from './SheetView';
+import { emptyWall } from './state/jobSheetReducer';
 import { useJobSheetContext, JobSheetProvider } from './state/JobSheetProvider';
 import { TallyPanel } from './TallyPanel';
 import { WallTable } from './WallTable';
@@ -37,9 +40,24 @@ const JobSheetEditor: FC = () => {
   const { projectId, data, rules, computed, dispatch, canEdit } = useJobSheetContext();
   const project = useProject(projectId);
   const client = useClient(project.clientId);
+  const [printMode, setPrintMode] = useState<'live' | 'blank'>('live');
   const { printRef, handlePrint } = usePrint<HTMLDivElement>({
-    isPrimaryContent: true
+    isPrimaryContent: true,
+    onAfterPrint: () => setPrintMode('live')
   });
+
+  // A hand-fill template: 16 empty numbered rows, empty tallies and boxes.
+  const blank = useMemo(() => {
+    const blankData = jobSheetDataSchema.parse({
+      walls: Array.from({ length: 16 }, (_, i) => emptyWall(`blank-${i}`))
+    });
+    return { data: blankData, computed: computeJobSheet(blankData, rules) };
+  }, [rules]);
+  const printBlank = () => {
+    setPrintMode('blank');
+    // Let React commit the blank sheet into the printable subtree first.
+    setTimeout(handlePrint, 60);
+  };
 
   const outline = useMemo(
     () => computeFloorOutline(data, computed, rules),
@@ -49,7 +67,7 @@ const JobSheetEditor: FC = () => {
 
   return (
     <>
-      <JobSheetToolbar onPrint={handlePrint} />
+      <JobSheetToolbar onPrint={handlePrint} onPrintBlank={printBlank} />
       <JobSheetHeader />
       <Divider sx={{ my: 2 }} />
 
@@ -95,11 +113,11 @@ const JobSheetEditor: FC = () => {
         <SheetView
           headerText={`${client.name} - ${project.address}, ${project.city}`}
           jobNumber={project.jobNumber}
-          data={data}
+          data={printMode === 'blank' ? blank.data : data}
           rules={rules}
-          computed={computed}
+          computed={printMode === 'blank' ? blank.computed : computed}
         />
-        {planInPrint && outline.walls.length > 0 && (
+        {printMode === 'live' && planInPrint && outline.walls.length > 0 && (
           <div style={{ breakInside: 'avoid', paddingTop: '4mm' }}>
             <FloorPlanSvg outline={outline} rules={rules} />
           </div>

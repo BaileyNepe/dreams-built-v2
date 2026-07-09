@@ -46,14 +46,22 @@ export const computeRebateSegments = (
     return [];
   }
 
-  // Insert breaks for every non-rebated opening, ignoring the parts of an
-  // opening that fall outside the run.
-  const breaks = wall.openings
-    .filter((o) => !o.hasRebate)
-    .map((o) => ({
-      start: Math.max(o.offsetFromStartMm, start),
-      end: Math.min(o.offsetFromStartMm + o.widthMm, end),
-      blk: o.blk
+  // Breaks: non-rebated openings (joinery — plain splits) and rebate
+  // insets (slab-edge steps — BLK-capped), clipped to the run.
+  const breaks = [
+    ...wall.openings
+      .filter((o) => !o.hasRebate)
+      .map((o) => ({ from: o.offsetFromStartMm, width: o.widthMm, blk: false })),
+    ...wall.rebateInsets.map((inset) => ({
+      from: inset.offsetFromStartMm,
+      width: inset.widthMm,
+      blk: true
+    }))
+  ]
+    .map((b) => ({
+      start: Math.max(b.from, start),
+      end: Math.min(b.from + b.width, end),
+      blk: b.blk
     }))
     .filter((b) => b.end > b.start)
     .sort((a, b) => a.start - b.start);

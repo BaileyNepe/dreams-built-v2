@@ -30,6 +30,7 @@ const baseWall: Wall = {
   blkAtStart: false,
   blkAtEnd: false,
   openings: [],
+  rebateInsets: [],
   polystyreneOverride: null,
   angledCornerDeg: null,
   isGarageDoorWall: false,
@@ -246,15 +247,7 @@ describe('partial-rebate wall (Bailey wall-5 diagram)', () => {
     rebateExtendAtStart: null,
     rebateExtendAtEnd: null,
     overhangCapAtEnd: null,
-    openings: [
-      {
-        kind: 'other',
-        widthMm: 2400,
-        offsetFromStartMm: 1800,
-        hasRebate: false,
-        blk: true
-      }
-    ]
+    rebateInsets: [{ offsetFromStartMm: 1800, widthMm: 2400 }]
   };
   const next: Wall = { ...baseWall, id: 'w6', hasRebate: false };
 
@@ -275,6 +268,33 @@ describe('partial-rebate wall (Bailey wall-5 diagram)', () => {
     expect(w.rebate.map((run) => run.cuts.map(formatCut))).toEqual([
       ['1200', '480'], // 1800 − 120 for the previous wall's crossing strip
       ['1800']
+    ]);
+  });
+});
+
+describe('brick terminating mid-wall (inset to the frame line at the corner)', () => {
+  it('one BLK at the transition; inset pieces run to the corner', () => {
+    const wall: Wall = {
+      ...baseWall,
+      id: 'w9',
+      lengthMm: 6000,
+      absorbShutterAtStart: null,
+      absorbShutterAtEnd: null,
+      rebateOffsetAtStart: null,
+      rebateOffsetAtEnd: null,
+      rebateExtendAtStart: null,
+      rebateExtendAtEnd: null,
+      overhangCapAtEnd: null,
+      // Brick covers the first 3600; the rest insets to the wall end.
+      rebateInsets: [{ offsetFromStartMm: 3600, widthMm: 2400 }]
+    };
+    const w = computeWall(wall, 0, rules, { prev: baseWall, next: baseWall });
+    // Outer board covers 3600 + 65 -> promoted to 4200; single BLK; the
+    // inset run (2400 - 65 = 2335, open at the external corner) overhangs.
+    expect(w.shutters.cuts.map(formatCut)).toEqual(['4200', 'BLK', '2400']);
+    // Rebate stops at the brick line: 3600 - 120 (previous wall) = 3480.
+    expect(w.rebate.map((run) => run.cuts.map(formatCut))).toEqual([
+      ['3000', '480']
     ]);
   });
 });

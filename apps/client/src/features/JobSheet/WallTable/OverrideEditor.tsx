@@ -17,7 +17,7 @@ import {
   Typography
 } from '@mui/material';
 import BasicModal from 'components/Modal';
-import { useState, type FC } from 'react';
+import { useEffect, useState, type FC } from 'react';
 import { useJobSheetContext } from '../state/JobSheetProvider';
 
 type CutDraft = Cut;
@@ -139,11 +139,14 @@ export const OverrideEditor: FC<{
   const [shutterCuts, setShutterCuts] = useState<CutDraft[]>([]);
   const [rebateRuns, setRebateRuns] = useState<CutDraft[][]>([]);
 
-  const openSeeded = () => {
+  // Seed the drafts whenever the editor opens (from the button or by
+  // clicking a breakdown chip).
+  useEffect(() => {
+    if (!isOpen) return;
     setShutterCuts(wall.override?.shutterCuts ?? computed.shutters.cuts);
     setRebateRuns(wall.override?.rebateRuns ?? computed.rebate.map((run) => run.cuts));
-    onOpen();
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   const isValid =
     shutterCuts.every((cut) => cut.lengthMm > 0) &&
@@ -165,7 +168,7 @@ export const OverrideEditor: FC<{
   return (
     <>
       <Box sx={{ display: 'flex', gap: 1 }}>
-        <Button size="small" variant="outlined" disabled={!canEdit} onClick={openSeeded}>
+        <Button size="small" variant="outlined" disabled={!canEdit} onClick={onOpen}>
           {wall.override ? 'Edit override' : 'Override breakdown'}
         </Button>
         {wall.override && (

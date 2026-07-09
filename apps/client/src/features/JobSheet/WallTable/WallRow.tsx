@@ -12,6 +12,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import {
   Box,
+  Button,
   Checkbox,
   Collapse,
   FormControlLabel,
@@ -27,6 +28,7 @@ import { useJobSheetContext } from '../state/JobSheetProvider';
 import { BreakdownCell } from './BreakdownCell';
 import { OpeningsEditor } from './OpeningsEditor';
 import { OverrideEditor } from './OverrideEditor';
+import { RebateInsetsEditor } from './RebateInsetsEditor';
 
 const Row = styled.div`
   align-items: center;
@@ -85,6 +87,7 @@ export const WallRow: FC<{
   const auto = (flag: boolean | null) => (flag === null ? ' (auto)' : '');
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOverrideOpen, setIsOverrideOpen] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   // Move focus into a freshly added row so measurements can be typed
   // one after another without reaching for the mouse.
@@ -170,12 +173,25 @@ export const WallRow: FC<{
           section="shutters"
           shutters={computed.shutters}
           isOverridden={computed.isOverridden}
+          onEdit={canEdit ? () => setIsOverrideOpen(true) : undefined}
         />
-        <BreakdownCell
-          section="rebate"
-          rebateRuns={computed.rebate}
-          isOverridden={computed.isOverridden}
-        />
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <Tooltip title="Brick rebate on/off for this wall">
+            <Checkbox
+              size="small"
+              checked={wall.hasRebate && data.rebatesEnabled}
+              disabled={!canEdit || !data.rebatesEnabled}
+              inputProps={{ 'aria-label': `Wall ${computed.number} rebate on/off` }}
+              onChange={(event) => patch({ hasRebate: event.target.checked })}
+            />
+          </Tooltip>
+          <BreakdownCell
+            section="rebate"
+            rebateRuns={computed.rebate}
+            isOverridden={computed.isOverridden}
+            onEdit={canEdit ? () => setIsOverrideOpen(true) : undefined}
+          />
+        </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           {computed.warnings.length > 0 && (
@@ -210,119 +226,6 @@ export const WallRow: FC<{
 
       <Collapse in={isExpanded} unmountOnExit>
         <DetailPanel>
-          <FormControlLabel
-            control={
-              <Checkbox
-                size="small"
-                checked={wall.hasRebate}
-                disabled={!canEdit}
-                onChange={(event) => patch({ hasRebate: event.target.checked })}
-              />
-            }
-            label="Has rebate"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                size="small"
-                checked={ends.rebate.offsetAtStart}
-                disabled={!canEdit || !wall.hasRebate}
-                onChange={(event) => patch({ rebateOffsetAtStart: event.target.checked })}
-              />
-            }
-            label={`−${rules.rebateWidthMm} at start${auto(wall.rebateOffsetAtStart)}`}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                size="small"
-                checked={ends.rebate.offsetAtEnd}
-                disabled={!canEdit || !wall.hasRebate}
-                onChange={(event) => patch({ rebateOffsetAtEnd: event.target.checked })}
-              />
-            }
-            label={`−${rules.rebateWidthMm} at end${auto(wall.rebateOffsetAtEnd)}`}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                size="small"
-                checked={ends.rebate.extendAtStart}
-                disabled={!canEdit || !wall.hasRebate}
-                onChange={(event) => patch({ rebateExtendAtStart: event.target.checked })}
-              />
-            }
-            label={`+${rules.rebateWidthMm} at start${auto(wall.rebateExtendAtStart)}`}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                size="small"
-                checked={ends.rebate.extendAtEnd}
-                disabled={!canEdit || !wall.hasRebate}
-                onChange={(event) => patch({ rebateExtendAtEnd: event.target.checked })}
-              />
-            }
-            label={`+${rules.rebateWidthMm} at end${auto(wall.rebateExtendAtEnd)}`}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                size="small"
-                checked={ends.absorbAtStart}
-                disabled={!canEdit}
-                onChange={(event) =>
-                  patch({ absorbShutterAtStart: event.target.checked })
-                }
-              />
-            }
-            label={`Absorb ${rules.shutterThicknessMm}mm at start${auto(wall.absorbShutterAtStart)}`}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                size="small"
-                checked={ends.absorbAtEnd}
-                disabled={!canEdit}
-                onChange={(event) => patch({ absorbShutterAtEnd: event.target.checked })}
-              />
-            }
-            label={`Absorb ${rules.shutterThicknessMm}mm at end${auto(wall.absorbShutterAtEnd)}`}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                size="small"
-                checked={ends.overhangCapAtEnd}
-                disabled={!canEdit}
-                onChange={(event) => patch({ overhangCapAtEnd: event.target.checked })}
-              />
-            }
-            label={`Overhang cap at end${auto(wall.overhangCapAtEnd)}`}
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                size="small"
-                checked={wall.blkAtStart}
-                disabled={!canEdit}
-                onChange={(event) => patch({ blkAtStart: event.target.checked })}
-              />
-            }
-            label="BLK at start"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                size="small"
-                checked={wall.blkAtEnd}
-                disabled={!canEdit}
-                onChange={(event) => patch({ blkAtEnd: event.target.checked })}
-              />
-            }
-            label="BLK at end"
-          />
-
           <TextField
             select
             size="small"
@@ -349,20 +252,6 @@ export const WallRow: FC<{
 
           <TextField
             size="small"
-            type="number"
-            label="Corner angle °"
-            value={wall.angledCornerDeg ?? ''}
-            disabled={!canEdit}
-            sx={{ width: '8.5rem' }}
-            onChange={(event) => {
-              const raw = event.target.value;
-              patch({ angledCornerDeg: raw === '' ? null : Number(raw) });
-            }}
-            helperText="Only for non-90° corners"
-          />
-
-          <TextField
-            size="small"
             label="Notes"
             value={wall.notes}
             disabled={!canEdit}
@@ -378,7 +267,131 @@ export const WallRow: FC<{
             onClose={() => setIsOverrideOpen(false)}
           />
 
+          <RebateInsetsEditor wall={wall} />
+
           <OpeningsEditor wall={wall} />
+
+          <Box sx={{ width: '100%' }}>
+            <Button size="small" onClick={() => setShowAdvanced((prev) => !prev)}>
+              {showAdvanced ? 'Hide' : 'Show'} advanced corner adjustments (auto-managed)
+            </Button>
+            <Collapse in={showAdvanced} unmountOnExit>
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '0.5rem 1.5rem',
+                  alignItems: 'center',
+                  pt: 1
+                }}
+              >
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={ends.rebate.offsetAtStart}
+                      disabled={!canEdit || !wall.hasRebate}
+                      onChange={(event) =>
+                        patch({ rebateOffsetAtStart: event.target.checked })
+                      }
+                    />
+                  }
+                  label={`−${rules.rebateWidthMm} at start${auto(wall.rebateOffsetAtStart)}`}
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={ends.rebate.offsetAtEnd}
+                      disabled={!canEdit || !wall.hasRebate}
+                      onChange={(event) =>
+                        patch({ rebateOffsetAtEnd: event.target.checked })
+                      }
+                    />
+                  }
+                  label={`−${rules.rebateWidthMm} at end${auto(wall.rebateOffsetAtEnd)}`}
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={ends.rebate.extendAtStart}
+                      disabled={!canEdit || !wall.hasRebate}
+                      onChange={(event) =>
+                        patch({ rebateExtendAtStart: event.target.checked })
+                      }
+                    />
+                  }
+                  label={`+${rules.rebateWidthMm} at start${auto(wall.rebateExtendAtStart)}`}
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={ends.rebate.extendAtEnd}
+                      disabled={!canEdit || !wall.hasRebate}
+                      onChange={(event) =>
+                        patch({ rebateExtendAtEnd: event.target.checked })
+                      }
+                    />
+                  }
+                  label={`+${rules.rebateWidthMm} at end${auto(wall.rebateExtendAtEnd)}`}
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={ends.absorbAtStart}
+                      disabled={!canEdit}
+                      onChange={(event) =>
+                        patch({ absorbShutterAtStart: event.target.checked })
+                      }
+                    />
+                  }
+                  label={`Absorb ${rules.shutterThicknessMm}mm at start${auto(wall.absorbShutterAtStart)}`}
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={ends.absorbAtEnd}
+                      disabled={!canEdit}
+                      onChange={(event) =>
+                        patch({ absorbShutterAtEnd: event.target.checked })
+                      }
+                    />
+                  }
+                  label={`Absorb ${rules.shutterThicknessMm}mm at end${auto(wall.absorbShutterAtEnd)}`}
+                />
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      size="small"
+                      checked={ends.overhangCapAtEnd}
+                      disabled={!canEdit}
+                      onChange={(event) =>
+                        patch({ overhangCapAtEnd: event.target.checked })
+                      }
+                    />
+                  }
+                  label={`Overhang cap at end${auto(wall.overhangCapAtEnd)}`}
+                />
+                <TextField
+                  size="small"
+                  type="number"
+                  label="Corner angle °"
+                  value={wall.angledCornerDeg ?? ''}
+                  disabled={!canEdit}
+                  sx={{ width: '8.5rem' }}
+                  onChange={(event) => {
+                    const raw = event.target.value;
+                    patch({ angledCornerDeg: raw === '' ? null : Number(raw) });
+                  }}
+                  helperText="Only for non-90° corners"
+                />
+              </Box>
+            </Collapse>
+          </Box>
         </DetailPanel>
       </Collapse>
     </div>

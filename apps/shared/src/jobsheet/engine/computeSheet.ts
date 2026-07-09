@@ -136,8 +136,8 @@ export const computeWall = (
   // span − 2×BLK, packed exactly, its shorts polystyrene-padded (the
   // channel is enclosed at both ends).
   const blkSpans = wall.hasRebate
-    ? [...wall.openings]
-        .filter((o) => !o.hasRebate && o.blk && o.widthMm > 0)
+    ? [...wall.rebateInsets]
+        .filter((inset) => inset.widthMm > 0)
         .sort((a, b) => a.offsetFromStartMm - b.offsetFromStartMm)
     : [];
 
@@ -145,37 +145,63 @@ export const computeWall = (
   if (effective > 0 && blkSpans.length > 0) {
     const thickness = rules.shutterThicknessMm;
     const cuts: Cut[] = [];
-    let cursor = 0;
-    blkSpans.forEach((opening, k) => {
-      const portion =
-        opening.offsetFromStartMm - cursor - (k === 0 && ends.absorbAtStart ? thickness : 0);
-      const board = packRun(
-        Math.max(0, portion + thickness),
-        { overhangAtEnd: true, polystyreneShort: polystyrene },
-        rules
-      );
-      cuts.push(...board.cuts, blkCut(rules));
+    let cursor = ends.absorbAtStart ? thickness : 0;
+    blkSpans.forEach((span) => {
+      const spanStart = Math.max(0, span.offsetFromStartMm);
+      const spanEnd = Math.min(wall.lengthMm, span.offsetFromStartMm + span.widthMm);
+      const leadingBlk = spanStart > cursor;
+      const trailingBlk = spanEnd < wall.lengthMm;
+      if (leadingBlk) {
+        // Outer board over the brick portion, covering the BLK; may overhang.
+        const board = packRun(
+          Math.max(0, spanStart - cursor + thickness),
+          { overhangAtEnd: true, polystyreneShort: polystyrene },
+          rules
+        );
+        cuts.push(...board.cuts, blkCut(rules));
+      }
+      // Inset run along the frame line; enclosed ends get poly shorts. A
+      // span running to the wall end is open at the corner instead.
+      const insetLength =
+        spanEnd -
+        spanStart -
+        (leadingBlk ? thickness : 0) -
+        (trailingBlk ? thickness : 0);
       const inset = packRun(
-        Math.max(0, opening.widthMm - 2 * thickness),
-        { overhangAtEnd: false, polystyreneShort: true },
+        Math.max(0, insetLength),
+        {
+          overhangAtEnd: !trailingBlk && wall.cornerEnd === 'external',
+          polystyreneShort: true,
+          angleDeg: trailingBlk ? null : wall.angledCornerDeg
+        },
         rules
       );
-      cuts.push(...inset.cuts, blkCut(rules));
-      cursor = opening.offsetFromStartMm + opening.widthMm;
+      cuts.push(...inset.cuts);
+      if (trailingBlk) cuts.push(blkCut(rules));
+      cursor = spanEnd - (trailingBlk ? thickness : 0);
     });
-    const lastPortion =
-      wall.lengthMm - cursor - (ends.absorbAtEnd ? thickness : 0);
-    const lastBoard = packRun(
-      Math.max(0, lastPortion + thickness + capExtra),
-      {
-        overhangAtEnd: wall.cornerEnd === 'external',
-        polystyreneShort: polystyrene,
-        angleDeg: wall.angledCornerDeg
-      },
-      rules
-    );
-    cuts.push(...lastBoard.cuts);
-    shutters = { effectiveLengthMm: effective, cuts, overhangMm: lastBoard.overhangMm + capExtra };
+    if (cursor < wall.lengthMm) {
+      const lastBoard = packRun(
+        Math.max(
+          0,
+          wall.lengthMm - cursor - (ends.absorbAtEnd ? thickness : 0) + capExtra
+        ),
+        {
+          overhangAtEnd: wall.cornerEnd === 'external',
+          polystyreneShort: polystyrene,
+          angleDeg: wall.angledCornerDeg
+        },
+        rules
+      );
+      cuts.push(...lastBoard.cuts);
+      shutters = {
+        effectiveLengthMm: effective,
+        cuts,
+        overhangMm: lastBoard.overhangMm + capExtra
+      };
+    } else {
+      shutters = { effectiveLengthMm: effective, cuts, overhangMm: 0 };
+    }
   } else {
     const packed = packRun(
       effective + capExtra,
@@ -218,10 +244,13 @@ export const computeJobSheet = (
   data: JobSheetData,
   rules: JobSheetRules
 ): ComputedSheet => {
-  const walls = data.walls.map((wall, index) =>
+  const sourceWalls = data.rebatesEnabled
+    ? data.walls
+    : data.walls.map((wall) => ({ ...wall, hasRebate: false }));
+  const walls = sourceWalls.map((wall, index) =>
     computeWall(wall, index, rules, {
-      prev: data.walls[(index - 1 + data.walls.length) % data.walls.length],
-      next: data.walls[(index + 1) % data.walls.length]
+      prev: sourceWalls[(index - 1 + sourceWalls.length) % sourceWalls.length],
+      next: sourceWalls[(index + 1) % sourceWalls.length]
     })
   );
   const perimeterMm = data.walls.reduce((acc, w) => acc + w.lengthMm, 0);

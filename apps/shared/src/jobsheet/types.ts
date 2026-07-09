@@ -65,14 +65,22 @@ export const openingSchema = z.object({
   /** Measured from the wall's start corner (shared with the previous wall). */
   offsetFromStartMm: z.number().int().nonnegative(),
   hasRebate: z.boolean(),
-  /**
-   * Cap the rebate channel ends with BLK insets where this opening breaks
-   * the run (mid-wall brick transitions). The adjacent rebate pieces may
-   * overhang to the cap, since the BLK sits wherever they end.
-   */
+  /** Deprecated: inset transitions are modelled by wall.rebateInsets now. */
   blk: z.boolean().default(false),
   label: z.string().optional()
 });
+
+/**
+ * A stretch of a rebate wall where the brick (and its rebate) stops and
+ * the slab edge steps in by one rebate width: the shutter run steps with
+ * it, capped by BLK insets at both transitions. Not joinery — purely a
+ * slab-edge feature.
+ */
+export const rebateInsetSchema = z.object({
+  offsetFromStartMm: z.number().int().nonnegative(),
+  widthMm: z.number().int().positive()
+});
+export type RebateInset = z.infer<typeof rebateInsetSchema>;
 export type Opening = z.infer<typeof openingSchema>;
 
 /** A single piece in a packed run. */
@@ -134,6 +142,7 @@ export const wallSchema = z.object({
   blkAtStart: z.boolean().default(false),
   blkAtEnd: z.boolean().default(false),
   openings: z.array(openingSchema).default([]),
+  rebateInsets: z.array(rebateInsetSchema).default([]),
   /** null = automatic (from the both-ends-internal rule); true/false = forced. */
   polystyreneOverride: z.boolean().nullable().default(null),
   /** Corner angle when the wall meets its neighbour at other than 90 degrees. */
@@ -163,6 +172,8 @@ export type SheetItem = z.infer<typeof sheetItemSchema>;
 export const jobSheetDataSchema = z.object({
   /** Foundation system as written on the sheet, e.g. "PROBASE". */
   system: z.string().default('PROBASE'),
+  /** Quick master switch: off = every wall computes as rebate-free. */
+  rebatesEnabled: z.boolean().default(true),
   /** Array order IS the wall numbering: garage-door wall first, clockwise. */
   walls: z.array(wallSchema).default([]),
   joinery: z.array(sheetItemSchema).default([]),

@@ -137,7 +137,7 @@ const placeRebate = (
   next: Wall | undefined,
   computedWall: ComputedWall,
   rules: JobSheetRules
-): { segments: PlacedRebateSegment[]; insets: InsetSpan[] } => {
+): PlacedRebateSegment[] => {
   const geometric = computeRebateSegments(wall, rules, resolveEnds(wall, { next }).rebate);
   // Overridden walls may have a different number of runs than the geometric
   // segmentation suggests; align what we can and lay the rest sequentially.
@@ -174,17 +174,7 @@ const placeRebate = (
     return { fromMm, toMm, packedEndMm, cuts: [...placed, ...caps] };
   });
 
-  // The slab edge steps in by one rebate width across each BLK-capped gap.
-  const insets: InsetSpan[] = [];
-  for (let i = 0; i < segments.length - 1; i += 1) {
-    if (geometric[i]?.blkAtEnd || geometric[i + 1]?.blkAtStart) {
-      insets.push({
-        fromMm: segments[i].packedEndMm,
-        toMm: segments[i + 1].fromMm - BLK_THICKNESS_MM
-      });
-    }
-  }
-  return { segments, insets };
+  return segments;
 };
 
 /**
@@ -278,10 +268,16 @@ const computeCornerIssues = (
 };
 
 export const computeFloorOutline = (
-  data: JobSheetData,
+  sourceData: JobSheetData,
   computed: ComputedSheet,
   rules: JobSheetRules
 ): FloorOutline => {
+  const data: JobSheetData = sourceData.rebatesEnabled
+    ? sourceData
+    : {
+        ...sourceData,
+        walls: sourceData.walls.map((wall) => ({ ...wall, hasRebate: false }))
+      };
   let position: Point = { x: 0, y: 0 };
   let heading: Point = { x: 1, y: 0 };
 
@@ -311,8 +307,8 @@ export const computeFloorOutline = (
     // pieces laid one rebate-width inside along the stepped slab edge.
     const thickness = rules.shutterThicknessMm;
     const blkSpans = wall.hasRebate
-      ? [...wall.openings]
-          .filter((o) => !o.hasRebate && o.blk && o.widthMm > 0)
+      ? [...wall.rebateInsets]
+          .filter((inset) => inset.widthMm > 0)
           .sort((a, b) => a.offsetFromStartMm - b.offsetFromStartMm)
       : [];
 
@@ -320,8 +316,9 @@ export const computeFloorOutline = (
     if (blkSpans.length === 0) {
       shutterCuts = placeCuts(computedWall.shutters.cuts, absorbOffset);
     } else {
-      // Split the flat cut list into groups at the BLK markers:
-      // [outer, inset, outer, inset, ...] alternating.
+      // Split the flat cut list into groups at the BLK markers and lay each
+      // group on its own line: outer boards on the boundary, inset pieces
+      // one rebate-width in, perpendicular BLKs at the steps.
       const groups: Cut[][] = [[]];
       for (const cut of computedWall.shutters.cuts) {
         if (cut.kind === 'blk') groups.push([]);
@@ -330,33 +327,50 @@ export const computeFloorOutline = (
       shutterCuts = [];
       let cursor = absorbOffset;
       let groupIndex = 0;
-      blkSpans.forEach((opening) => {
-        shutterCuts.push(...placeCuts(groups[groupIndex] ?? [], cursor));
-        groupIndex += 1;
-        shutterCuts.push({
-          cut: { kind: 'blk', lengthMm: rules.blkLengthMm, polystyrene: false },
-          fromMm: opening.offsetFromStartMm,
-          toMm: opening.offsetFromStartMm + thickness,
-          perpendicular: true
-        });
+      blkSpans.forEach((span) => {
+        const spanStart = Math.max(0, span.offsetFromStartMm);
+        const spanEnd = Math.min(wall.lengthMm, span.offsetFromStartMm + span.widthMm);
+        const leadingBlk = spanStart > cursor;
+        const trailingBlk = spanEnd < wall.lengthMm;
+        if (leadingBlk) {
+          shutterCuts.push(...placeCuts(groups[groupIndex] ?? [], cursor));
+          groupIndex += 1;
+          shutterCuts.push({
+            cut: { kind: 'blk', lengthMm: rules.blkLengthMm, polystyrene: false },
+            fromMm: spanStart,
+            toMm: spanStart + thickness,
+            perpendicular: true
+          });
+        }
         shutterCuts.push(
           ...placeCuts(
             groups[groupIndex] ?? [],
-            opening.offsetFromStartMm + thickness
+            spanStart + (leadingBlk ? thickness : 0)
           ).map((placed) => ({ ...placed, insetMm: rules.rebateWidthMm }))
         );
         groupIndex += 1;
-        const spanEnd = opening.offsetFromStartMm + opening.widthMm;
-        shutterCuts.push({
-          cut: { kind: 'blk', lengthMm: rules.blkLengthMm, polystyrene: false },
-          fromMm: spanEnd - thickness,
-          toMm: spanEnd,
-          perpendicular: true
-        });
-        cursor = spanEnd - thickness;
+        if (trailingBlk) {
+          shutterCuts.push({
+            cut: { kind: 'blk', lengthMm: rules.blkLengthMm, polystyrene: false },
+            fromMm: spanEnd - thickness,
+            toMm: spanEnd,
+            perpendicular: true
+          });
+          cursor = spanEnd - thickness;
+        } else {
+          cursor = spanEnd;
+        }
       });
-      shutterCuts.push(...placeCuts(groups[groupIndex] ?? [], cursor));
+      if (cursor < wall.lengthMm) {
+        shutterCuts.push(...placeCuts(groups[groupIndex] ?? [], cursor));
+      }
     }
+
+    // The slab edge steps in across every inset span.
+    const wallInsets: InsetSpan[] = blkSpans.map((span) => ({
+      fromMm: Math.max(0, span.offsetFromStartMm),
+      toMm: Math.min(wall.lengthMm, span.offsetFromStartMm + span.widthMm)
+    }));
 
     walls.push({
       id: wall.id,
@@ -368,15 +382,13 @@ export const computeFloorOutline = (
       direction: heading,
       outwardNormal,
       shutterCuts,
-      ...(() => {
-        const rebate = placeRebate(
-          wall,
-          data.walls[(index + 1) % data.walls.length],
-          computedWall,
-          rules
-        );
-        return { rebateSegments: rebate.segments, insets: rebate.insets };
-      })()
+      rebateSegments: placeRebate(
+        wall,
+        data.walls[(index + 1) % data.walls.length],
+        computedWall,
+        rules
+      ),
+      insets: wallInsets
     });
 
     position = end;

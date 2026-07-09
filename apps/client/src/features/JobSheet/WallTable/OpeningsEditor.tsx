@@ -130,19 +130,6 @@ export const OpeningsEditor: FC<{ wall: Wall }> = ({ wall }) => {
               label="Has rebate"
             />
           </Tooltip>
-          <Tooltip title="Cap the rebate channel ends with BLK insets at this opening (mid-wall brick transitions); the adjacent pieces overhang to the cap">
-            <FormControlLabel
-              control={
-                <Checkbox
-                  size="small"
-                  checked={opening.blk}
-                  disabled={!canEdit || opening.hasRebate}
-                  onChange={(event) => updateOpening(index, { blk: event.target.checked })}
-                />
-              }
-              label="BLK caps"
-            />
-          </Tooltip>
           <TextField
             size="small"
             label="Label"

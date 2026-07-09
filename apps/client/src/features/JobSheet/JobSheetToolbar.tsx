@@ -1,11 +1,23 @@
 import { jobSheetRulesSchema } from '@dreams-built/shared/src/jobsheet/types';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import GridOnIcon from '@mui/icons-material/GridOn';
+import RedoIcon from '@mui/icons-material/Redo';
+import UndoIcon from '@mui/icons-material/Undo';
 import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import HistoryIcon from '@mui/icons-material/History';
 import PrintIcon from '@mui/icons-material/Print';
 import SyncIcon from '@mui/icons-material/Sync';
 import TuneIcon from '@mui/icons-material/Tune';
-import { Box, Button, Chip, CircularProgress, Tooltip } from '@mui/material';
+import {
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  FormControlLabel,
+  IconButton,
+  Switch,
+  Tooltip
+} from '@mui/material';
 import { useActiveRulesQuery, useRefreshRulesMutation } from 'api/jobsheets';
 import { useMemo, useState, type FC } from 'react';
 import { useJobSheetContext } from './state/JobSheetProvider';
@@ -69,9 +81,25 @@ const SaveChip: FC<{ status: SaveStatus; onRetry: () => void }> = ({
   }
 };
 
-export const JobSheetToolbar: FC<{ onPrint: () => void }> = ({ onPrint }) => {
-  const { canEdit, saveStatus, retrySave, sheetId, projectId, rules, applyServerSheet } =
-    useJobSheetContext();
+export const JobSheetToolbar: FC<{ onPrint: () => void; onPrintBlank: () => void }> = ({
+  onPrint,
+  onPrintBlank
+}) => {
+  const {
+    canEdit,
+    saveStatus,
+    retrySave,
+    sheetId,
+    projectId,
+    rules,
+    applyServerSheet,
+    data,
+    dispatch,
+    undo,
+    redo,
+    canUndo,
+    canRedo
+  } = useJobSheetContext();
 
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isRulesOpen, setIsRulesOpen] = useState(false);
@@ -102,6 +130,39 @@ export const JobSheetToolbar: FC<{ onPrint: () => void }> = ({ onPrint }) => {
     >
       <SaveChip status={saveStatus} onRetry={retrySave} />
 
+      {canEdit && (
+        <>
+          <Tooltip title="Undo (Cmd+Z)">
+            <span>
+              <IconButton size="small" onClick={undo} disabled={!canUndo} aria-label="Undo">
+                <UndoIcon fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Redo (Shift+Cmd+Z)">
+            <span>
+              <IconButton size="small" onClick={redo} disabled={!canRedo} aria-label="Redo">
+                <RedoIcon fontSize="small" />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Master switch: off computes every wall without brick rebate">
+            <FormControlLabel
+              control={
+                <Switch
+                  size="small"
+                  checked={data.rebatesEnabled}
+                  onChange={(event) =>
+                    dispatch({ type: 'setRebatesEnabled', value: event.target.checked })
+                  }
+                />
+              }
+              label="Rebates"
+            />
+          </Tooltip>
+        </>
+      )}
+
       {rulesAreStale && canEdit && (
         <Tooltip title="The global rules changed since this sheet was created. Update the sheet to use them (non-overridden walls recompute).">
           <Button
@@ -124,6 +185,11 @@ export const JobSheetToolbar: FC<{ onPrint: () => void }> = ({ onPrint }) => {
       <Button size="small" startIcon={<PrintIcon />} onClick={onPrint}>
         Print
       </Button>
+      <Tooltip title="Print an empty sheet to fill in by hand">
+        <Button size="small" startIcon={<GridOnIcon />} onClick={onPrintBlank}>
+          Blank
+        </Button>
+      </Tooltip>
       <Button
         size="small"
         startIcon={<HistoryIcon />}
