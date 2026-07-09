@@ -1,5 +1,5 @@
 /**
- * Domain model for the ProBase foundation job sheet.
+ * Domain model for the DREAMSBUILT foundation job sheet.
  *
  * Everything is dimensioned in millimetres. Wall ordering follows the trade
  * convention: the first wall in the list is the wall containing the garage
@@ -180,8 +180,8 @@ export type SheetItem = z.infer<typeof sheetItemSchema>;
 /* ------------------------------------------------------------------ */
 
 export const jobSheetDataSchema = z.object({
-  /** Foundation system as written on the sheet, e.g. "PROBASE". */
-  system: z.string().default('PROBASE'),
+  /** Foundation system as written on the sheet, e.g. "DREAMSBUILT". */
+  system: z.string().default('DREAMSBUILT'),
   /** Quick master switch: off = every wall computes as rebate-free. */
   rebatesEnabled: z.boolean().default(true),
   /**
