@@ -19,6 +19,7 @@ import { Route as LandingServicesImport } from './routes/_landing/services'
 import { Route as LandingContactImport } from './routes/_landing/contact'
 import { Route as LandingAboutImport } from './routes/_landing/about'
 import { Route as DashboardDashboardClientsIndexImport } from './routes/_dashboard/dashboard/clients/index'
+import { Route as DashboardDashboardProjectsJobsheetProjectIdImport } from './routes/_dashboard/dashboard/projects/jobsheet.$projectId'
 import { Route as DashboardDashboardProjectsEditProjectIdImport } from './routes/_dashboard/dashboard/projects/edit.$projectId'
 import { Route as DashboardDashboardClientsEditClientIdImport } from './routes/_dashboard/dashboard/clients/edit.$clientId'
 
@@ -212,6 +213,17 @@ const DashboardDashboardClientsCreateLazyRoute =
     ),
   )
 
+const DashboardDashboardProjectsJobsheetProjectIdRoute =
+  DashboardDashboardProjectsJobsheetProjectIdImport.update({
+    id: '/dashboard/projects/jobsheet/$projectId',
+    path: '/dashboard/projects/jobsheet/$projectId',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import(
+      './routes/_dashboard/dashboard/projects/jobsheet.$projectId.lazy'
+    ).then((d) => d.Route),
+  )
+
 const DashboardDashboardProjectsEditProjectIdRoute =
   DashboardDashboardProjectsEditProjectIdImport.update({
     id: '/dashboard/projects/edit/$projectId',
@@ -378,6 +390,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardDashboardProjectsEditProjectIdImport
       parentRoute: typeof DashboardLazyImport
     }
+    '/_dashboard/dashboard/projects/jobsheet/$projectId': {
+      id: '/_dashboard/dashboard/projects/jobsheet/$projectId'
+      path: '/dashboard/projects/jobsheet/$projectId'
+      fullPath: '/dashboard/projects/jobsheet/$projectId'
+      preLoaderRoute: typeof DashboardDashboardProjectsJobsheetProjectIdImport
+      parentRoute: typeof DashboardLazyImport
+    }
   }
 }
 
@@ -397,6 +416,7 @@ interface DashboardLazyRouteChildren {
   DashboardDashboardProjectsIndexLazyRoute: typeof DashboardDashboardProjectsIndexLazyRoute
   DashboardDashboardClientsEditClientIdRoute: typeof DashboardDashboardClientsEditClientIdRoute
   DashboardDashboardProjectsEditProjectIdRoute: typeof DashboardDashboardProjectsEditProjectIdRoute
+  DashboardDashboardProjectsJobsheetProjectIdRoute: typeof DashboardDashboardProjectsJobsheetProjectIdRoute
 }
 
 const DashboardLazyRouteChildren: DashboardLazyRouteChildren = {
@@ -421,6 +441,8 @@ const DashboardLazyRouteChildren: DashboardLazyRouteChildren = {
     DashboardDashboardClientsEditClientIdRoute,
   DashboardDashboardProjectsEditProjectIdRoute:
     DashboardDashboardProjectsEditProjectIdRoute,
+  DashboardDashboardProjectsJobsheetProjectIdRoute:
+    DashboardDashboardProjectsJobsheetProjectIdRoute,
 }
 
 const DashboardLazyRouteWithChildren = DashboardLazyRoute._addFileChildren(
@@ -465,6 +487,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/projects': typeof DashboardDashboardProjectsIndexLazyRoute
   '/dashboard/clients/edit/$clientId': typeof DashboardDashboardClientsEditClientIdRoute
   '/dashboard/projects/edit/$projectId': typeof DashboardDashboardProjectsEditProjectIdRoute
+  '/dashboard/projects/jobsheet/$projectId': typeof DashboardDashboardProjectsJobsheetProjectIdRoute
 }
 
 export interface FileRoutesByTo {
@@ -487,6 +510,7 @@ export interface FileRoutesByTo {
   '/dashboard/projects': typeof DashboardDashboardProjectsIndexLazyRoute
   '/dashboard/clients/edit/$clientId': typeof DashboardDashboardClientsEditClientIdRoute
   '/dashboard/projects/edit/$projectId': typeof DashboardDashboardProjectsEditProjectIdRoute
+  '/dashboard/projects/jobsheet/$projectId': typeof DashboardDashboardProjectsJobsheetProjectIdRoute
 }
 
 export interface FileRoutesById {
@@ -511,6 +535,7 @@ export interface FileRoutesById {
   '/_dashboard/dashboard/projects/': typeof DashboardDashboardProjectsIndexLazyRoute
   '/_dashboard/dashboard/clients/edit/$clientId': typeof DashboardDashboardClientsEditClientIdRoute
   '/_dashboard/dashboard/projects/edit/$projectId': typeof DashboardDashboardProjectsEditProjectIdRoute
+  '/_dashboard/dashboard/projects/jobsheet/$projectId': typeof DashboardDashboardProjectsJobsheetProjectIdRoute
 }
 
 export interface FileRouteTypes {
@@ -535,6 +560,7 @@ export interface FileRouteTypes {
     | '/dashboard/projects'
     | '/dashboard/clients/edit/$clientId'
     | '/dashboard/projects/edit/$projectId'
+    | '/dashboard/projects/jobsheet/$projectId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/logout'
@@ -556,6 +582,7 @@ export interface FileRouteTypes {
     | '/dashboard/projects'
     | '/dashboard/clients/edit/$clientId'
     | '/dashboard/projects/edit/$projectId'
+    | '/dashboard/projects/jobsheet/$projectId'
   id:
     | '__root__'
     | '/logout'
@@ -578,6 +605,7 @@ export interface FileRouteTypes {
     | '/_dashboard/dashboard/projects/'
     | '/_dashboard/dashboard/clients/edit/$clientId'
     | '/_dashboard/dashboard/projects/edit/$projectId'
+    | '/_dashboard/dashboard/projects/jobsheet/$projectId'
   fileRoutesById: FileRoutesById
 }
 
@@ -626,7 +654,8 @@ export const routeTree = rootRoute
         "/_dashboard/dashboard/messages/",
         "/_dashboard/dashboard/projects/",
         "/_dashboard/dashboard/clients/edit/$clientId",
-        "/_dashboard/dashboard/projects/edit/$projectId"
+        "/_dashboard/dashboard/projects/edit/$projectId",
+        "/_dashboard/dashboard/projects/jobsheet/$projectId"
       ]
     },
     "/_landing": {
@@ -704,6 +733,10 @@ export const routeTree = rootRoute
     },
     "/_dashboard/dashboard/projects/edit/$projectId": {
       "filePath": "_dashboard/dashboard/projects/edit.$projectId.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/dashboard/projects/jobsheet/$projectId": {
+      "filePath": "_dashboard/dashboard/projects/jobsheet.$projectId.tsx",
       "parent": "/_dashboard"
     }
   }

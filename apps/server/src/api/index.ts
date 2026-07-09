@@ -2,6 +2,8 @@ import { trpc } from '@config/trpc';
 import { clientRouter } from './client/routes';
 import { contactRouter } from './contact/route';
 import { forumRouter } from './forum/routes';
+import { jobSheetRulesRouter } from './jobsheet/rules-routes';
+import { jobSheetsRouter } from './jobsheet/routes';
 import { projectFilesRouter } from './project/file-routes';
 import { projectsRouter } from './project/routes';
 import { reportsRouter } from './report/route';
@@ -14,6 +16,8 @@ export const apiRouter = trpc.router({
   clients: clientRouter,
   projects: projectsRouter,
   projectFiles: projectFilesRouter,
+  jobSheets: jobSheetsRouter,
+  jobSheetRules: jobSheetRulesRouter,
   timesheet: timesheetRouter,
   schedule: scheduleRouter,
   reports: reportsRouter,

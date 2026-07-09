@@ -6,6 +6,10 @@
   "dependencies": {
     "@auth0/auth0-react": "^2.3.0",
     "@aws-sdk/client-s3": "^3.787.0",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/modifiers": "^9.0.0",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@dreams-built/server": "workspace:server",
     "@dreams-built/shared": "workspace:shared",
     "@emotion/react": "^11.14.0",
