@@ -16,12 +16,15 @@ const Container = styled.div<{
   border-radius: ${({ theme }) => theme.shape.borderRadius}px;
   box-shadow: 0 0 1rem 0 rgba(0, 0, 0, 0.2);
   display: grid;
-  grid-template-rows: ${({ $rows }) => ($rows === 2 ? 'min-content auto' : 'auto')};
+  /* minmax(0, ...) lets the content row shrink so it scrolls instead of
+     overflowing past the container's max-height. */
+  grid-template-rows: ${({ $rows }) =>
+    $rows === 2 ? 'min-content minmax(0, 1fr)' : 'minmax(0, 1fr)'};
   height: ${({ $height }) => $height ?? 'auto'};
   left: 50%;
   max-height: 80dvh;
   max-width: 80vw;
-  /* overflow: auto; */
+  overflow: hidden;
   padding: ${({ $padding }) => $padding ?? '1rem'};
   position: relative;
   position: absolute;
