@@ -76,6 +76,39 @@ const CutBand: FC<{
       );
       const isShort = placed.cut.kind === 'short';
 
+      // BLK caps sit ACROSS the channel (perpendicular): a 65-thick block
+      // spanning the band width at the step face.
+      if (placed.perpendicular) {
+        const station = (placed.fromMm + placed.toMm) / 2;
+        const inner = at(wallStart, direction, station, normal, centreOffsetMm - thicknessMm / 2);
+        const outer = at(wallStart, direction, station, normal, centreOffsetMm + thicknessMm / 2);
+        const labelAt = at(wallStart, direction, station, normal, labelOffsetMm);
+        return (
+          // eslint-disable-next-line react/no-array-index-key
+          <g key={index}>
+            <line
+              x1={inner.x}
+              y1={inner.y}
+              x2={outer.x}
+              y2={outer.y}
+              stroke="#777"
+              strokeWidth={placed.toMm - placed.fromMm}
+            />
+            <text
+              x={labelAt.x}
+              y={labelAt.y}
+              fontSize={200}
+              fontWeight={600}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fill="#555"
+            >
+              BLK
+            </text>
+          </g>
+        );
+      }
+
       // Joint tick: a line across the band where this cut butts the next.
       const jointInner = at(
         wallStart,
@@ -144,6 +177,8 @@ export const FloorPlanSvg: FC<{
   // Scroll to zoom (non-passive listener so the page doesn't scroll too).
   const svgRef = useRef<SVGSVGElement>(null);
   const [zoom, setZoom] = useState(1);
+  // Click a wall number to spotlight that wall's shutters and rebates.
+  const [focusWallId, setFocusWallId] = useState<string | null>(null);
   useEffect(() => {
     const svg = svgRef.current;
     if (!svg) return undefined;
@@ -169,10 +204,28 @@ export const FloorPlanSvg: FC<{
     fullHeight / zoom
   ].join(' ');
 
-  const polygonPoints = vertices
-    .slice(0, -1)
-    .map((vertex) => `${vertex.x},${vertex.y}`)
-    .join(' ');
+  // Slab outline with inset steps: across a BLK-capped bare span the edge
+  // steps in by one rebate width (the BLKs form the step faces).
+  const slabPath = walls.length
+    ? `${walls
+        .map((wall, index) => {
+          const pt = (alongMm: number, inMm: number) =>
+            at(wall.start, wall.direction, alongMm, wall.outwardNormal, -inMm);
+          const parts: string[] = [];
+          const move = index === 0 ? 'M' : 'L';
+          parts.push(`${move} ${wall.start.x} ${wall.start.y}`);
+          for (const inset of wall.insets) {
+            const a = pt(inset.fromMm, 0);
+            const b = pt(inset.fromMm, rebateWidth);
+            const c = pt(inset.toMm, rebateWidth);
+            const d = pt(inset.toMm, 0);
+            parts.push(`L ${a.x} ${a.y} L ${b.x} ${b.y} L ${c.x} ${c.y} L ${d.x} ${d.y}`);
+          }
+          parts.push(`L ${wall.end.x} ${wall.end.y}`);
+          return parts.join(' ');
+        })
+        .join(' ')} Z`
+    : '';
 
   const [first] = vertices;
   const last = vertices[vertices.length - 1];
@@ -189,7 +242,7 @@ export const FloorPlanSvg: FC<{
       <title>{title}</title>
 
       {walls.length > 0 && (
-        <polygon points={polygonPoints} fill="#f2f0ec" stroke="#555" strokeWidth={20} />
+        <path d={slabPath} fill="#f2f0ec" stroke="#555" strokeWidth={20} />
       )}
 
       {misclosureMm > 1 && (
@@ -213,8 +266,9 @@ export const FloorPlanSvg: FC<{
           wall.outwardNormal,
           shutterThickness + LABEL_CLEARANCE_MM + NUMBER_CLEARANCE_MM
         );
+        const isDimmed = focusWallId !== null && focusWallId !== wall.id;
         return (
-          <g key={wall.id}>
+          <g key={wall.id} opacity={isDimmed ? 0.12 : 1}>
             {/* Shutter boxing: inner face in contact with the slab edge. */}
             <CutBand
               wallStart={wall.start}
@@ -249,7 +303,11 @@ export const FloorPlanSvg: FC<{
               fontWeight={700}
               textAnchor="middle"
               dominantBaseline="middle"
-              fill="#222"
+              fill={focusWallId === wall.id ? '#d32f2f' : '#222'}
+              style={{ cursor: 'pointer', userSelect: 'none' }}
+              onClick={() =>
+                setFocusWallId((current) => (current === wall.id ? null : wall.id))
+              }
             >
               {wall.number}
               {wall.isGarageDoorWall ? ' ⌂' : ''}

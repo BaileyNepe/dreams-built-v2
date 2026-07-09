@@ -33,13 +33,23 @@ export type PlacedCut = {
   /** Distance along the wall from its start corner, in mm. */
   fromMm: number;
   toMm: number;
+  /** BLK caps sit across the channel: drawn perpendicular to the wall. */
+  perpendicular?: boolean;
 };
 
 export type PlacedRebateSegment = {
   fromMm: number;
   toMm: number;
+  /** Where the pieces actually finish (overhang included) — the step face. */
+  packedEndMm: number;
   cuts: PlacedCut[];
 };
+
+/**
+ * A span where the slab edge steps IN by one rebate width: the bare
+ * stretch between two brick portions of a partial-rebate wall.
+ */
+export type InsetSpan = { fromMm: number; toMm: number };
 
 export type PlacedWall = {
   id: string;
@@ -54,6 +64,7 @@ export type PlacedWall = {
   outwardNormal: Point;
   shutterCuts: PlacedCut[];
   rebateSegments: PlacedRebateSegment[];
+  insets: InsetSpan[];
 };
 
 /**
@@ -117,21 +128,61 @@ const placeCuts = (cuts: Cut[], startOffsetMm: number): PlacedCut[] => {
   return placed;
 };
 
+const BLK_THICKNESS_MM = 65;
+
 const placeRebate = (
   wall: Wall,
   next: Wall | undefined,
   computedWall: ComputedWall,
   rules: JobSheetRules
-): PlacedRebateSegment[] => {
-  const segments = computeRebateSegments(wall, rules, resolveEnds(wall, next).rebate);
+): { segments: PlacedRebateSegment[]; insets: InsetSpan[] } => {
+  const geometric = computeRebateSegments(wall, rules, resolveEnds(wall, next).rebate);
   // Overridden walls may have a different number of runs than the geometric
   // segmentation suggests; align what we can and lay the rest sequentially.
-  return computedWall.rebate.map((run, index) => {
-    const segment = segments[index];
+  const segments = computedWall.rebate.map((run, index) => {
+    const segment = geometric[index];
     const fromMm = segment?.startMm ?? 0;
     const toMm = segment?.endMm ?? fromMm + run.effectiveLengthMm;
-    return { fromMm, toMm, cuts: placeCuts(run.cuts, fromMm) };
+
+    // Lay the pieces from the segment start; BLK caps sit perpendicular
+    // across the channel — the end cap where the pieces finish (overhang
+    // included), the start cap just before the brick line resumes.
+    const pieces = run.cuts.filter((cut) => cut.kind !== 'blk');
+    const placed = placeCuts(pieces, fromMm);
+    const packedEndMm = placed.length > 0 ? placed[placed.length - 1].toMm : toMm;
+
+    const caps: PlacedCut[] = [];
+    if (segment?.blkAtStart) {
+      caps.push({
+        cut: { kind: 'blk', lengthMm: rules.blkLengthMm, polystyrene: false },
+        fromMm: fromMm - BLK_THICKNESS_MM,
+        toMm: fromMm,
+        perpendicular: true
+      });
+    }
+    if (segment?.blkAtEnd) {
+      caps.push({
+        cut: { kind: 'blk', lengthMm: rules.blkLengthMm, polystyrene: false },
+        fromMm: packedEndMm,
+        toMm: packedEndMm + BLK_THICKNESS_MM,
+        perpendicular: true
+      });
+    }
+
+    return { fromMm, toMm, packedEndMm, cuts: [...placed, ...caps] };
   });
+
+  // The slab edge steps in by one rebate width across each BLK-capped gap.
+  const insets: InsetSpan[] = [];
+  for (let i = 0; i < segments.length - 1; i += 1) {
+    if (geometric[i]?.blkAtEnd || geometric[i + 1]?.blkAtStart) {
+      insets.push({
+        fromMm: segments[i].packedEndMm,
+        toMm: segments[i + 1].fromMm - BLK_THICKNESS_MM
+      });
+    }
+  }
+  return { segments, insets };
 };
 
 /**
@@ -260,12 +311,15 @@ export const computeFloorOutline = (
       direction: heading,
       outwardNormal,
       shutterCuts: placeCuts(computedWall.shutters.cuts, absorbOffset),
-      rebateSegments: placeRebate(
-        wall,
-        data.walls[(index + 1) % data.walls.length],
-        computedWall,
-        rules
-      )
+      ...(() => {
+        const rebate = placeRebate(
+          wall,
+          data.walls[(index + 1) % data.walls.length],
+          computedWall,
+          rules
+        );
+        return { rebateSegments: rebate.segments, insets: rebate.insets };
+      })()
     });
 
     position = end;
