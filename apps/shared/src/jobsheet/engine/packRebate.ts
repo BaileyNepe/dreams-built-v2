@@ -1,84 +1,127 @@
 /**
  * Brick rebate packer for one wall.
  *
- * The brick rebate is a strip recessed into the inside face of the perimeter
- * shutter where the brick veneer sits. It runs along the wall but is broken
- * by:
+ * The rebate strip follows the perimeter inside the shutter and is broken
+ * by non-rebated openings. At corners the strips joint like boards: at an
+ * external corner one strip runs through and the other is shortened by one
+ * rebate width (−120); at an internal corner one strip EXTENDS one rebate
+ * width past the wall end to fill the corner square. Which wall does what
+ * is resolved by computeSheet (auto by corner kind, overridable).
  *
- *   - a rebate-width offset (rules.rebateWidthMm) at either end where a
- *     perpendicular wall's brick face crosses this wall's rebate run, and
- *   - any opening on the wall whose `hasRebate` is false (full-height
- *     joinery: garage doors, entry doors, sliders, stackers).
- *
- * The rebate never overhangs at any end — the brick veneer would otherwise
- * stick past the corner. Each sub-segment is packed independently with the
- * same greedy standard-size algorithm as the shutter packer.
- *
- * Walls without brick rebate (`hasRebate: false`) emit an empty array,
- * which renders as "-" on the job sheet.
+ * Where an opening breaks the run mid-wall with `blk` set, the channel
+ * ends are capped with BLK insets and the adjacent pieces may overhang to
+ * the cap (the BLK sits wherever they finish), so those segment ends pack
+ * with overhang instead of an exact short.
  */
 
-import type { JobSheetRules, PackedRun, Wall } from '../types';
+import type { Cut, JobSheetRules, PackedRun, Wall } from '../types';
 import { packRun } from './packRun';
 
-export type RebateSegment = { startMm: number; endMm: number };
+/** The wall-end adjustments after auto/override resolution. */
+export type ResolvedRebateEnds = {
+  offsetAtStart: boolean;
+  offsetAtEnd: boolean;
+  extendAtStart: boolean;
+  extendAtEnd: boolean;
+  /** Allow the final segment to overhang past the wall end (open channel). */
+  overhangAtWallEnd: boolean;
+};
+
+export type RebateSegment = {
+  startMm: number;
+  endMm: number;
+  blkAtStart: boolean;
+  blkAtEnd: boolean;
+};
 
 /** Where along the wall the rebate runs sit — also used by the floor-plan visual. */
 export const computeRebateSegments = (
   wall: Wall,
-  rules: JobSheetRules
+  rules: JobSheetRules,
+  ends: ResolvedRebateEnds
 ): RebateSegment[] => {
-  const start = wall.rebateOffsetAtStart ? rules.rebateWidthMm : 0;
-  const end = wall.lengthMm - (wall.rebateOffsetAtEnd ? rules.rebateWidthMm : 0);
+  const width = rules.rebateWidthMm;
+  const start = (ends.offsetAtStart ? width : 0) - (ends.extendAtStart ? width : 0);
+  const end =
+    wall.lengthMm - (ends.offsetAtEnd ? width : 0) + (ends.extendAtEnd ? width : 0);
   if (end <= start) {
     return [];
   }
 
   // Insert breaks for every non-rebated opening, ignoring the parts of an
-  // opening that fall outside the rebate offsets.
+  // opening that fall outside the run.
   const breaks = wall.openings
     .filter((o) => !o.hasRebate)
     .map((o) => ({
       start: Math.max(o.offsetFromStartMm, start),
-      end: Math.min(o.offsetFromStartMm + o.widthMm, end)
+      end: Math.min(o.offsetFromStartMm + o.widthMm, end),
+      blk: o.blk
     }))
     .filter((b) => b.end > b.start)
     .sort((a, b) => a.start - b.start);
 
   const segments: RebateSegment[] = [];
   let cursor = start;
+  let blkPending = false;
   for (const br of breaks) {
     if (br.start > cursor) {
-      segments.push({ startMm: cursor, endMm: br.start });
+      segments.push({
+        startMm: cursor,
+        endMm: br.start,
+        blkAtStart: blkPending,
+        blkAtEnd: br.blk
+      });
     }
-    cursor = Math.max(cursor, br.end);
+    if (br.end > cursor) {
+      cursor = br.end;
+      blkPending = br.blk;
+    }
   }
   if (end > cursor) {
-    segments.push({ startMm: cursor, endMm: end });
+    segments.push({
+      startMm: cursor,
+      endMm: end,
+      blkAtStart: blkPending,
+      blkAtEnd: false
+    });
   }
   return segments;
 };
 
+const blkCut = (rules: JobSheetRules): Cut => ({
+  kind: 'blk',
+  lengthMm: rules.blkLengthMm,
+  polystyrene: false
+});
+
 /**
- * Pack the brick rebate for a wall: one `PackedRun` per sub-segment (a wall
- * with a single garage door cuts into two segments; a wall with no openings
- * stays as one).
- *
- * `polystyreneShort` is the wall's resolved polystyrene flag (auto rule or
- * manual override), applied to any short cut in any segment.
+ * Pack the brick rebate for a wall: one `PackedRun` per sub-segment.
+ * `polystyreneShort` is the wall's resolved polystyrene flag.
  */
 export const packRebateForWall = (
   wall: Wall,
   rules: JobSheetRules,
-  polystyreneShort: boolean
+  polystyreneShort: boolean,
+  ends: ResolvedRebateEnds
 ): PackedRun[] => {
   if (!wall.hasRebate) return [];
 
-  return computeRebateSegments(wall, rules).map((seg) =>
-    packRun(
+  const segments = computeRebateSegments(wall, rules, ends);
+  return segments.map((seg, index) => {
+    const isLast = index === segments.length - 1;
+    const overhangAtEnd = seg.blkAtEnd || (isLast && ends.overhangAtWallEnd);
+    const run = packRun(
       seg.endMm - seg.startMm,
-      { overhangAtEnd: false, polystyreneShort },
+      { overhangAtEnd, polystyreneShort },
       rules
-    )
-  );
+    );
+    return {
+      ...run,
+      cuts: [
+        ...(seg.blkAtStart ? [blkCut(rules)] : []),
+        ...run.cuts,
+        ...(seg.blkAtEnd ? [blkCut(rules)] : [])
+      ]
+    };
+  });
 };

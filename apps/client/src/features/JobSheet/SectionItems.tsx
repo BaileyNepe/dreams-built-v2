@@ -18,16 +18,35 @@ const TITLES: Record<SectionKey, string> = {
   garage: 'Garage'
 };
 
+/** Garage-door openings flow into the Garage box automatically. */
+export const derivedGarageItems = (
+  walls: { openings: { kind: string; widthMm: number }[] }[]
+) =>
+  walls.flatMap((wall, index) =>
+    wall.openings
+      .filter((opening) => opening.kind === 'garage_door' && opening.widthMm > 0)
+      .map((opening) => ({
+        text: `Garage door ${opening.widthMm} (wall ${index + 1})`
+      }))
+  );
+
 /** Simple add/remove item list (free text + optional qty), one per box on the sheet. */
 export const SectionItems: FC<{ section: SectionKey }> = ({ section }) => {
   const { data, dispatch, canEdit } = useJobSheetContext();
   const items = data[section];
+  const derived = section === 'garage' ? derivedGarageItems(data.walls) : [];
 
   return (
     <Paper variant="outlined" sx={{ p: 1.5, display: 'grid', gap: 1 }}>
       <Typography variant="subtitle2" fontWeight={700}>
         {TITLES[section]}
       </Typography>
+
+      {derived.map((item) => (
+        <Typography key={item.text} variant="body2" color="text.secondary">
+          {item.text} · auto
+        </Typography>
+      ))}
 
       {items.map((item) => (
         <Box key={item.id} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
@@ -76,7 +95,7 @@ export const SectionItems: FC<{ section: SectionKey }> = ({ section }) => {
         </Box>
       ))}
 
-      {items.length === 0 && (
+      {items.length === 0 && derived.length === 0 && (
         <Typography variant="body2" color="text.disabled">
           Nothing yet
         </Typography>

@@ -50,7 +50,7 @@ describe('jobSheetReducer: walls', () => {
     });
     expect(state.walls[1]).toMatchObject({
       cornerStart: 'external',
-      absorbShutterAtStart: false
+      absorbShutterAtStart: null
     });
 
     // The last wall's end corner wraps around to the first wall's start.

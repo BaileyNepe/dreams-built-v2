@@ -65,6 +65,12 @@ export const openingSchema = z.object({
   /** Measured from the wall's start corner (shared with the previous wall). */
   offsetFromStartMm: z.number().int().nonnegative(),
   hasRebate: z.boolean(),
+  /**
+   * Cap the rebate channel ends with BLK insets where this opening breaks
+   * the run (mid-wall brick transitions). The adjacent rebate pieces may
+   * overhang to the cap, since the BLK sits wherever they end.
+   */
+  blk: z.boolean().default(false),
   label: z.string().optional()
 });
 export type Opening = z.infer<typeof openingSchema>;
@@ -104,17 +110,26 @@ export const wallSchema = z.object({
   cornerStart: cornerKindSchema.default('external'),
   cornerEnd: cornerKindSchema.default('external'),
   /**
-   * At an internal corner the perpendicular wall's shutter sits inside the
-   * foundation and eats one shutter thickness off this wall's run. Only one
-   * of the two walls meeting at the corner absorbs it — the user picks which.
+   * Corner adjustments are applied AUTOMATICALLY by convention — the wall
+   * ARRIVING at a corner handles it at its end:
+   *   external end → shutter overhang-caps the next board; rebate −120
+   *   (when the next wall also has rebate).
+   *   internal end → shutter absorbs one board thickness; rebate extends
+   *   +120 into the corner square (when the next wall also has rebate).
+   * Each flag is a tri-state override: null = auto, true/false = forced.
    */
-  absorbShutterAtStart: z.boolean().default(false),
-  absorbShutterAtEnd: z.boolean().default(false),
+  absorbShutterAtStart: z.boolean().nullable().default(null),
+  absorbShutterAtEnd: z.boolean().nullable().default(null),
   /** False for walls with no brick veneer (e.g. garage walls): rebate row is "-". */
   hasRebate: z.boolean().default(true),
-  /** Subtract the rebate width where a perpendicular brick face crosses. */
-  rebateOffsetAtStart: z.boolean().default(false),
-  rebateOffsetAtEnd: z.boolean().default(false),
+  /** Subtract the rebate width where the neighbouring strip runs through. */
+  rebateOffsetAtStart: z.boolean().nullable().default(null),
+  rebateOffsetAtEnd: z.boolean().nullable().default(null),
+  /** Extend the rebate one width past the wall end into an internal corner. */
+  rebateExtendAtStart: z.boolean().nullable().default(null),
+  rebateExtendAtEnd: z.boolean().nullable().default(null),
+  /** Overhang at least one board thickness past an external end corner. */
+  overhangCapAtEnd: z.boolean().nullable().default(null),
   /** Emit a BLK inset piece where rebate coverage starts/stops mid-wall. */
   blkAtStart: z.boolean().default(false),
   blkAtEnd: z.boolean().default(false),

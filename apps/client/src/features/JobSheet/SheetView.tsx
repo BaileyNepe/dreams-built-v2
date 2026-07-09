@@ -11,6 +11,7 @@ import {
   type Tally
 } from '@dreams-built/shared/src/jobsheet/types';
 import { Fragment, type FC } from 'react';
+import { derivedGarageItems } from './SectionItems';
 import { styled } from 'styled-components';
 import { SECTION_COLORS } from './constants';
 
@@ -277,7 +278,15 @@ export const SheetView: FC<{
               </tr>
             </thead>
             <tbody>
-              {data[section].length === 0 ? (
+              {section === 'garage' &&
+                derivedGarageItems(data.walls).map((item) => (
+                  <tr key={item.text}>
+                    <td>{item.text}</td>
+                    <td className="qty" />
+                  </tr>
+                ))}
+              {data[section].length === 0 &&
+              (section !== 'garage' || derivedGarageItems(data.walls).length === 0) ? (
                 <tr>
                   <td colSpan={2}>&nbsp;</td>
                 </tr>

@@ -1,5 +1,6 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
+import { resolveEnds } from '@dreams-built/shared/src/jobsheet/engine/computeSheet';
 import {
   type ComputedWall,
   type CornerKind,
@@ -72,7 +73,14 @@ export const WallRow: FC<{
   computed: ComputedWall;
   isNewlyAdded?: boolean;
 }> = memo(({ wall, computed, isNewlyAdded = false }) => {
-  const { dispatch, canEdit, rules } = useJobSheetContext();
+  const { dispatch, canEdit, rules, data } = useJobSheetContext();
+
+  // Corner adjustments resolve automatically from the corner kinds; the
+  // checkboxes show the resolved state and clicking forces an override.
+  const index = data.walls.findIndex((w) => w.id === wall.id);
+  const nextWall = data.walls[(index + 1) % data.walls.length];
+  const ends = resolveEnds(wall, nextWall);
+  const auto = (flag: boolean | null) => (flag === null ? ' (auto)' : '');
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOverrideOpen, setIsOverrideOpen] = useState(false);
 
@@ -215,47 +223,80 @@ export const WallRow: FC<{
             control={
               <Checkbox
                 size="small"
-                checked={wall.rebateOffsetAtStart}
+                checked={ends.rebate.offsetAtStart}
                 disabled={!canEdit || !wall.hasRebate}
                 onChange={(event) => patch({ rebateOffsetAtStart: event.target.checked })}
               />
             }
-            label={`−${rules.rebateWidthMm} at start`}
+            label={`−${rules.rebateWidthMm} at start${auto(wall.rebateOffsetAtStart)}`}
           />
           <FormControlLabel
             control={
               <Checkbox
                 size="small"
-                checked={wall.rebateOffsetAtEnd}
+                checked={ends.rebate.offsetAtEnd}
                 disabled={!canEdit || !wall.hasRebate}
                 onChange={(event) => patch({ rebateOffsetAtEnd: event.target.checked })}
               />
             }
-            label={`−${rules.rebateWidthMm} at end`}
+            label={`−${rules.rebateWidthMm} at end${auto(wall.rebateOffsetAtEnd)}`}
           />
           <FormControlLabel
             control={
               <Checkbox
                 size="small"
-                checked={wall.absorbShutterAtStart}
-                disabled={!canEdit || wall.cornerStart !== 'internal'}
+                checked={ends.rebate.extendAtStart}
+                disabled={!canEdit || !wall.hasRebate}
+                onChange={(event) => patch({ rebateExtendAtStart: event.target.checked })}
+              />
+            }
+            label={`+${rules.rebateWidthMm} at start${auto(wall.rebateExtendAtStart)}`}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={ends.rebate.extendAtEnd}
+                disabled={!canEdit || !wall.hasRebate}
+                onChange={(event) => patch({ rebateExtendAtEnd: event.target.checked })}
+              />
+            }
+            label={`+${rules.rebateWidthMm} at end${auto(wall.rebateExtendAtEnd)}`}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={ends.absorbAtStart}
+                disabled={!canEdit}
                 onChange={(event) =>
                   patch({ absorbShutterAtStart: event.target.checked })
                 }
               />
             }
-            label={`Absorb ${rules.shutterThicknessMm}mm at start`}
+            label={`Absorb ${rules.shutterThicknessMm}mm at start${auto(wall.absorbShutterAtStart)}`}
           />
           <FormControlLabel
             control={
               <Checkbox
                 size="small"
-                checked={wall.absorbShutterAtEnd}
-                disabled={!canEdit || wall.cornerEnd !== 'internal'}
+                checked={ends.absorbAtEnd}
+                disabled={!canEdit}
                 onChange={(event) => patch({ absorbShutterAtEnd: event.target.checked })}
               />
             }
-            label={`Absorb ${rules.shutterThicknessMm}mm at end`}
+            label={`Absorb ${rules.shutterThicknessMm}mm at end${auto(wall.absorbShutterAtEnd)}`}
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                size="small"
+                checked={ends.overhangCapAtEnd}
+                disabled={!canEdit}
+                onChange={(event) => patch({ overhangCapAtEnd: event.target.checked })}
+              />
+            }
+            label={`Overhang cap at end${auto(wall.overhangCapAtEnd)}`}
           />
           <FormControlLabel
             control={

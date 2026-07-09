@@ -17,12 +17,12 @@ const wall = (id: string, lengthMm: number, patch: Partial<Wall> = {}): Wall => 
   ...patch
 });
 
-/** Rectangle with fully sealed boxing: one rebate offset per corner. */
+/** A plain rectangle: the auto corner convention seals it with no input. */
 const sealedRectangle = () => [
-  wall('w1', 6000, { isGarageDoorWall: true, rebateOffsetAtStart: true }),
-  wall('w2', 4000, { rebateOffsetAtStart: true }),
-  wall('w3', 6000, { rebateOffsetAtStart: true }),
-  wall('w4', 4000, { rebateOffsetAtStart: true })
+  wall('w1', 6000, { isGarageDoorWall: true }),
+  wall('w2', 4000),
+  wall('w3', 6000),
+  wall('w4', 4000)
 ];
 
 const outlineOf = (walls: Wall[]) => {
@@ -68,9 +68,9 @@ describe('FloorPlanPanel', () => {
   });
 
   it('flags overlapping rebate strips at an unsealed corner with a chip and marker', () => {
-    // Remove the offset that seals the corner between walls 4 and 1.
+    // Force OFF the auto offset that seals the corner between walls 4 and 1.
     const walls = sealedRectangle().map((w) =>
-      w.id === 'w1' ? { ...w, rebateOffsetAtStart: false } : w
+      w.id === 'w4' ? { ...w, rebateOffsetAtEnd: false as boolean | null } : w
     );
     renderPanel(outlineOf(walls));
 
@@ -79,15 +79,18 @@ describe('FloorPlanPanel', () => {
     expect(screen.getByTestId('corner-issue-marker')).toBeInTheDocument();
   });
 
-  it('flags a shutter overlap at an internal corner where neither wall absorbs', () => {
+  it('flags a shutter overlap when the auto absorb is forced off at an internal corner', () => {
     renderPanel(
       outlineOf([
-        wall('w1', 6000, { rebateOffsetAtStart: true }),
-        wall('w2', 4000, { rebateOffsetAtStart: true }),
-        wall('w3', 2000, { rebateOffsetAtStart: true }),
-        wall('w4', 2000, { cornerEnd: 'internal', rebateOffsetAtStart: true }),
+        wall('w1', 6000),
+        wall('w2', 4000),
+        wall('w3', 2000),
+        wall('w4', 2000, {
+          cornerEnd: 'internal',
+          absorbShutterAtEnd: false as boolean | null
+        }),
         wall('w5', 4000),
-        wall('w6', 2000, { rebateOffsetAtStart: true })
+        wall('w6', 2000)
       ])
     );
     expect(screen.getByTestId('corner-issue-chip')).toHaveTextContent(

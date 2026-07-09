@@ -30,6 +30,9 @@ const wall = (w: Partial<Wall> & Pick<Wall, 'id' | 'lengthMm'>): Wall => ({
   hasRebate: true,
   rebateOffsetAtStart: false,
   rebateOffsetAtEnd: false,
+  rebateExtendAtStart: false,
+  rebateExtendAtEnd: false,
+  overhangCapAtEnd: false,
   blkAtStart: false,
   blkAtEnd: false,
   openings: [],
@@ -54,6 +57,7 @@ export const nineWarrenLaneData: JobSheetData = {
           widthMm: 4850,
           offsetFromStartMm: 785,
           hasRebate: false,
+          blk: false,
           label: 'Garage Door 4850mm'
         }
       ]

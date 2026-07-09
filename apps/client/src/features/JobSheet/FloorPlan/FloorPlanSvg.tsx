@@ -5,7 +5,7 @@ import {
 } from '@dreams-built/shared/src/jobsheet/engine/geometry';
 import { formatCut } from '@dreams-built/shared/src/jobsheet/engine/format';
 import { type JobSheetRules } from '@dreams-built/shared/src/jobsheet/types';
-import { type FC } from 'react';
+import { useEffect, useRef, useState, type FC } from 'react';
 import { SECTION_COLORS, type SheetSection } from '../constants';
 
 /**
@@ -140,15 +140,33 @@ export const FloorPlanSvg: FC<{
   title?: string;
 }> = ({ outline, rules, title = 'Floor plan' }) => {
   const { bounds, walls, vertices, misclosureMm, cornerIssues } = outline;
+
+  // Scroll to zoom (non-passive listener so the page doesn't scroll too).
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [zoom, setZoom] = useState(1);
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return undefined;
+    const onWheel = (event: WheelEvent) => {
+      event.preventDefault();
+      setZoom((z) => Math.min(10, Math.max(1, z * (event.deltaY < 0 ? 1.15 : 1 / 1.15))));
+    };
+    svg.addEventListener('wheel', onWheel, { passive: false });
+    return () => svg.removeEventListener('wheel', onWheel);
+  }, []);
   const shutterThickness = rules.shutterThicknessMm;
   const rebateWidth = rules.rebateWidthMm;
 
   const pad = PADDING_MM + shutterThickness + LABEL_CLEARANCE_MM + NUMBER_CLEARANCE_MM;
+  const fullWidth = bounds.maxX - bounds.minX + pad * 2;
+  const fullHeight = bounds.maxY - bounds.minY + pad * 2;
+  const centreX = (bounds.minX + bounds.maxX) / 2;
+  const centreY = (bounds.minY + bounds.maxY) / 2;
   const viewBox = [
-    bounds.minX - pad,
-    bounds.minY - pad,
-    bounds.maxX - bounds.minX + pad * 2,
-    bounds.maxY - bounds.minY + pad * 2
+    centreX - fullWidth / zoom / 2,
+    centreY - fullHeight / zoom / 2,
+    fullWidth / zoom,
+    fullHeight / zoom
   ].join(' ');
 
   const polygonPoints = vertices
@@ -161,6 +179,7 @@ export const FloorPlanSvg: FC<{
 
   return (
     <svg
+      ref={svgRef}
       viewBox={viewBox}
       role="img"
       aria-label={title}

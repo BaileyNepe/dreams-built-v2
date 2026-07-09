@@ -2,7 +2,7 @@ import { describe, expect, it } from 'bun:test';
 
 import { DEFAULT_JOBSHEET_RULES } from '../defaults';
 import type { Wall } from '../types';
-import { packRebateForWall } from './packRebate';
+import { packRebateForWall, type ResolvedRebateEnds } from './packRebate';
 
 const rules = DEFAULT_JOBSHEET_RULES;
 
@@ -16,6 +16,9 @@ const baseWall: Wall = {
   hasRebate: true,
   rebateOffsetAtStart: false,
   rebateOffsetAtEnd: false,
+  rebateExtendAtStart: false,
+  rebateExtendAtEnd: false,
+  overhangCapAtEnd: false,
   blkAtStart: false,
   blkAtEnd: false,
   openings: [],
@@ -26,12 +29,21 @@ const baseWall: Wall = {
   override: null
 };
 
+const ends = (patch: Partial<ResolvedRebateEnds> = {}): ResolvedRebateEnds => ({
+  offsetAtStart: false,
+  offsetAtEnd: false,
+  extendAtStart: false,
+  extendAtEnd: false,
+  overhangAtWallEnd: false,
+  ...patch
+});
+
 const lengths = (runs: ReturnType<typeof packRebateForWall>) =>
   runs.map((run) => run.cuts.map((c) => c.lengthMm));
 
 describe('packRebateForWall: walls with no brick rebate', () => {
   it('returns an empty array for a wall flagged hasRebate=false', () => {
-    expect(packRebateForWall({ ...baseWall, hasRebate: false }, rules, false)).toEqual(
+    expect(packRebateForWall({ ...baseWall, hasRebate: false }, rules, false, ends())).toEqual(
       []
     );
   });
@@ -40,31 +52,33 @@ describe('packRebateForWall: walls with no brick rebate', () => {
 describe('packRebateForWall: simple walls', () => {
   it('packs a wall with no offsets and no openings as a single segment', () => {
     // 9 Warren Lane wall 3: 2060mm, no offset -> 1800 + 260 short.
-    const result = packRebateForWall({ ...baseWall, lengthMm: 2060 }, rules, false);
+    const result = packRebateForWall({ ...baseWall, lengthMm: 2060 }, rules, false, ends());
     expect(lengths(result)).toEqual([[1800, 260]]);
     expect(result[0].cuts[1]).toMatchObject({ kind: 'short' });
   });
 
   it('subtracts the offset at the start (wall 2: 7010 -> 6890 -> 4800 + 1800 + 290)', () => {
     const result = packRebateForWall(
-      { ...baseWall, lengthMm: 7010, rebateOffsetAtStart: true },
+      { ...baseWall, lengthMm: 7010 },
       rules,
-      false
+      false,
+      ends({ offsetAtStart: true })
     );
     expect(lengths(result)).toEqual([[4800, 1800, 290]]);
   });
 
   it('subtracts the offset at the end (wall 5: 14270 -> 14150 -> 4800 + 4800 + 4200 + 350)', () => {
     const result = packRebateForWall(
-      { ...baseWall, lengthMm: 14270, rebateOffsetAtEnd: true },
+      { ...baseWall, lengthMm: 14270 },
       rules,
-      false
+      false,
+      ends({ offsetAtEnd: true })
     );
     expect(lengths(result)).toEqual([[4800, 4800, 4200, 350]]);
   });
 
   it('never overhangs, even at an external corner end', () => {
-    const result = packRebateForWall({ ...baseWall, lengthMm: 3380 }, rules, false);
+    const result = packRebateForWall({ ...baseWall, lengthMm: 3380 }, rules, false, ends());
     // Shutter packing with overhang would give [3600]; rebate must not.
     expect(lengths(result)).toEqual([[3000, 380]]);
   });
@@ -87,7 +101,8 @@ describe('packRebateForWall: openings split the run', () => {
         ]
       },
       rules,
-      false
+      false,
+      ends()
     );
     expect(lengths(result)).toEqual([
       [600, 185],
@@ -105,7 +120,8 @@ describe('packRebateForWall: openings split the run', () => {
         ]
       },
       rules,
-      false
+      false,
+      ends()
     );
     expect(lengths(result)).toEqual([[3000]]);
   });
@@ -113,7 +129,7 @@ describe('packRebateForWall: openings split the run', () => {
 
 describe('packRebateForWall: polystyrene flag', () => {
   it('marks shorts as polystyrene when the resolved flag is set', () => {
-    const [run] = packRebateForWall({ ...baseWall, lengthMm: 2060 }, rules, true);
+    const [run] = packRebateForWall({ ...baseWall, lengthMm: 2060 }, rules, true, ends());
     expect(run.cuts[1]).toMatchObject({ kind: 'short', polystyrene: true });
   });
 
@@ -121,13 +137,14 @@ describe('packRebateForWall: polystyrene flag', () => {
     const [run] = packRebateForWall(
       { ...baseWall, lengthMm: 2060, cornerEnd: 'internal' },
       rules,
-      false
+      false,
+      ends()
     );
     expect(run.cuts[1]).toMatchObject({ kind: 'short', polystyrene: false });
   });
 
   it('does not mark non-short cuts as polystyrene even when flagged', () => {
-    const [run] = packRebateForWall({ ...baseWall, lengthMm: 4800 }, rules, true);
+    const [run] = packRebateForWall({ ...baseWall, lengthMm: 4800 }, rules, true, ends());
     expect(run.cuts).toEqual([
       { kind: 'standard', lengthMm: 4800, polystyrene: false }
     ]);
@@ -137,14 +154,10 @@ describe('packRebateForWall: polystyrene flag', () => {
 describe('packRebateForWall: degenerate cases', () => {
   it('returns no segments when offsets eat the whole wall', () => {
     const result = packRebateForWall(
-      {
-        ...baseWall,
-        lengthMm: 200,
-        rebateOffsetAtStart: true,
-        rebateOffsetAtEnd: true
-      },
+      { ...baseWall, lengthMm: 200 },
       rules,
-      false
+      false,
+      ends({ offsetAtStart: true, offsetAtEnd: true })
     );
     expect(result).toEqual([]);
   });
@@ -156,13 +169,13 @@ describe('packRebateForWall: degenerate cases', () => {
       {
         ...baseWall,
         lengthMm: 3000,
-        rebateOffsetAtStart: true,
         openings: [
-          { kind: 'window', widthMm: 200, offsetFromStartMm: 100, hasRebate: false }
+          { kind: 'window', widthMm: 200, offsetFromStartMm: 100, hasRebate: false, blk: false }
         ]
       },
       rules,
-      false
+      false,
+      ends({ offsetAtStart: true })
     );
     expect(result).toHaveLength(1);
     expect(result[0].effectiveLengthMm).toBe(2700);

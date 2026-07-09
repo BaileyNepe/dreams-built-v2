@@ -16,8 +16,8 @@ import type {
   PackedRun,
   Wall
 } from '../types';
-import { packRebateForWall } from './packRebate';
-import { computeShutterRunLength, packRun } from './packRun';
+import { packRebateForWall, type ResolvedRebateEnds } from './packRebate';
+import { packRun } from './packRun';
 import { tallyRuns } from './tallies';
 
 /** What the both-ends-internal rule says for this wall, ignoring overrides. */
@@ -30,20 +30,56 @@ export const isPolystyreneAuto = (wall: Wall, rules: JobSheetRules): boolean =>
 export const resolvePolystyrene = (wall: Wall, rules: JobSheetRules): boolean =>
   wall.polystyreneOverride ?? isPolystyreneAuto(wall, rules);
 
+/**
+ * Corner adjustments resolved from the auto convention (the wall arriving
+ * at a corner handles it at its end) plus any per-wall overrides.
+ */
+export type ResolvedEnds = {
+  absorbAtStart: boolean;
+  absorbAtEnd: boolean;
+  overhangCapAtEnd: boolean;
+  rebate: ResolvedRebateEnds;
+};
+
+export const resolveEnds = (wall: Wall, next: Wall | undefined): ResolvedEnds => {
+  const nextHasRebate = next?.hasRebate ?? false;
+  const bothRebate = wall.hasRebate && nextHasRebate;
+  const endExternal = wall.cornerEnd === 'external';
+  const endInternal = wall.cornerEnd === 'internal';
+
+  const offsetAtEnd = wall.rebateOffsetAtEnd ?? (endExternal && bothRebate);
+  const extendAtEnd = wall.rebateExtendAtEnd ?? (endInternal && bothRebate);
+
+  return {
+    absorbAtStart: wall.absorbShutterAtStart ?? false,
+    absorbAtEnd: wall.absorbShutterAtEnd ?? endInternal,
+    overhangCapAtEnd: wall.overhangCapAtEnd ?? endExternal,
+    rebate: {
+      offsetAtStart: wall.rebateOffsetAtStart ?? false,
+      offsetAtEnd,
+      extendAtStart: wall.rebateExtendAtStart ?? false,
+      extendAtEnd,
+      // An open channel end (no neighbouring strip) overhangs to its cap.
+      overhangAtWallEnd: endExternal && !nextHasRebate && !offsetAtEnd && !extendAtEnd
+    }
+  };
+};
+
+/** Effective shutter run length after resolved absorb allowances. */
+export const computeShutterRunLength = (
+  wall: Wall,
+  rules: JobSheetRules,
+  ends: ResolvedEnds
+): number =>
+  wall.lengthMm -
+  (ends.absorbAtStart ? rules.shutterThicknessMm : 0) -
+  (ends.absorbAtEnd ? rules.shutterThicknessMm : 0);
+
 const blkCut = (rules: JobSheetRules): Cut => ({
   kind: 'blk',
   lengthMm: rules.blkLengthMm,
   polystyrene: false
 });
-
-/**
- * Whether a BLK inset consumes packed run length (true) or is purely an
- * additive marker piece (false).
- *
- * TODO(bailey): confirm against a real sheet — job 26055 wall 12 shows BLK
- * mid-run in the 300 column, which manual overrides cover either way.
- */
-const BLK_CONSUMES_LENGTH = false;
 
 /** A PackedRun built verbatim from manually overridden cuts. */
 const runFromCuts = (cuts: Cut[]): PackedRun => ({
@@ -55,7 +91,8 @@ const runFromCuts = (cuts: Cut[]): PackedRun => ({
 export const computeWall = (
   wall: Wall,
   index: number,
-  rules: JobSheetRules
+  rules: JobSheetRules,
+  next?: Wall
 ): ComputedWall => {
   const number = index + 1;
   const polystyreneAuto = isPolystyreneAuto(wall, rules);
@@ -75,7 +112,8 @@ export const computeWall = (
   }
 
   const warnings: string[] = [];
-  const rawLength = computeShutterRunLength(wall, rules);
+  const ends = resolveEnds(wall, next);
+  const rawLength = computeShutterRunLength(wall, rules, ends);
   let effective = rawLength;
   if (rawLength < 0) {
     warnings.push(
@@ -84,9 +122,13 @@ export const computeWall = (
     effective = 0;
   }
 
+  // Cap the next wall's board: pack to at least one board past the corner.
+  const capExtra =
+    effective > 0 && ends.overhangCapAtEnd ? rules.shutterThicknessMm : 0;
+
   const polystyrene = resolvePolystyrene(wall, rules);
-  const shutters = packRun(
-    effective,
+  const packed = packRun(
+    effective + capExtra,
     {
       overhangAtEnd: wall.cornerEnd === 'external',
       polystyreneShort: polystyrene,
@@ -94,19 +136,18 @@ export const computeWall = (
     },
     rules
   );
+  const shutters = {
+    ...packed,
+    effectiveLengthMm: effective,
+    overhangMm: packed.overhangMm + capExtra
+  };
 
   if (wall.blkAtStart || wall.blkAtEnd) {
-    const cuts = [
+    shutters.cuts = [
       ...(wall.blkAtStart ? [blkCut(rules)] : []),
       ...shutters.cuts,
       ...(wall.blkAtEnd ? [blkCut(rules)] : [])
     ];
-    shutters.cuts = cuts;
-    if (BLK_CONSUMES_LENGTH) {
-      // Placeholder for the alternative semantics: repack with the BLK
-      // lengths subtracted from the effective run.
-      warnings.push('BLK length-consumption semantics not confirmed yet.');
-    }
   }
 
   return {
@@ -114,7 +155,7 @@ export const computeWall = (
     number,
     lengthMm: wall.lengthMm,
     shutters,
-    rebate: packRebateForWall(wall, rules, polystyrene),
+    rebate: packRebateForWall(wall, rules, polystyrene, ends.rebate),
     isOverridden: false,
     polystyreneAuto,
     warnings,
@@ -126,7 +167,9 @@ export const computeJobSheet = (
   data: JobSheetData,
   rules: JobSheetRules
 ): ComputedSheet => {
-  const walls = data.walls.map((wall, index) => computeWall(wall, index, rules));
+  const walls = data.walls.map((wall, index) =>
+    computeWall(wall, index, rules, data.walls[(index + 1) % data.walls.length])
+  );
   const perimeterMm = data.walls.reduce((acc, w) => acc + w.lengthMm, 0);
 
   return {

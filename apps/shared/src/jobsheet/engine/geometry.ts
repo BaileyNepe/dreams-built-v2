@@ -23,6 +23,7 @@ import type {
   JobSheetRules,
   Wall
 } from '../types';
+import { resolveEnds } from './computeSheet';
 import { computeRebateSegments } from './packRebate';
 
 export type Point = { x: number; y: number };
@@ -118,10 +119,11 @@ const placeCuts = (cuts: Cut[], startOffsetMm: number): PlacedCut[] => {
 
 const placeRebate = (
   wall: Wall,
+  next: Wall | undefined,
   computedWall: ComputedWall,
   rules: JobSheetRules
 ): PlacedRebateSegment[] => {
-  const segments = computeRebateSegments(wall, rules);
+  const segments = computeRebateSegments(wall, rules, resolveEnds(wall, next).rebate);
   // Overridden walls may have a different number of runs than the geometric
   // segmentation suggests; align what we can and lay the rest sequentially.
   return computedWall.rebate.map((run, index) => {
@@ -156,11 +158,14 @@ const computeCornerIssues = (
     const wallNumber = i + 1;
     const nextWallNumber = j + 1;
 
+    const wallEnds = resolveEnds(wall, next);
+    const nextEnds = resolveEnds(next, walls[(j + 1) % walls.length]);
+
     if (wall.cornerEnd === 'internal') {
       // The perpendicular shutter consumes one board thickness inside the
       // floor: exactly one of the two walls must absorb it.
       const absorbs =
-        Number(wall.absorbShutterAtEnd) + Number(next.absorbShutterAtStart);
+        Number(wallEnds.absorbAtEnd) + Number(nextEnds.absorbAtStart);
       if (absorbs === 0) {
         issues.push({
           wallNumber,
@@ -182,8 +187,8 @@ const computeCornerIssues = (
       // External corner: the two rebate strips run inside the perimeter and
       // cross each other unless exactly one wall carries the offset. Actual
       // segment geometry is used so openings at the corner don't flag.
-      const endSegments = computeRebateSegments(wall, rules);
-      const startSegments = computeRebateSegments(next, rules);
+      const endSegments = computeRebateSegments(wall, rules, wallEnds.rebate);
+      const startSegments = computeRebateSegments(next, rules, nextEnds.rebate);
       const lastSegment = endSegments[endSegments.length - 1];
       const [firstSegment] = startSegments;
       const reachesCorner =
@@ -202,8 +207,8 @@ const computeCornerIssues = (
       } else if (
         wall.hasRebate &&
         next.hasRebate &&
-        wall.rebateOffsetAtEnd &&
-        next.rebateOffsetAtStart
+        wallEnds.rebate.offsetAtEnd &&
+        nextEnds.rebate.offsetAtStart
       ) {
         issues.push({
           wallNumber,
@@ -242,7 +247,8 @@ export const computeFloorOutline = (
     // Shutter cuts start after any absorbed board at the wall start; BLK
     // markers at the very start would otherwise push everything sideways,
     // so the offset only applies to the packed run itself.
-    const absorbOffset = wall.absorbShutterAtStart ? rules.shutterThicknessMm : 0;
+    const ends = resolveEnds(wall, data.walls[(index + 1) % data.walls.length]);
+    const absorbOffset = ends.absorbAtStart ? rules.shutterThicknessMm : 0;
 
     walls.push({
       id: wall.id,
@@ -254,7 +260,12 @@ export const computeFloorOutline = (
       direction: heading,
       outwardNormal,
       shutterCuts: placeCuts(computedWall.shutters.cuts, absorbOffset),
-      rebateSegments: placeRebate(wall, computedWall, rules)
+      rebateSegments: placeRebate(
+        wall,
+        data.walls[(index + 1) % data.walls.length],
+        computedWall,
+        rules
+      )
     });
 
     position = end;

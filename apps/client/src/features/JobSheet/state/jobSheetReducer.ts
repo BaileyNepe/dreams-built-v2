@@ -21,11 +21,14 @@ export const emptyWall = (id: string): Wall => ({
   lengthMm: 0,
   cornerStart: 'external',
   cornerEnd: 'external',
-  absorbShutterAtStart: false,
-  absorbShutterAtEnd: false,
+  absorbShutterAtStart: null,
+  absorbShutterAtEnd: null,
   hasRebate: true,
-  rebateOffsetAtStart: false,
-  rebateOffsetAtEnd: false,
+  rebateOffsetAtStart: null,
+  rebateOffsetAtEnd: null,
+  rebateExtendAtStart: null,
+  rebateExtendAtEnd: null,
+  overhangCapAtEnd: null,
   blkAtStart: false,
   blkAtEnd: false,
   openings: [],
@@ -74,9 +77,10 @@ export const jobSheetReducer = (
         walls[next] = {
           ...walls[next],
           cornerStart: action.patch.cornerEnd,
-          ...(action.patch.cornerEnd === 'external' && {
-            absorbShutterAtStart: false
-          })
+          // Corner changed: fall back to auto so the convention re-applies.
+          absorbShutterAtStart: null,
+          rebateExtendAtStart: null,
+          rebateOffsetAtStart: null
         };
       }
       if (walls.length > 1 && action.patch.cornerStart !== undefined) {
@@ -84,9 +88,10 @@ export const jobSheetReducer = (
         walls[previous] = {
           ...walls[previous],
           cornerEnd: action.patch.cornerStart,
-          ...(action.patch.cornerStart === 'external' && {
-            absorbShutterAtEnd: false
-          })
+          absorbShutterAtEnd: null,
+          rebateExtendAtEnd: null,
+          rebateOffsetAtEnd: null,
+          overhangCapAtEnd: null
         };
       }
 
