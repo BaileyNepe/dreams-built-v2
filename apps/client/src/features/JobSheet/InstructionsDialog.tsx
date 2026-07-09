@@ -72,10 +72,7 @@ export const InstructionsDialog: FC<{ open: boolean; onClose: () => void }> = ({
         matching rebate segments are computed for you. A plain number (or a
         suffix-free sum like 11610/1960) clears the segmentation. The same
         stretches can be edited under the wall&apos;s &ldquo;Rebate insets&rdquo;
-        panel. Where a bare stretch runs right to a corner, the corner itself
-        sits one rebate width off the measured line — the neighbouring
-        wall&apos;s boards and strip adjust ±120 to the actual slab face
-        automatically.
+        panel.
       </Section>
 
       <Section title="BLK insets">
