@@ -39,13 +39,16 @@ export const InstructionsDialog: FC<{ open: boolean; onClose: () => void }> = ({
       </Section>
 
       <Section title="Absorbing the shutter width">
-        At an internal corner, the perpendicular wall&apos;s shutter sits inside the
-        floor and eats one shutter width off the run. Only one of the two walls
-        meeting at the corner absorbs it — tick &ldquo;Absorb at start/end&rdquo; on
-        whichever wall gives the tidier cut. The floor plan flags any corner where
-        boards would overlap (neither wall absorbs) or leave a gap (both absorb):
-        concrete escapes through gaps, and two boards can&apos;t occupy the same
-        space. Rebate corners work the same way with the rebate offsets.
+        A shutter runs until it hits the next wall (internal corner — exact) or
+        overflows past it (external corner — overhang). The wall LEAVING an
+        internal corner starts one shutter width in, because the previous
+        wall&apos;s board already sits against its face — that&apos;s the
+        automatic default; flip it per corner with the &ldquo;Absorb at
+        start/end&rdquo; boxes if the crew runs that joint the other way. The
+        floor plan flags any corner where boards would overlap (neither wall
+        absorbs) or leave a gap (both absorb): concrete escapes through gaps,
+        and two boards can&apos;t occupy the same space. Rebate corners work the
+        same way with the rebate offsets.
       </Section>
 
       <Section title='Polystyrene shorts ("p")'>

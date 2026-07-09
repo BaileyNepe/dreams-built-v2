@@ -54,8 +54,12 @@ export const rebateReachesEnd = (wall: Wall): boolean =>
   );
 
 /**
- * Corner adjustments resolved from the auto convention (the wall arriving
- * at a corner handles it at its end) plus any per-wall overrides.
+ * Corner adjustments resolved from the auto convention plus any per-wall
+ * overrides. Shutters: a run goes until it hits the next wall (internal
+ * end — exact) or overflows past it (external end — overhang cap); the
+ * wall LEAVING an internal corner starts one board thickness in, because
+ * the previous wall's board already sits against its face. Rebate joints
+ * stay with the arriving wall (offset/extend at its end by corner kind).
  */
 export type ResolvedEnds = {
   absorbAtStart: boolean;
@@ -75,8 +79,8 @@ export const resolveEnds = (
   const endInternal = wall.cornerEnd === 'internal';
 
   return {
-    absorbAtStart: wall.absorbShutterAtStart ?? false,
-    absorbAtEnd: wall.absorbShutterAtEnd ?? endInternal,
+    absorbAtStart: wall.absorbShutterAtStart ?? wall.cornerStart === 'internal',
+    absorbAtEnd: wall.absorbShutterAtEnd ?? false,
     overhangCapAtEnd: wall.overhangCapAtEnd ?? wall.cornerEnd === 'external',
     rebate: {
       // The departing wall's strip gives way where the previous wall's
@@ -205,7 +209,9 @@ export const computeWall = (
       cuts.push(...inset.cuts);
       if (trailingBlk) cuts.push(blkCut(rules));
       else endOverhang = inset.overhangMm + capExtra;
-      cursor = trailingBlk ? spanEnd - thickness : spanEnd;
+      // The board after the step starts clear of the BLK at the brick
+      // line — no overlap (the BLK fills shutter-to-brick-line itself).
+      cursor = spanEnd;
     });
     if (cursor < wall.lengthMm) {
       const lastBoard = packRun(
