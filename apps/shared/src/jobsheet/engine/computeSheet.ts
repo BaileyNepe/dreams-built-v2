@@ -89,11 +89,21 @@ export const resolveEnds = (
     overhangCapAtEnd: wall.overhangCapAtEnd ?? wall.cornerEnd === 'external',
     rebate: {
       // The departing wall's strip gives way where the previous wall's
-      // rebate crosses the corner ("1800 − previous wall").
+      // rebate crosses the corner ("1800 − previous wall"). Wall 1 is
+      // bricked first, so its strip runs from its very beginning — the
+      // LAST wall takes the give-way at its end at the closing corner.
       offsetAtStart:
         wall.rebateOffsetAtStart ??
-        (wall.cornerStart === 'external' && rebateReachesStart(wall) && prevReaches),
-      offsetAtEnd: wall.rebateOffsetAtEnd ?? false,
+        (!(neighbours.isFirst ?? false) &&
+          wall.cornerStart === 'external' &&
+          rebateReachesStart(wall) &&
+          prevReaches),
+      offsetAtEnd:
+        wall.rebateOffsetAtEnd ??
+        ((neighbours.isLast ?? false) &&
+          wall.cornerEnd === 'external' &&
+          rebateReachesEnd(wall) &&
+          nextReaches),
       extendAtStart: wall.rebateExtendAtStart ?? false,
       extendAtEnd:
         wall.rebateExtendAtEnd ?? (endInternal && rebateReachesEnd(wall) && nextReaches)

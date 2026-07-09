@@ -63,9 +63,14 @@ export const InstructionsDialog: FC<{ open: boolean; onClose: () => void }> = ({
 
       <Section title="Rebates">
         The brick rebate runs along the inside of the perimeter shutter and never
-        overhangs. Where a perpendicular brick face crosses, tick the rebate offset
-        for that end. Walls without brick veneer (e.g. garage walls): untick
-        &ldquo;Has rebate&rdquo; and the row shows &ldquo;-&rdquo;.
+        overhangs. Where a perpendicular brick face crosses, the departing
+        wall&apos;s strip gives way one rebate width — except wall 1, which is
+        bricked first and always starts from its very beginning; the last
+        wall&apos;s strip gives way at the closing corner instead. Joinery does
+        NOT stop the brick rebate — the shelf runs through under doors and
+        windows; only a garage door breaks the run. Walls without brick veneer
+        (e.g. garage walls): untick &ldquo;Has rebate&rdquo; and the row shows
+        &ldquo;-&rdquo;.
       </Section>
 
       <Section title="Partial brick: type the wall in segments">

@@ -55,9 +55,10 @@ export const openingKindSchema = z.enum([
 export type OpeningKind = z.infer<typeof openingKindSchema>;
 
 /**
- * An opening along a wall. `hasRebate: false` (full-height joinery: garage
- * doors, entry doors, sliders, stackers) splits the brick rebate run into
- * segments around the opening.
+ * An opening along a wall. `hasRebate: false` splits the brick rebate run
+ * into segments around the opening. Regular joinery (entry doors, sliders,
+ * stackers, windows) does NOT stop the brick shelf — it runs through under
+ * the opening — so only garage doors default to `hasRebate: false`.
  */
 export const openingSchema = z.object({
   kind: openingKindSchema,

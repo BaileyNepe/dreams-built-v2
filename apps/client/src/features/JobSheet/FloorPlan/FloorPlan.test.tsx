@@ -68,10 +68,11 @@ describe('FloorPlanPanel', () => {
   });
 
   it('flags overlapping rebate strips at an unsealed corner with a chip and marker', () => {
-    // Force OFF the auto offset that seals the corner between walls 4 and 1
-    // (the departing wall's strip gives way at its start by convention).
+    // Force OFF the auto offset that seals the closing corner between walls
+    // 4 and 1 (wall 1 always starts full; the LAST wall gives way at its
+    // end by convention).
     const walls = sealedRectangle().map((w) =>
-      w.id === 'w1' ? { ...w, rebateOffsetAtStart: false as boolean | null } : w
+      w.id === 'w4' ? { ...w, rebateOffsetAtEnd: false as boolean | null } : w
     );
     renderPanel(outlineOf(walls));
 

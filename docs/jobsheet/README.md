@@ -30,8 +30,9 @@ Open it from a project's detail page → **Job Sheet**.
   wall (Auto / On / Off).
 - **Rebate**: runs along the inside of the perimeter shutter and **never
   overhangs**. Per end, an offset (default 120mm) applies where a
-  perpendicular brick face crosses. Openings with "Has rebate" unticked
-  (garage doors, sliders, entry doors…) split the rebate run into segments.
+  perpendicular brick face crosses. Regular joinery does NOT stop the brick
+  shelf — it runs through under doors and windows; only openings with "Has
+  rebate" unticked (garage doors, by default) split the run into segments.
   Walls with no brick veneer at all: untick "Has rebate" → the row prints
   `-`.
 - **BLK**: an inset piece (≈120×65) marking where rebate coverage starts or

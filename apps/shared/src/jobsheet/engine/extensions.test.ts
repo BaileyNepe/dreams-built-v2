@@ -258,6 +258,32 @@ describe('absorb convention: departing wall starts 65 in, wall 1 excepted', () =
     // Wall 4: starts 65 in AND absorbs at its end against wall 1's board.
     expect(runs).toEqual([2400, 2335, 2335, 2270]);
   });
+
+  it('wall 1’s rebate starts at the wall beginning; the last wall gives way', () => {
+    // All-external brick square, everything on auto.
+    const ring = {
+      ...nineWarrenLaneData,
+      walls: (['a', 'b', 'c', 'd'] as const).map((id) => ({
+        ...baseWall,
+        id,
+        lengthMm: 2400,
+        absorbShutterAtStart: null,
+        absorbShutterAtEnd: null,
+        rebateOffsetAtStart: null,
+        rebateOffsetAtEnd: null,
+        rebateExtendAtStart: null,
+        rebateExtendAtEnd: null,
+        overhangCapAtEnd: null
+      }))
+    };
+    const sheet = computeJobSheet(ring, rules);
+    const strips = sheet.walls.map((w) =>
+      w.rebate.reduce((acc, run) => acc + run.effectiveLengthMm, 0)
+    );
+    // Wall 1 bricked first: full strip. Walls 2-3 give way at their start.
+    // Wall 4 gives way at its start AND at its end against wall 1's strip.
+    expect(strips).toEqual([2400, 2280, 2280, 2160]);
+  });
 });
 
 describe('partial-rebate wall (Bailey wall-5 diagram)', () => {
