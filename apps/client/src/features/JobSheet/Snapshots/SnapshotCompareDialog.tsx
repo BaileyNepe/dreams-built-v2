@@ -1,5 +1,6 @@
 import { diffSheets, type SheetDiff } from '@dreams-built/shared/src/jobsheet/engine/diff';
 import {
+  migrateJobSheetData,
   snapshotBlobSchema,
   type SnapshotBlob
 } from '@dreams-built/shared/src/jobsheet/types';
@@ -29,7 +30,8 @@ const useBlobFor = (selection: string, live: SnapshotBlob): SnapshotBlob | null 
   return useMemo(() => {
     if (selection === CURRENT) return live;
     if (!snapshot.data) return null;
-    return snapshotBlobSchema.parse(snapshot.data.blob);
+    const parsed = snapshotBlobSchema.parse(snapshot.data.blob);
+    return { ...parsed, data: migrateJobSheetData(parsed.data) };
   }, [selection, snapshot.data, live]);
 };
 

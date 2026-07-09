@@ -183,6 +183,32 @@ export const jobSheetDataSchema = z.object({
 });
 export type JobSheetData = z.infer<typeof jobSheetDataSchema>;
 
+/**
+ * One-time migration: inset transitions used to be modelled as openings
+ * with `blk: true`; they are wall.rebateInsets now. Apply after parsing
+ * anywhere persisted sheet data is loaded.
+ */
+export const migrateJobSheetData = (data: JobSheetData): JobSheetData => {
+  let changed = false;
+  const walls = data.walls.map((wall) => {
+    const legacy = wall.openings.filter((o) => o.blk && !o.hasRebate);
+    if (legacy.length === 0) return wall;
+    changed = true;
+    return {
+      ...wall,
+      openings: wall.openings.filter((o) => !(o.blk && !o.hasRebate)),
+      rebateInsets: [
+        ...wall.rebateInsets,
+        ...legacy.map((o) => ({
+          offsetFromStartMm: o.offsetFromStartMm,
+          widthMm: o.widthMm
+        }))
+      ]
+    };
+  });
+  return changed ? { ...data, walls } : data;
+};
+
 /* ------------------------------------------------------------------ */
 /* Computed output (derived by the engine, never persisted on the sheet)*/
 /* ------------------------------------------------------------------ */

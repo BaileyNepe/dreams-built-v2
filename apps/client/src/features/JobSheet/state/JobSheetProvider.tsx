@@ -2,6 +2,7 @@ import { computeJobSheet } from '@dreams-built/shared/src/jobsheet/engine/comput
 import {
   jobSheetDataSchema,
   jobSheetRulesSchema,
+  migrateJobSheetData,
   type ComputedSheet,
   type JobSheetData,
   type JobSheetRules
@@ -78,7 +79,7 @@ export const JobSheetProvider: FC<
   // refresh) takes precedence when it was based on the server's current
   // revision — it is strictly newer work from this device.
   const [initial] = useState(() => {
-    const serverData = jobSheetDataSchema.parse(sheet.data);
+    const serverData = migrateJobSheetData(jobSheetDataSchema.parse(sheet.data));
     const draft = canEdit ? readDraft(sheet.id) : null;
     if (
       draft &&
@@ -133,7 +134,7 @@ export const JobSheetProvider: FC<
         setRules(jobSheetRulesSchema.parse(serverSheet.rules));
         dispatch({
           type: 'replaceAll',
-          data: jobSheetDataSchema.parse(serverSheet.data)
+          data: migrateJobSheetData(jobSheetDataSchema.parse(serverSheet.data))
         });
       }
     }),

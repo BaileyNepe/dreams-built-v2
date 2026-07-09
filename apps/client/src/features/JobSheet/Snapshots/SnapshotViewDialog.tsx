@@ -1,5 +1,5 @@
 import { computeJobSheet } from '@dreams-built/shared/src/jobsheet/engine/computeSheet';
-import { snapshotBlobSchema } from '@dreams-built/shared/src/jobsheet/types';
+import { migrateJobSheetData, snapshotBlobSchema } from '@dreams-built/shared/src/jobsheet/types';
 import { Skeleton, Typography } from '@mui/material';
 import { useSnapshot } from 'api/jobsheets';
 import { useClient } from 'api/clients';
@@ -22,8 +22,9 @@ export const SnapshotViewDialog: FC<{
   const blob = useMemo(() => {
     if (!snapshot.data) return null;
     const parsed = snapshotBlobSchema.parse(snapshot.data.blob);
+    const data = migrateJobSheetData(parsed.data);
     // Recompute for display: deterministic given data + rules, and typed.
-    return { ...parsed, computed: computeJobSheet(parsed.data, parsed.rules) };
+    return { ...parsed, data, computed: computeJobSheet(data, parsed.rules) };
   }, [snapshot.data]);
 
   return (

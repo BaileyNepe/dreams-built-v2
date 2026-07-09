@@ -13,6 +13,7 @@ import { computeJobSheet } from '@dreams-built/shared/src/jobsheet/engine/comput
 import {
   jobSheetDataSchema,
   jobSheetRulesSchema,
+  migrateJobSheetData,
   snapshotBlobSchema,
   type JobSheetData
 } from '@dreams-built/shared/src/jobsheet/types';
@@ -157,7 +158,7 @@ export const removeSheet = async (db: Db, sheetId: string) => {
 /* ------------------------------------------------------------------ */
 
 const buildBlob = (sheet: { data: unknown; rules: unknown }) => {
-  const data = jobSheetDataSchema.parse(sheet.data);
+  const data = migrateJobSheetData(jobSheetDataSchema.parse(sheet.data));
   const rules = jobSheetRulesSchema.parse(sheet.rules);
   return { data, rules, computed: computeJobSheet(data, rules) };
 };
