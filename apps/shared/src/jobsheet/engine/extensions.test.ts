@@ -230,3 +230,51 @@ describe('diffSheets', () => {
     expect(w13?.after?.shutters).toBe('1200 320p');
   });
 });
+
+describe('partial-rebate wall (Bailey wall-5 diagram)', () => {
+  // 6000 wall: brick 1800 | bare 2400 (BLK caps) | brick 1800; the previous
+  // wall carries rebate across the external start corner.
+  const prev: Wall = { ...baseWall, id: 'w4', lengthMm: 2400 };
+  const wall5: Wall = {
+    ...baseWall,
+    id: 'w5',
+    lengthMm: 6000,
+    absorbShutterAtStart: null,
+    absorbShutterAtEnd: null,
+    rebateOffsetAtStart: null,
+    rebateOffsetAtEnd: null,
+    rebateExtendAtStart: null,
+    rebateExtendAtEnd: null,
+    overhangCapAtEnd: null,
+    openings: [
+      {
+        kind: 'other',
+        widthMm: 2400,
+        offsetFromStartMm: 1800,
+        hasRebate: false,
+        blk: true
+      }
+    ]
+  };
+  const next: Wall = { ...baseWall, id: 'w6', hasRebate: false };
+
+  it('steps the shutter run: boards over the BLKs, exact poly inset between', () => {
+    const w = computeWall(wall5, 4, rules, { prev, next });
+    expect(w.shutters.cuts.map(formatCut)).toEqual([
+      '2400', // covers 1800 + 65 (over the BLK), overhang allowed
+      'BLK',
+      '1800',
+      '470p', // inset run 2400 − 2×65 = 2270, exact, polystyrene
+      'BLK',
+      '2400' // covers 65 + 1800 + corner cap, overhang allowed
+    ]);
+  });
+
+  it('keeps the rebate exact with the previous-wall deduction and no BLKs', () => {
+    const w = computeWall(wall5, 4, rules, { prev, next });
+    expect(w.rebate.map((run) => run.cuts.map(formatCut))).toEqual([
+      ['1200', '480'], // 1800 − 120 for the previous wall's crossing strip
+      ['1800']
+    ]);
+  });
+});

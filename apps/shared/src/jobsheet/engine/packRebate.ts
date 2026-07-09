@@ -14,7 +14,7 @@
  * with overhang instead of an exact short.
  */
 
-import type { Cut, JobSheetRules, PackedRun, Wall } from '../types';
+import type { JobSheetRules, PackedRun, Wall } from '../types';
 import { packRun } from './packRun';
 
 /** The wall-end adjustments after auto/override resolution. */
@@ -23,8 +23,6 @@ export type ResolvedRebateEnds = {
   offsetAtEnd: boolean;
   extendAtStart: boolean;
   extendAtEnd: boolean;
-  /** Allow the final segment to overhang past the wall end (open channel). */
-  overhangAtWallEnd: boolean;
 };
 
 export type RebateSegment = {
@@ -88,15 +86,10 @@ export const computeRebateSegments = (
   return segments;
 };
 
-const blkCut = (rules: JobSheetRules): Cut => ({
-  kind: 'blk',
-  lengthMm: rules.blkLengthMm,
-  polystyrene: false
-});
-
 /**
- * Pack the brick rebate for a wall: one `PackedRun` per sub-segment.
- * `polystyreneShort` is the wall's resolved polystyrene flag.
+ * Pack the brick rebate for a wall: one `PackedRun` per sub-segment. The
+ * rebate NEVER overhangs and never carries BLKs — the strip runs exactly
+ * to the brick line; the BLK steps belong to the shutter run.
  */
 export const packRebateForWall = (
   wall: Wall,
@@ -106,22 +99,7 @@ export const packRebateForWall = (
 ): PackedRun[] => {
   if (!wall.hasRebate) return [];
 
-  const segments = computeRebateSegments(wall, rules, ends);
-  return segments.map((seg, index) => {
-    const isLast = index === segments.length - 1;
-    const overhangAtEnd = seg.blkAtEnd || (isLast && ends.overhangAtWallEnd);
-    const run = packRun(
-      seg.endMm - seg.startMm,
-      { overhangAtEnd, polystyreneShort },
-      rules
-    );
-    return {
-      ...run,
-      cuts: [
-        ...(seg.blkAtStart ? [blkCut(rules)] : []),
-        ...run.cuts,
-        ...(seg.blkAtEnd ? [blkCut(rules)] : [])
-      ]
-    };
-  });
+  return computeRebateSegments(wall, rules, ends).map((seg) =>
+    packRun(seg.endMm - seg.startMm, { overhangAtEnd: false, polystyreneShort }, rules)
+  );
 };

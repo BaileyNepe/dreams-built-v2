@@ -136,7 +136,7 @@ const placeRebate = (
   computedWall: ComputedWall,
   rules: JobSheetRules
 ): { segments: PlacedRebateSegment[]; insets: InsetSpan[] } => {
-  const geometric = computeRebateSegments(wall, rules, resolveEnds(wall, next).rebate);
+  const geometric = computeRebateSegments(wall, rules, resolveEnds(wall, { next }).rebate);
   // Overridden walls may have a different number of runs than the geometric
   // segmentation suggests; align what we can and lay the rest sequentially.
   const segments = computedWall.rebate.map((run, index) => {
@@ -209,8 +209,8 @@ const computeCornerIssues = (
     const wallNumber = i + 1;
     const nextWallNumber = j + 1;
 
-    const wallEnds = resolveEnds(wall, next);
-    const nextEnds = resolveEnds(next, walls[(j + 1) % walls.length]);
+    const wallEnds = resolveEnds(wall, { prev: walls[(i - 1 + walls.length) % walls.length], next });
+    const nextEnds = resolveEnds(next, { prev: wall, next: walls[(j + 1) % walls.length] });
 
     if (wall.cornerEnd === 'internal') {
       // The perpendicular shutter consumes one board thickness inside the
@@ -298,7 +298,10 @@ export const computeFloorOutline = (
     // Shutter cuts start after any absorbed board at the wall start; BLK
     // markers at the very start would otherwise push everything sideways,
     // so the offset only applies to the packed run itself.
-    const ends = resolveEnds(wall, data.walls[(index + 1) % data.walls.length]);
+    const ends = resolveEnds(wall, {
+      prev: data.walls[(index - 1 + data.walls.length) % data.walls.length],
+      next: data.walls[(index + 1) % data.walls.length]
+    });
     const absorbOffset = ends.absorbAtStart ? rules.shutterThicknessMm : 0;
 
     walls.push({

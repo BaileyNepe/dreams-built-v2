@@ -27,7 +27,7 @@
  * with a larger overhang — the Rules dialog warns about that.
  */
 
-import type { Cut, JobSheetRules, PackedRun, Wall } from '../types';
+import type { Cut, JobSheetRules, PackedRun } from '../types';
 
 export type PackOptions = {
   /** Allow overhang past the end of the run (external corner ends). */
@@ -134,15 +134,3 @@ export const packRun = (
   cuts.push(standardCut(cover));
   return { effectiveLengthMm: lengthMm, cuts, overhangMm: cover - remaining };
 };
-
-/**
- * Effective shutter run length for a wall: the measurement minus one
- * shutter thickness for each internal-corner end flagged as absorbing the
- * perpendicular wall's board. May be negative on a transiently misconfigured
- * wall — callers (computeWall) clamp to 0 and surface a warning instead of
- * throwing, so live editing never crashes.
- */
-export const computeShutterRunLength = (wall: Wall, rules: JobSheetRules): number =>
-  wall.lengthMm -
-  (wall.absorbShutterAtStart ? rules.shutterThicknessMm : 0) -
-  (wall.absorbShutterAtEnd ? rules.shutterThicknessMm : 0);

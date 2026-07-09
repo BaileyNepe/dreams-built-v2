@@ -34,7 +34,6 @@ const ends = (patch: Partial<ResolvedRebateEnds> = {}): ResolvedRebateEnds => ({
   offsetAtEnd: false,
   extendAtStart: false,
   extendAtEnd: false,
-  overhangAtWallEnd: false,
   ...patch
 });
 
@@ -96,6 +95,7 @@ describe('packRebateForWall: openings split the run', () => {
             widthMm: 4850,
             offsetFromStartMm: 785,
             hasRebate: false,
+            blk: false,
             label: 'Garage Door'
           }
         ]
@@ -116,7 +116,7 @@ describe('packRebateForWall: openings split the run', () => {
         ...baseWall,
         lengthMm: 3000,
         openings: [
-          { kind: 'window', widthMm: 900, offsetFromStartMm: 1000, hasRebate: true }
+          { kind: 'window', widthMm: 900, offsetFromStartMm: 1000, hasRebate: true, blk: false }
         ]
       },
       rules,

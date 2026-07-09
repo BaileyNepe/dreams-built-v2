@@ -135,7 +135,8 @@ describe('computeFloorOutline: placements', () => {
             kind: 'garage_door',
             widthMm: 4850,
             offsetFromStartMm: 785,
-            hasRebate: false
+            hasRebate: false,
+            blk: false
           }
         ]
       }),

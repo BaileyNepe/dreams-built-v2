@@ -2,7 +2,8 @@ import { describe, expect, it } from 'bun:test';
 
 import { DEFAULT_JOBSHEET_RULES } from '../defaults';
 import type { Wall } from '../types';
-import { computeShutterRunLength, packRun } from './packRun';
+import { computeShutterRunLength, resolveEnds } from './computeSheet';
+import { packRun } from './packRun';
 
 const rules = DEFAULT_JOBSHEET_RULES;
 
@@ -180,6 +181,9 @@ describe('computeShutterRunLength', () => {
     hasRebate: false,
     rebateOffsetAtStart: false,
     rebateOffsetAtEnd: false,
+    rebateExtendAtStart: false,
+    rebateExtendAtEnd: false,
+    overhangCapAtEnd: false,
     blkAtStart: false,
     blkAtEnd: false,
     openings: [],
@@ -189,34 +193,32 @@ describe('computeShutterRunLength', () => {
     notes: '',
     override: null
   };
+  const endsFor = (wall: Wall) => resolveEnds(wall, {});
 
   it('returns the wall length untouched with no absorb flags', () => {
-    expect(computeShutterRunLength({ ...baseWall, lengthMm: 4480 }, rules)).toBe(4480);
+    const wall = { ...baseWall, lengthMm: 4480 };
+    expect(computeShutterRunLength(wall, rules, endsFor(wall))).toBe(4480);
   });
 
   it('subtracts one shutter thickness per absorbing end', () => {
-    expect(
-      computeShutterRunLength({ ...baseWall, absorbShutterAtEnd: true }, rules)
-    ).toBe(1555);
-    expect(
-      computeShutterRunLength(
-        { ...baseWall, absorbShutterAtStart: true, absorbShutterAtEnd: true },
-        rules
-      )
-    ).toBe(1490);
+    const one = { ...baseWall, absorbShutterAtEnd: true };
+    expect(computeShutterRunLength(one, rules, endsFor(one))).toBe(1555);
+    const both = { ...baseWall, absorbShutterAtStart: true, absorbShutterAtEnd: true };
+    expect(computeShutterRunLength(both, rules, endsFor(both))).toBe(1490);
+  });
+
+  it('absorbs automatically at an internal end corner when unset (auto)', () => {
+    const wall = { ...baseWall, absorbShutterAtEnd: null };
+    expect(computeShutterRunLength(wall, rules, endsFor(wall))).toBe(1555);
   });
 
   it('goes negative (not throwing) when allowances exceed the length', () => {
-    expect(
-      computeShutterRunLength(
-        {
-          ...baseWall,
-          lengthMm: 100,
-          absorbShutterAtStart: true,
-          absorbShutterAtEnd: true
-        },
-        rules
-      )
-    ).toBe(-30);
+    const wall = {
+      ...baseWall,
+      lengthMm: 100,
+      absorbShutterAtStart: true,
+      absorbShutterAtEnd: true
+    };
+    expect(computeShutterRunLength(wall, rules, endsFor(wall))).toBe(-30);
   });
 });
