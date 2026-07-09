@@ -82,14 +82,19 @@ export const getSheetByProject = async (db: Db, projectId: string) =>
  * an existing live sheet is returned as-is; a soft-deleted one is reset in
  * place (projectId is unique, so re-inserting would violate the index).
  */
-export const createSheet = async (db: Db, projectId: string) => {
+export const createSheet = async (db: Db, projectId: string, wallCount = 0) => {
   const project = await db.project.findFirst({
     where: { id: projectId, deleted: false }
   });
   if (!project) throw notFound('Project');
 
   const activeRules = await getActiveRules(db);
-  const emptyData: JobSheetData = jobSheetDataSchema.parse({});
+  const emptyData: JobSheetData = jobSheetDataSchema.parse({
+    walls: Array.from({ length: wallCount }, () => ({
+      id: crypto.randomUUID(),
+      lengthMm: 0
+    }))
+  });
 
   const existing = await db.jobSheet.findUnique({ where: { projectId } });
   if (existing && !existing.deleted) return existing;

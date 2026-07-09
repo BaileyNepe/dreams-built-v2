@@ -24,8 +24,13 @@ export const jobSheetsRouter = trpc.router({
     .query(({ ctx, input }) => getSheetByProject(ctx.db, input.projectId)),
 
   create: protectedProcedure([authz.jobs_edit])
-    .input(z.object({ projectId: z.string() }))
-    .mutation(({ ctx, input }) => createSheet(ctx.db, input.projectId)),
+    .input(
+      z.object({
+        projectId: z.string(),
+        wallCount: z.number().int().min(0).max(50).default(0)
+      })
+    )
+    .mutation(({ ctx, input }) => createSheet(ctx.db, input.projectId, input.wallCount)),
 
   // Autosave endpoint: optimistic-lock save of the whole document.
   save: protectedProcedure([authz.jobs_edit])

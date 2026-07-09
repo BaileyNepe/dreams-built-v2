@@ -172,6 +172,7 @@ const JobSheetContent: FC = () => {
 
   const sheet = useJobSheet(projectId);
   const createSheet = useCreateJobSheetMutation();
+  const [wallCount, setWallCount] = useState('8');
 
   return (
     <>
@@ -205,13 +206,38 @@ const JobSheetContent: FC = () => {
             Create the shutter &amp; rebate cut sheet for this job.
           </Typography>
           {canEdit && (
-            <Button
-              variant="contained"
-              disabled={createSheet.isPending}
-              onClick={() => createSheet.mutate({ projectId })}
+            <Box
+              sx={{
+                display: 'flex',
+                gap: 1.5,
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}
             >
-              Create job sheet
-            </Button>
+              <TextField
+                size="small"
+                type="number"
+                label="Walls"
+                value={wallCount}
+                sx={{ width: '6rem' }}
+                inputProps={{ min: 0, max: 50 }}
+                onChange={(event) => setWallCount(event.target.value)}
+                helperText="Rows to start with"
+              />
+              <Button
+                variant="contained"
+                disabled={createSheet.isPending}
+                sx={{ alignSelf: 'flex-start', mt: 0.25 }}
+                onClick={() =>
+                  createSheet.mutate({
+                    projectId,
+                    wallCount: Math.min(50, Math.max(0, Math.floor(Number(wallCount) || 0)))
+                  })
+                }
+              >
+                Create job sheet
+              </Button>
+            </Box>
           )}
         </Box>
       )}
