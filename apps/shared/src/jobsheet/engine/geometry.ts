@@ -134,11 +134,11 @@ const BLK_THICKNESS_MM = 65;
 
 const placeRebate = (
   wall: Wall,
-  next: Wall | undefined,
+  neighbours: { prev?: Wall; next?: Wall },
   computedWall: ComputedWall,
   rules: JobSheetRules
 ): PlacedRebateSegment[] => {
-  const geometric = computeRebateSegments(wall, rules, resolveEnds(wall, { next }).rebate);
+  const geometric = computeRebateSegments(wall, rules, resolveEnds(wall, neighbours).rebate);
   // Overridden walls may have a different number of runs than the geometric
   // segmentation suggests; align what we can and lay the rest sequentially.
   const segments = computedWall.rebate.map((run, index) => {
@@ -346,7 +346,9 @@ export const computeFloorOutline = (
         shutterCuts.push(
           ...placeCuts(
             groups[groupIndex] ?? [],
-            spanStart + (leadingBlk ? thickness : 0)
+            // A span reaching the wall start lays from the absorb cursor,
+            // matching the engine's inset-run start.
+            leadingBlk ? spanStart + thickness : cursor
           ).map((placed) => ({ ...placed, insetMm: rules.rebateWidthMm }))
         );
         groupIndex += 1;
@@ -385,7 +387,10 @@ export const computeFloorOutline = (
       shutterCuts,
       rebateSegments: placeRebate(
         wall,
-        data.walls[(index + 1) % data.walls.length],
+        {
+          prev: data.walls[(index - 1 + data.walls.length) % data.walls.length],
+          next: data.walls[(index + 1) % data.walls.length]
+        },
         computedWall,
         rules
       ),
