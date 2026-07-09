@@ -304,7 +304,8 @@ export const FloorPlanSvg: FC<{
         height: 'auto',
         display: 'block',
         cursor: dragRef.current ? 'grabbing' : 'grab',
-        touchAction: 'none'
+        touchAction: 'none',
+        userSelect: 'none'
       }}
       data-testid="floor-plan-svg"
       onPointerDown={onPointerDown}
