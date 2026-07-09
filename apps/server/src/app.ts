@@ -7,6 +7,7 @@ import { apiRouter } from 'api';
 
 import cacheApi from 'api/cache/routes';
 import healthApi from 'api/health/route';
+import xeroOauthApi from 'api/xero/oauth/route';
 import compression from 'compression';
 import cors from 'cors';
 import express, { json } from 'express';
@@ -29,6 +30,7 @@ app.options('*', cors());
 
 app.use(`${v1Prefix}/health`, healthApi);
 app.use(`${v1Prefix}/clear-cache`, cacheApi);
+app.use(`${v1Prefix}/xero`, xeroOauthApi);
 
 app.use(
   '/trpc/v1',

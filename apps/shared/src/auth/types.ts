@@ -14,6 +14,11 @@ const AuthzSchema = z.enum([
   'schedule:edit',
   'messages:read',
   'upload',
+  // Xero / payroll permissions
+  'xero:manage',
+  'payroll:manage',
+  'payroll:view:all',
+  'payroll:view:self',
   // Forum permissions
   'forum:create:post',
   'forum:update:post',

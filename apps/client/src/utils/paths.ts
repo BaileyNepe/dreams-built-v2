@@ -26,6 +26,11 @@ export const paths = {
 
   messages: '/dashboard/messages',
 
+  payroll: '/dashboard/payroll',
+  payrollPayRun: '/dashboard/payroll/payrun/$payRunId',
+  myPay: '/dashboard/payroll/me',
+  settingsXero: '/dashboard/settings/xero',
+
   logout: '/logout',
 
   contact: '/contact',

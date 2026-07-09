@@ -11,12 +11,13 @@ datasource db {
 }
 
 model Client {
-    id        String    @id @default(cuid())
-    name      String    @default("")
-    color     String    @default("")
-    createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
-    updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
-    project   Project[]
+    id            String    @id @default(cuid())
+    name          String    @default("")
+    color         String    @default("")
+    xeroContactId String?   @unique @map("xero_contact_id")
+    createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+    updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+    project       Project[]
 
     @@map("client")
 }
@@ -46,6 +47,9 @@ model Project {
     jobNumber  Int      @unique @map("job_number")
     clientId   String   @map("client_id")
     client     Client   @relation(fields: [clientId], references: [id])
+
+    xeroProjectId String?   @unique @map("xero_project_id")
+    xeroSyncedAt  DateTime? @map("xero_synced_at")
 
     timeEntry       TimeEntry[]
     projectSchedule ProjectSchedule[]
@@ -169,12 +173,15 @@ model User {
     image     String   @default("")
     deleted   Boolean  @default(false)
 
-    hourlyRate Float       @default(0) @map("hourly_rate")
-    authId     String      @unique @map("auth_id")
-    role       Role        @default(USER)
-    lastActive DateTime    @default(now()) @map("last_active") @db.Timestamptz(3)
-    timeEntry  TimeEntry[]
-    note       Note[]
+    hourlyRate     Float       @default(0) @map("hourly_rate")
+    authId         String      @unique @map("auth_id")
+    xeroEmployeeId String?     @unique @map("xero_employee_id")
+    role           Role        @default(USER)
+    lastActive     DateTime    @default(now()) @map("last_active") @db.Timestamptz(3)
+    timeEntry      TimeEntry[]
+    note           Note[]
+
+    xeroTimesheetExports XeroTimesheetExport[]
 
     // Forum relations
     forumPosts    ForumPost[]
@@ -227,6 +234,61 @@ model Note {
     user      User     @relation(fields: [userId], references: [id])
 
     @@map("note")
+}
+
+// Singleton row (id = "singleton") holding the app-wide Xero OAuth connection.
+// accessToken/refreshToken are AES-256-GCM encrypted (iv:tag:ciphertext, base64).
+model XeroConnection {
+    id                    String               @id @default("singleton")
+    tenantId              String               @default("") @map("tenant_id")
+    tenantName            String               @default("") @map("tenant_name")
+    accessToken           String               @default("") @map("access_token")
+    refreshToken          String               @default("") @map("refresh_token")
+    accessTokenExpiresAt  DateTime?            @map("access_token_expires_at")
+    scopes                String               @default("")
+    status                XeroConnectionStatus @default(DISCONNECTED)
+    defaultEarningsRateId String               @default("") @map("default_earnings_rate_id")
+    connectedById         String?              @map("connected_by_id")
+    createdAt             DateTime             @default(now()) @map("created_at")
+    updatedAt             DateTime             @updatedAt @map("updated_at")
+
+    @@map("xero_connection")
+}
+
+enum XeroConnectionStatus {
+    DISCONNECTED
+    CONNECTED
+    ERROR
+}
+
+model XeroTimesheetExport {
+    id                String           @id @default(cuid())
+    userId            String           @map("user_id")
+    weekStart         String           @map("week_start")
+    xeroTimesheetId   String           @default("") @map("xero_timesheet_id")
+    payrollCalendarId String           @default("") @map("payroll_calendar_id")
+    periodStartDate   String           @default("") @map("period_start_date")
+    periodEndDate     String           @default("") @map("period_end_date")
+    status            XeroExportStatus @default(PUSHED)
+    totalUnits        Float            @default(0) @map("total_units")
+    // Snapshot of the timesheet lines sent to Xero, for audit/diffing
+    lines             Json
+    error             String           @default("")
+    exportedById      String           @map("exported_by_id")
+    createdAt         DateTime         @default(now()) @map("created_at")
+    updatedAt         DateTime         @updatedAt @map("updated_at")
+
+    user User @relation(fields: [userId], references: [id])
+
+    @@unique([userId, weekStart])
+    @@map("xero_timesheet_export")
+}
+
+enum XeroExportStatus {
+    PUSHED
+    APPROVED
+    REVERSED
+    FAILED
 }
 
 model Contact {

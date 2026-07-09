@@ -10,6 +10,7 @@ import { reportsRouter } from './report/route';
 import { scheduleRouter } from './schedule/routes';
 import { timesheetRouter } from './timesheet/routes';
 import { userRouter } from './user/routes';
+import { xeroRouter } from './xero/routes';
 
 export const apiRouter = trpc.router({
   users: userRouter,
@@ -22,7 +23,8 @@ export const apiRouter = trpc.router({
   schedule: scheduleRouter,
   reports: reportsRouter,
   contact: contactRouter,
-  forum: forumRouter
+  forum: forumRouter,
+  xero: xeroRouter
 });
 
 export type ApiRouter = typeof apiRouter;

@@ -18,7 +18,15 @@ const rawEnv = {
   s3SecretKey: process.env.S3_SECRET_KEY,
   s3Region: process.env.S3_REGION,
   s3BucketName: process.env.S3_BUCKET_NAME,
-  cloudFrontUrl: process.env.CLOUDFRONT_URL
+  cloudFrontUrl: process.env.CLOUDFRONT_URL,
+
+  // Xero Configuration
+  clientUrl: process.env.CLIENT_URL,
+  xeroClientId: process.env.XERO_CLIENT_ID,
+  xeroClientSecret: process.env.XERO_CLIENT_SECRET,
+  xeroRedirectUri: process.env.XERO_REDIRECT_URI,
+  xeroScopes: process.env.XERO_SCOPES,
+  xeroTokenEncryptionKey: process.env.XERO_TOKEN_ENCRYPTION_KEY
 };
 
 const configValidation = z.object({
@@ -39,7 +47,20 @@ const configValidation = z.object({
   s3SecretKey: z.string(),
   s3Region: z.string(),
   s3BucketName: z.string(),
-  cloudFrontUrl: z.string()
+  cloudFrontUrl: z.string(),
+
+  // Optional so the server boots without a Xero app configured;
+  // the Xero routers reject with a clear error when unset.
+  clientUrl: z.string().default('http://localhost:3000'),
+  xeroClientId: z.string().default(''),
+  xeroClientSecret: z.string().default(''),
+  xeroRedirectUri: z.string().default(''),
+  xeroScopes: z
+    .string()
+    .default(
+      'openid profile email offline_access projects accounting.contacts payroll.employees.read payroll.settings.read payroll.payruns.read payroll.payslips.read payroll.timesheets'
+    ),
+  xeroTokenEncryptionKey: z.string().default('')
 });
 
 export const env = configValidation.parse(rawEnv);

@@ -21,6 +21,7 @@ import { Route as LandingAboutImport } from './routes/_landing/about'
 import { Route as DashboardDashboardClientsIndexImport } from './routes/_dashboard/dashboard/clients/index'
 import { Route as DashboardDashboardProjectsJobsheetProjectIdImport } from './routes/_dashboard/dashboard/projects/jobsheet.$projectId'
 import { Route as DashboardDashboardProjectsEditProjectIdImport } from './routes/_dashboard/dashboard/projects/edit.$projectId'
+import { Route as DashboardDashboardPayrollPayrunPayRunIdImport } from './routes/_dashboard/dashboard/payroll/payrun.$payRunId'
 import { Route as DashboardDashboardClientsEditClientIdImport } from './routes/_dashboard/dashboard/clients/edit.$clientId'
 
 // Create Virtual Routes
@@ -42,14 +43,23 @@ const DashboardDashboardReportsLazyImport = createFileRoute(
 const DashboardDashboardProjectsIndexLazyImport = createFileRoute(
   '/_dashboard/dashboard/projects/',
 )()
+const DashboardDashboardPayrollIndexLazyImport = createFileRoute(
+  '/_dashboard/dashboard/payroll/',
+)()
 const DashboardDashboardMessagesIndexLazyImport = createFileRoute(
   '/_dashboard/dashboard/messages/',
 )()
 const DashboardDashboardEmployeesIndexLazyImport = createFileRoute(
   '/_dashboard/dashboard/employees/',
 )()
+const DashboardDashboardSettingsXeroLazyImport = createFileRoute(
+  '/_dashboard/dashboard/settings/xero',
+)()
 const DashboardDashboardProjectsCreateLazyImport = createFileRoute(
   '/_dashboard/dashboard/projects/create',
+)()
+const DashboardDashboardPayrollMeLazyImport = createFileRoute(
+  '/_dashboard/dashboard/payroll/me',
 )()
 const DashboardDashboardEmployeesEmployeeIdLazyImport = createFileRoute(
   '/_dashboard/dashboard/employees/$employeeId',
@@ -147,6 +157,17 @@ const DashboardDashboardProjectsIndexLazyRoute =
     ),
   )
 
+const DashboardDashboardPayrollIndexLazyRoute =
+  DashboardDashboardPayrollIndexLazyImport.update({
+    id: '/dashboard/payroll/',
+    path: '/dashboard/payroll/',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/_dashboard/dashboard/payroll/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
 const DashboardDashboardMessagesIndexLazyRoute =
   DashboardDashboardMessagesIndexLazyImport.update({
     id: '/dashboard/messages/',
@@ -180,6 +201,17 @@ const DashboardDashboardClientsIndexRoute =
     ),
   )
 
+const DashboardDashboardSettingsXeroLazyRoute =
+  DashboardDashboardSettingsXeroLazyImport.update({
+    id: '/dashboard/settings/xero',
+    path: '/dashboard/settings/xero',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/_dashboard/dashboard/settings/xero.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
 const DashboardDashboardProjectsCreateLazyRoute =
   DashboardDashboardProjectsCreateLazyImport.update({
     id: '/dashboard/projects/create',
@@ -187,6 +219,17 @@ const DashboardDashboardProjectsCreateLazyRoute =
     getParentRoute: () => DashboardLazyRoute,
   } as any).lazy(() =>
     import('./routes/_dashboard/dashboard/projects/create.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const DashboardDashboardPayrollMeLazyRoute =
+  DashboardDashboardPayrollMeLazyImport.update({
+    id: '/dashboard/payroll/me',
+    path: '/dashboard/payroll/me',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/_dashboard/dashboard/payroll/me.lazy').then(
       (d) => d.Route,
     ),
   )
@@ -231,6 +274,17 @@ const DashboardDashboardProjectsEditProjectIdRoute =
     getParentRoute: () => DashboardLazyRoute,
   } as any).lazy(() =>
     import('./routes/_dashboard/dashboard/projects/edit.$projectId.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+
+const DashboardDashboardPayrollPayrunPayRunIdRoute =
+  DashboardDashboardPayrollPayrunPayRunIdImport.update({
+    id: '/dashboard/payroll/payrun/$payRunId',
+    path: '/dashboard/payroll/payrun/$payRunId',
+    getParentRoute: () => DashboardLazyRoute,
+  } as any).lazy(() =>
+    import('./routes/_dashboard/dashboard/payroll/payrun.$payRunId.lazy').then(
       (d) => d.Route,
     ),
   )
@@ -341,11 +395,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardDashboardEmployeesEmployeeIdLazyImport
       parentRoute: typeof DashboardLazyImport
     }
+    '/_dashboard/dashboard/payroll/me': {
+      id: '/_dashboard/dashboard/payroll/me'
+      path: '/dashboard/payroll/me'
+      fullPath: '/dashboard/payroll/me'
+      preLoaderRoute: typeof DashboardDashboardPayrollMeLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
     '/_dashboard/dashboard/projects/create': {
       id: '/_dashboard/dashboard/projects/create'
       path: '/dashboard/projects/create'
       fullPath: '/dashboard/projects/create'
       preLoaderRoute: typeof DashboardDashboardProjectsCreateLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/dashboard/settings/xero': {
+      id: '/_dashboard/dashboard/settings/xero'
+      path: '/dashboard/settings/xero'
+      fullPath: '/dashboard/settings/xero'
+      preLoaderRoute: typeof DashboardDashboardSettingsXeroLazyImport
       parentRoute: typeof DashboardLazyImport
     }
     '/_dashboard/dashboard/clients/': {
@@ -369,6 +437,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DashboardDashboardMessagesIndexLazyImport
       parentRoute: typeof DashboardLazyImport
     }
+    '/_dashboard/dashboard/payroll/': {
+      id: '/_dashboard/dashboard/payroll/'
+      path: '/dashboard/payroll'
+      fullPath: '/dashboard/payroll'
+      preLoaderRoute: typeof DashboardDashboardPayrollIndexLazyImport
+      parentRoute: typeof DashboardLazyImport
+    }
     '/_dashboard/dashboard/projects/': {
       id: '/_dashboard/dashboard/projects/'
       path: '/dashboard/projects'
@@ -381,6 +456,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard/clients/edit/$clientId'
       fullPath: '/dashboard/clients/edit/$clientId'
       preLoaderRoute: typeof DashboardDashboardClientsEditClientIdImport
+      parentRoute: typeof DashboardLazyImport
+    }
+    '/_dashboard/dashboard/payroll/payrun/$payRunId': {
+      id: '/_dashboard/dashboard/payroll/payrun/$payRunId'
+      path: '/dashboard/payroll/payrun/$payRunId'
+      fullPath: '/dashboard/payroll/payrun/$payRunId'
+      preLoaderRoute: typeof DashboardDashboardPayrollPayrunPayRunIdImport
       parentRoute: typeof DashboardLazyImport
     }
     '/_dashboard/dashboard/projects/edit/$projectId': {
@@ -409,12 +491,16 @@ interface DashboardLazyRouteChildren {
   DashboardDashboardIndexLazyRoute: typeof DashboardDashboardIndexLazyRoute
   DashboardDashboardClientsCreateLazyRoute: typeof DashboardDashboardClientsCreateLazyRoute
   DashboardDashboardEmployeesEmployeeIdLazyRoute: typeof DashboardDashboardEmployeesEmployeeIdLazyRoute
+  DashboardDashboardPayrollMeLazyRoute: typeof DashboardDashboardPayrollMeLazyRoute
   DashboardDashboardProjectsCreateLazyRoute: typeof DashboardDashboardProjectsCreateLazyRoute
+  DashboardDashboardSettingsXeroLazyRoute: typeof DashboardDashboardSettingsXeroLazyRoute
   DashboardDashboardClientsIndexRoute: typeof DashboardDashboardClientsIndexRoute
   DashboardDashboardEmployeesIndexLazyRoute: typeof DashboardDashboardEmployeesIndexLazyRoute
   DashboardDashboardMessagesIndexLazyRoute: typeof DashboardDashboardMessagesIndexLazyRoute
+  DashboardDashboardPayrollIndexLazyRoute: typeof DashboardDashboardPayrollIndexLazyRoute
   DashboardDashboardProjectsIndexLazyRoute: typeof DashboardDashboardProjectsIndexLazyRoute
   DashboardDashboardClientsEditClientIdRoute: typeof DashboardDashboardClientsEditClientIdRoute
+  DashboardDashboardPayrollPayrunPayRunIdRoute: typeof DashboardDashboardPayrollPayrunPayRunIdRoute
   DashboardDashboardProjectsEditProjectIdRoute: typeof DashboardDashboardProjectsEditProjectIdRoute
   DashboardDashboardProjectsJobsheetProjectIdRoute: typeof DashboardDashboardProjectsJobsheetProjectIdRoute
 }
@@ -428,17 +514,24 @@ const DashboardLazyRouteChildren: DashboardLazyRouteChildren = {
     DashboardDashboardClientsCreateLazyRoute,
   DashboardDashboardEmployeesEmployeeIdLazyRoute:
     DashboardDashboardEmployeesEmployeeIdLazyRoute,
+  DashboardDashboardPayrollMeLazyRoute: DashboardDashboardPayrollMeLazyRoute,
   DashboardDashboardProjectsCreateLazyRoute:
     DashboardDashboardProjectsCreateLazyRoute,
+  DashboardDashboardSettingsXeroLazyRoute:
+    DashboardDashboardSettingsXeroLazyRoute,
   DashboardDashboardClientsIndexRoute: DashboardDashboardClientsIndexRoute,
   DashboardDashboardEmployeesIndexLazyRoute:
     DashboardDashboardEmployeesIndexLazyRoute,
   DashboardDashboardMessagesIndexLazyRoute:
     DashboardDashboardMessagesIndexLazyRoute,
+  DashboardDashboardPayrollIndexLazyRoute:
+    DashboardDashboardPayrollIndexLazyRoute,
   DashboardDashboardProjectsIndexLazyRoute:
     DashboardDashboardProjectsIndexLazyRoute,
   DashboardDashboardClientsEditClientIdRoute:
     DashboardDashboardClientsEditClientIdRoute,
+  DashboardDashboardPayrollPayrunPayRunIdRoute:
+    DashboardDashboardPayrollPayrunPayRunIdRoute,
   DashboardDashboardProjectsEditProjectIdRoute:
     DashboardDashboardProjectsEditProjectIdRoute,
   DashboardDashboardProjectsJobsheetProjectIdRoute:
@@ -480,12 +573,16 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof DashboardDashboardIndexLazyRoute
   '/dashboard/clients/create': typeof DashboardDashboardClientsCreateLazyRoute
   '/dashboard/employees/$employeeId': typeof DashboardDashboardEmployeesEmployeeIdLazyRoute
+  '/dashboard/payroll/me': typeof DashboardDashboardPayrollMeLazyRoute
   '/dashboard/projects/create': typeof DashboardDashboardProjectsCreateLazyRoute
+  '/dashboard/settings/xero': typeof DashboardDashboardSettingsXeroLazyRoute
   '/dashboard/clients': typeof DashboardDashboardClientsIndexRoute
   '/dashboard/employees': typeof DashboardDashboardEmployeesIndexLazyRoute
   '/dashboard/messages': typeof DashboardDashboardMessagesIndexLazyRoute
+  '/dashboard/payroll': typeof DashboardDashboardPayrollIndexLazyRoute
   '/dashboard/projects': typeof DashboardDashboardProjectsIndexLazyRoute
   '/dashboard/clients/edit/$clientId': typeof DashboardDashboardClientsEditClientIdRoute
+  '/dashboard/payroll/payrun/$payRunId': typeof DashboardDashboardPayrollPayrunPayRunIdRoute
   '/dashboard/projects/edit/$projectId': typeof DashboardDashboardProjectsEditProjectIdRoute
   '/dashboard/projects/jobsheet/$projectId': typeof DashboardDashboardProjectsJobsheetProjectIdRoute
 }
@@ -503,12 +600,16 @@ export interface FileRoutesByTo {
   '/dashboard': typeof DashboardDashboardIndexLazyRoute
   '/dashboard/clients/create': typeof DashboardDashboardClientsCreateLazyRoute
   '/dashboard/employees/$employeeId': typeof DashboardDashboardEmployeesEmployeeIdLazyRoute
+  '/dashboard/payroll/me': typeof DashboardDashboardPayrollMeLazyRoute
   '/dashboard/projects/create': typeof DashboardDashboardProjectsCreateLazyRoute
+  '/dashboard/settings/xero': typeof DashboardDashboardSettingsXeroLazyRoute
   '/dashboard/clients': typeof DashboardDashboardClientsIndexRoute
   '/dashboard/employees': typeof DashboardDashboardEmployeesIndexLazyRoute
   '/dashboard/messages': typeof DashboardDashboardMessagesIndexLazyRoute
+  '/dashboard/payroll': typeof DashboardDashboardPayrollIndexLazyRoute
   '/dashboard/projects': typeof DashboardDashboardProjectsIndexLazyRoute
   '/dashboard/clients/edit/$clientId': typeof DashboardDashboardClientsEditClientIdRoute
+  '/dashboard/payroll/payrun/$payRunId': typeof DashboardDashboardPayrollPayrunPayRunIdRoute
   '/dashboard/projects/edit/$projectId': typeof DashboardDashboardProjectsEditProjectIdRoute
   '/dashboard/projects/jobsheet/$projectId': typeof DashboardDashboardProjectsJobsheetProjectIdRoute
 }
@@ -528,12 +629,16 @@ export interface FileRoutesById {
   '/_dashboard/dashboard/': typeof DashboardDashboardIndexLazyRoute
   '/_dashboard/dashboard/clients/create': typeof DashboardDashboardClientsCreateLazyRoute
   '/_dashboard/dashboard/employees/$employeeId': typeof DashboardDashboardEmployeesEmployeeIdLazyRoute
+  '/_dashboard/dashboard/payroll/me': typeof DashboardDashboardPayrollMeLazyRoute
   '/_dashboard/dashboard/projects/create': typeof DashboardDashboardProjectsCreateLazyRoute
+  '/_dashboard/dashboard/settings/xero': typeof DashboardDashboardSettingsXeroLazyRoute
   '/_dashboard/dashboard/clients/': typeof DashboardDashboardClientsIndexRoute
   '/_dashboard/dashboard/employees/': typeof DashboardDashboardEmployeesIndexLazyRoute
   '/_dashboard/dashboard/messages/': typeof DashboardDashboardMessagesIndexLazyRoute
+  '/_dashboard/dashboard/payroll/': typeof DashboardDashboardPayrollIndexLazyRoute
   '/_dashboard/dashboard/projects/': typeof DashboardDashboardProjectsIndexLazyRoute
   '/_dashboard/dashboard/clients/edit/$clientId': typeof DashboardDashboardClientsEditClientIdRoute
+  '/_dashboard/dashboard/payroll/payrun/$payRunId': typeof DashboardDashboardPayrollPayrunPayRunIdRoute
   '/_dashboard/dashboard/projects/edit/$projectId': typeof DashboardDashboardProjectsEditProjectIdRoute
   '/_dashboard/dashboard/projects/jobsheet/$projectId': typeof DashboardDashboardProjectsJobsheetProjectIdRoute
 }
@@ -553,12 +658,16 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/clients/create'
     | '/dashboard/employees/$employeeId'
+    | '/dashboard/payroll/me'
     | '/dashboard/projects/create'
+    | '/dashboard/settings/xero'
     | '/dashboard/clients'
     | '/dashboard/employees'
     | '/dashboard/messages'
+    | '/dashboard/payroll'
     | '/dashboard/projects'
     | '/dashboard/clients/edit/$clientId'
+    | '/dashboard/payroll/payrun/$payRunId'
     | '/dashboard/projects/edit/$projectId'
     | '/dashboard/projects/jobsheet/$projectId'
   fileRoutesByTo: FileRoutesByTo
@@ -575,12 +684,16 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/dashboard/clients/create'
     | '/dashboard/employees/$employeeId'
+    | '/dashboard/payroll/me'
     | '/dashboard/projects/create'
+    | '/dashboard/settings/xero'
     | '/dashboard/clients'
     | '/dashboard/employees'
     | '/dashboard/messages'
+    | '/dashboard/payroll'
     | '/dashboard/projects'
     | '/dashboard/clients/edit/$clientId'
+    | '/dashboard/payroll/payrun/$payRunId'
     | '/dashboard/projects/edit/$projectId'
     | '/dashboard/projects/jobsheet/$projectId'
   id:
@@ -598,12 +711,16 @@ export interface FileRouteTypes {
     | '/_dashboard/dashboard/'
     | '/_dashboard/dashboard/clients/create'
     | '/_dashboard/dashboard/employees/$employeeId'
+    | '/_dashboard/dashboard/payroll/me'
     | '/_dashboard/dashboard/projects/create'
+    | '/_dashboard/dashboard/settings/xero'
     | '/_dashboard/dashboard/clients/'
     | '/_dashboard/dashboard/employees/'
     | '/_dashboard/dashboard/messages/'
+    | '/_dashboard/dashboard/payroll/'
     | '/_dashboard/dashboard/projects/'
     | '/_dashboard/dashboard/clients/edit/$clientId'
+    | '/_dashboard/dashboard/payroll/payrun/$payRunId'
     | '/_dashboard/dashboard/projects/edit/$projectId'
     | '/_dashboard/dashboard/projects/jobsheet/$projectId'
   fileRoutesById: FileRoutesById
@@ -648,12 +765,16 @@ export const routeTree = rootRoute
         "/_dashboard/dashboard/",
         "/_dashboard/dashboard/clients/create",
         "/_dashboard/dashboard/employees/$employeeId",
+        "/_dashboard/dashboard/payroll/me",
         "/_dashboard/dashboard/projects/create",
+        "/_dashboard/dashboard/settings/xero",
         "/_dashboard/dashboard/clients/",
         "/_dashboard/dashboard/employees/",
         "/_dashboard/dashboard/messages/",
+        "/_dashboard/dashboard/payroll/",
         "/_dashboard/dashboard/projects/",
         "/_dashboard/dashboard/clients/edit/$clientId",
+        "/_dashboard/dashboard/payroll/payrun/$payRunId",
         "/_dashboard/dashboard/projects/edit/$projectId",
         "/_dashboard/dashboard/projects/jobsheet/$projectId"
       ]
@@ -707,8 +828,16 @@ export const routeTree = rootRoute
       "filePath": "_dashboard/dashboard/employees/$employeeId.lazy.tsx",
       "parent": "/_dashboard"
     },
+    "/_dashboard/dashboard/payroll/me": {
+      "filePath": "_dashboard/dashboard/payroll/me.lazy.tsx",
+      "parent": "/_dashboard"
+    },
     "/_dashboard/dashboard/projects/create": {
       "filePath": "_dashboard/dashboard/projects/create.lazy.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/dashboard/settings/xero": {
+      "filePath": "_dashboard/dashboard/settings/xero.lazy.tsx",
       "parent": "/_dashboard"
     },
     "/_dashboard/dashboard/clients/": {
@@ -723,12 +852,20 @@ export const routeTree = rootRoute
       "filePath": "_dashboard/dashboard/messages/index.lazy.tsx",
       "parent": "/_dashboard"
     },
+    "/_dashboard/dashboard/payroll/": {
+      "filePath": "_dashboard/dashboard/payroll/index.lazy.tsx",
+      "parent": "/_dashboard"
+    },
     "/_dashboard/dashboard/projects/": {
       "filePath": "_dashboard/dashboard/projects/index.lazy.tsx",
       "parent": "/_dashboard"
     },
     "/_dashboard/dashboard/clients/edit/$clientId": {
       "filePath": "_dashboard/dashboard/clients/edit.$clientId.tsx",
+      "parent": "/_dashboard"
+    },
+    "/_dashboard/dashboard/payroll/payrun/$payRunId": {
+      "filePath": "_dashboard/dashboard/payroll/payrun.$payRunId.tsx",
       "parent": "/_dashboard"
     },
     "/_dashboard/dashboard/projects/edit/$projectId": {

@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-use-before-define */
+import { authz } from '@dreams-built/shared/src/auth/permissions';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -10,6 +11,7 @@ import {
   Button,
   Card,
   CardContent,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -36,6 +38,9 @@ import {
 } from 'api/forum';
 import { useScheduleQuery } from 'api/schedule';
 import { useTimesheetEntries } from 'api/timesheet';
+import { usePayRuns, useXeroStatus } from 'api/xero';
+import { useNavigate } from 'utils/hooks/useNavigate';
+import { paths } from 'utils/paths';
 import { FileDropzone, type FileWithPreview } from 'components/FileDropzone';
 import Image from 'components/Image';
 import InfiniteScroll from 'components/InfiniteScroll';
@@ -547,6 +552,72 @@ const ForumPostComponent: FC<{ post: ForumPost }> = ({ post }) => {
   );
 };
 
+const formatPayRunDate = (value: string) =>
+  value ? formatDate({ date: new Date(value.slice(0, 10)), format: 'd MMM yyyy' }) : '';
+
+function XeroPayrollWidget() {
+  const navigate = useNavigate();
+  const status = useXeroStatus();
+  const isConnected = status.data?.status === 'CONNECTED';
+  const payRuns = usePayRuns(1, isConnected);
+
+  if (!status.data) return null;
+
+  const latestPayRun = payRuns.data?.payRuns[0];
+
+  return (
+    <NoticeBox>
+      <Box
+        sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+      >
+        <Typography variant="subtitle1" fontWeight="bold">
+          Xero Payroll
+        </Typography>
+        {status.data.status === 'CONNECTED' && !status.data.expiresSoon && (
+          <Chip label="Connected" color="success" size="small" />
+        )}
+        {status.data.status === 'CONNECTED' && status.data.expiresSoon && (
+          <Chip label="Reconnect soon" color="warning" size="small" />
+        )}
+        {status.data.status === 'ERROR' && (
+          <Chip label="Connection expired" color="error" size="small" />
+        )}
+        {status.data.status === 'DISCONNECTED' && (
+          <Chip label="Not connected" size="small" />
+        )}
+      </Box>
+
+      {status.data.status !== 'CONNECTED' && (
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+          {status.data.status === 'ERROR'
+            ? 'The Xero connection has expired — reconnect it to resume payroll and project syncing.'
+            : 'Connect Xero to see pay runs and sync projects.'}
+        </Typography>
+      )}
+
+      {isConnected && latestPayRun && (
+        <Typography variant="body2" sx={{ mt: 1 }}>
+          Latest pay run: {formatPayRunDate(latestPayRun.periodStartDate)} –{' '}
+          {formatPayRunDate(latestPayRun.periodEndDate)} ({latestPayRun.status})
+        </Typography>
+      )}
+
+      <Box sx={{ mt: 1 }}>
+        <Button
+          size="small"
+          onClick={() =>
+            navigate({
+              to: status.data.status === 'CONNECTED' ? paths.payroll : paths.settingsXero
+            })
+          }
+        >
+          {status.data.status === 'CONNECTED' ? 'Open Payroll' : 'Open Xero Settings'}
+        </Button>
+      </Box>
+    </NoticeBox>
+  );
+}
+
 function DashboardContent() {
   const { user } = useAuth();
 
@@ -826,6 +897,8 @@ function DashboardContent() {
               </Typography>
             </NoticeAlert>
           )}
+
+          {user.permissions?.includes(authz.payroll_view_all) && <XeroPayrollWidget />}
 
           <NoticeBox>
             <Typography variant="subtitle1" fontWeight="bold">

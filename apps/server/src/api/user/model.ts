@@ -10,7 +10,8 @@ export const loadUser = async (authId: string) =>
       lastName: true,
       role: true,
       authId: true,
-      deleted: true
+      deleted: true,
+      xeroEmployeeId: true
     },
     where: {
       authId

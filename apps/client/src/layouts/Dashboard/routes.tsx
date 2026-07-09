@@ -2,7 +2,10 @@ import { authz } from '@dreams-built/shared/src/auth/permissions';
 import { type Authz } from '@dreams-built/shared/src/auth/types';
 import {
   ArrowRightStartOnRectangleIcon,
+  BanknotesIcon,
   CalendarIcon,
+  Cog6ToothIcon,
+  CurrencyDollarIcon,
   FolderIcon,
   GlobeAltIcon,
   InboxIcon,
@@ -67,6 +70,24 @@ export const routes: {
     to: paths.messages,
     icon: InboxIcon,
     requiredPermission: authz.messages_read
+  },
+  {
+    name: 'Payroll',
+    to: paths.payroll,
+    icon: BanknotesIcon,
+    requiredPermission: authz.payroll_view_all
+  },
+  {
+    name: 'My Pay',
+    to: paths.myPay,
+    icon: CurrencyDollarIcon,
+    requiredPermission: authz.payroll_view_self
+  },
+  {
+    name: 'Xero',
+    to: paths.settingsXero,
+    icon: Cog6ToothIcon,
+    requiredPermission: authz.xero_manage
   },
   {
     name: 'Logout',

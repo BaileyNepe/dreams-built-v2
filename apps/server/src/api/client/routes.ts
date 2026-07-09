@@ -22,7 +22,8 @@ export const clientRouter = trpc.router({
         select: {
           id: true,
           name: true,
-          color: true
+          color: true,
+          xeroContactId: true
         }
       });
 

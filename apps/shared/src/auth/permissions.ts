@@ -23,6 +23,11 @@ export const authz = {
 
   upload: 'upload',
 
+  xero_manage: 'xero:manage',
+  payroll_manage: 'payroll:manage',
+  payroll_view_all: 'payroll:view:all',
+  payroll_view_self: 'payroll:view:self',
+
   // Forum permissions
   forum_create_post: 'forum:create:post',
   forum_update_post: 'forum:update:post',
@@ -168,12 +173,37 @@ const forumPermissions: Permission = [
   }
 ];
 
+const payrollPermissions: Permission = [
+  {
+    id: authz.xero_manage,
+    name: 'Xero Manage',
+    // ADMIN-only: ADMIN implicitly receives every permission (see roles.ts)
+    roles: []
+  },
+  {
+    id: authz.payroll_manage,
+    name: 'Payroll Manage',
+    roles: []
+  },
+  {
+    id: authz.payroll_view_all,
+    name: 'Payroll View All',
+    roles: ['MANAGER']
+  },
+  {
+    id: authz.payroll_view_self,
+    name: 'Payroll View Self',
+    roles: ['MANAGER', 'EMPLOYEE', 'CONTRACTOR']
+  }
+];
+
 export const permissions: Permission = [
   ...rolesPermissions,
   ...clientPermissions,
   ...timesheetPermissions,
   ...jobsPermissions,
-  ...forumPermissions
+  ...forumPermissions,
+  ...payrollPermissions
 ];
 
 export const getViewablePermissions = (role?: Set<Role>) =>

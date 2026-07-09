@@ -4,6 +4,8 @@ import { PaginationSchema } from '@dreams-built/shared/src/pagination/types';
 import { projectSchema } from '@dreams-built/shared/src/schemas';
 import { type Prisma } from '@prisma/client';
 import { TRPCError } from '@trpc/server';
+import { logWarning } from '@utils/logger';
+import { pushProjectToXero } from 'api/xero/projects/service';
 import { z } from 'zod';
 
 export const projectsRouter = trpc.router({
@@ -216,7 +218,7 @@ export const projectsRouter = trpc.router({
         });
       }
 
-      return ctx.db.project.update({
+      const project = await ctx.db.project.update({
         where: {
           id: input.projectId
         },
@@ -234,6 +236,24 @@ export const projectsRouter = trpc.router({
           jobNumber: input.jobNumber
         }
       });
+
+      // Linked projects mirror their name/contact to Xero; a Xero outage
+      // should never fail the local save, so surface it as a warning only.
+      let xeroSyncWarning: string | undefined;
+
+      if (project.xeroProjectId) {
+        try {
+          await pushProjectToXero(project.id);
+        } catch (error) {
+          logWarning({ message: 'Xero project sync failed on update', error });
+          xeroSyncWarning =
+            error instanceof TRPCError
+              ? `Saved, but syncing to Xero failed: ${error.message}`
+              : 'Saved, but syncing to Xero failed';
+        }
+      }
+
+      return { ...project, xeroSyncWarning };
     }),
 
   toggleInvoiced: protectedProcedure([authz.jobs_edit])
