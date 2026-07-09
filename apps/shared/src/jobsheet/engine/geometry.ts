@@ -23,7 +23,7 @@ import type {
   JobSheetRules,
   Wall
 } from '../types';
-import { resolveEnds } from './computeSheet';
+import { rebateReachesEnd, rebateReachesStart, resolveEnds } from './computeSheet';
 import { computeRebateSegments } from './packRebate';
 
 export type Point = { x: number; y: number };
@@ -397,13 +397,33 @@ export const computeFloorOutline = (
       insets: wallInsets
     });
 
-    position = end;
-    vertices.push({ ...position });
+    // The true corner sits off the nominal (brick-line) walk wherever a
+    // bare stretch meets it: a wall whose inset runs to this end meets its
+    // neighbour on the frame line, one rebate width inside its own nominal
+    // line — and the next wall's nominal line sits one width outside the
+    // corner when ITS start stretch is bare. Measurements follow the
+    // actual slab faces, so without these jogs partial-brick floors would
+    // report a phantom misclosure.
+    const corner = { ...end };
+    if (wall.hasRebate && !rebateReachesEnd(wall)) {
+      corner.x -= outwardNormal.x * rules.rebateWidthMm;
+      corner.y -= outwardNormal.y * rules.rebateWidthMm;
+    }
+    vertices.push({ ...corner });
 
     // Turn at this wall's end corner: right at external, left at internal,
     // by the wall's angled override when set (degrees of turn; 90 = square).
     const turn = wall.angledCornerDeg ?? 90;
     heading = rotate(heading, wall.cornerEnd === 'external' ? turn : -turn);
+
+    position = corner;
+    const nextWall = data.walls[(index + 1) % data.walls.length];
+    if (nextWall.hasRebate && !rebateReachesStart(nextWall)) {
+      position = {
+        x: position.x + heading.y * rules.rebateWidthMm,
+        y: position.y - heading.x * rules.rebateWidthMm
+      };
+    }
   });
 
   const misclosureMm = Math.round(Math.hypot(position.x, position.y));
