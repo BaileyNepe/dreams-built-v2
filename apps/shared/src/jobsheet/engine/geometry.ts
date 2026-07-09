@@ -35,6 +35,8 @@ export type PlacedCut = {
   toMm: number;
   /** BLK caps sit across the channel: drawn perpendicular to the wall. */
   perpendicular?: boolean;
+  /** Inward shift for pieces on an inset slab edge (partial-rebate spans). */
+  insetMm?: number;
 };
 
 export type PlacedRebateSegment = {
@@ -304,6 +306,58 @@ export const computeFloorOutline = (
     });
     const absorbOffset = ends.absorbAtStart ? rules.shutterThicknessMm : 0;
 
+    // On a partial-rebate wall the shutter run is segmented: outer boards
+    // over the brick portions, perpendicular BLKs at the steps, and inset
+    // pieces laid one rebate-width inside along the stepped slab edge.
+    const thickness = rules.shutterThicknessMm;
+    const blkSpans = wall.hasRebate
+      ? [...wall.openings]
+          .filter((o) => !o.hasRebate && o.blk && o.widthMm > 0)
+          .sort((a, b) => a.offsetFromStartMm - b.offsetFromStartMm)
+      : [];
+
+    let shutterCuts: PlacedCut[];
+    if (blkSpans.length === 0) {
+      shutterCuts = placeCuts(computedWall.shutters.cuts, absorbOffset);
+    } else {
+      // Split the flat cut list into groups at the BLK markers:
+      // [outer, inset, outer, inset, ...] alternating.
+      const groups: Cut[][] = [[]];
+      for (const cut of computedWall.shutters.cuts) {
+        if (cut.kind === 'blk') groups.push([]);
+        else groups[groups.length - 1].push(cut);
+      }
+      shutterCuts = [];
+      let cursor = absorbOffset;
+      let groupIndex = 0;
+      blkSpans.forEach((opening) => {
+        shutterCuts.push(...placeCuts(groups[groupIndex] ?? [], cursor));
+        groupIndex += 1;
+        shutterCuts.push({
+          cut: { kind: 'blk', lengthMm: rules.blkLengthMm, polystyrene: false },
+          fromMm: opening.offsetFromStartMm,
+          toMm: opening.offsetFromStartMm + thickness,
+          perpendicular: true
+        });
+        shutterCuts.push(
+          ...placeCuts(
+            groups[groupIndex] ?? [],
+            opening.offsetFromStartMm + thickness
+          ).map((placed) => ({ ...placed, insetMm: rules.rebateWidthMm }))
+        );
+        groupIndex += 1;
+        const spanEnd = opening.offsetFromStartMm + opening.widthMm;
+        shutterCuts.push({
+          cut: { kind: 'blk', lengthMm: rules.blkLengthMm, polystyrene: false },
+          fromMm: spanEnd - thickness,
+          toMm: spanEnd,
+          perpendicular: true
+        });
+        cursor = spanEnd - thickness;
+      });
+      shutterCuts.push(...placeCuts(groups[groupIndex] ?? [], cursor));
+    }
+
     walls.push({
       id: wall.id,
       number: computedWall.number,
@@ -313,7 +367,7 @@ export const computeFloorOutline = (
       end,
       direction: heading,
       outwardNormal,
-      shutterCuts: placeCuts(computedWall.shutters.cuts, absorbOffset),
+      shutterCuts,
       ...(() => {
         const rebate = placeRebate(
           wall,

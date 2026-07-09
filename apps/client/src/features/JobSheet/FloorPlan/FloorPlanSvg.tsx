@@ -51,6 +51,8 @@ const CutBand: FC<{
   thicknessMm: number;
   /** Where cut labels go, offset along the normal (signed). */
   labelOffsetMm: number;
+  /** How deep a perpendicular BLK spans (the slab step depth). */
+  stepDepthMm: number;
   cuts: PlacedCut[];
   section: SheetSection;
 }> = ({
@@ -60,19 +62,21 @@ const CutBand: FC<{
   centreOffsetMm,
   thicknessMm,
   labelOffsetMm,
+  stepDepthMm,
   cuts,
   section
 }) => (
   <>
     {cuts.map((placed, index) => {
-      const from = at(wallStart, direction, placed.fromMm, normal, centreOffsetMm);
-      const to = at(wallStart, direction, placed.toMm, normal, centreOffsetMm);
+      const inset = placed.insetMm ?? 0;
+      const from = at(wallStart, direction, placed.fromMm, normal, centreOffsetMm - inset);
+      const to = at(wallStart, direction, placed.toMm, normal, centreOffsetMm - inset);
       const mid = at(
         wallStart,
         direction,
         (placed.fromMm + placed.toMm) / 2,
         normal,
-        labelOffsetMm
+        labelOffsetMm - inset
       );
       const isShort = placed.cut.kind === 'short';
 
@@ -80,7 +84,9 @@ const CutBand: FC<{
       // spanning the band width at the step face.
       if (placed.perpendicular) {
         const station = (placed.fromMm + placed.toMm) / 2;
-        const inner = at(wallStart, direction, station, normal, centreOffsetMm - thicknessMm / 2);
+        // The BLK spans the slab step: from the outer band's face down to
+        // the inset line.
+        const inner = at(wallStart, direction, station, normal, centreOffsetMm + thicknessMm / 2 - stepDepthMm - thicknessMm);
         const outer = at(wallStart, direction, station, normal, centreOffsetMm + thicknessMm / 2);
         const labelAt = at(wallStart, direction, station, normal, labelOffsetMm);
         return (
@@ -177,6 +183,10 @@ export const FloorPlanSvg: FC<{
   // Scroll to zoom (non-passive listener so the page doesn't scroll too).
   const svgRef = useRef<SVGSVGElement>(null);
   const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const dragRef = useRef<{ x: number; y: number; panX: number; panY: number } | null>(
+    null
+  );
   // Click a wall number to spotlight that wall's shutters and rebates.
   const [focusWallId, setFocusWallId] = useState<string | null>(null);
   useEffect(() => {
@@ -197,12 +207,33 @@ export const FloorPlanSvg: FC<{
   const fullHeight = bounds.maxY - bounds.minY + pad * 2;
   const centreX = (bounds.minX + bounds.maxX) / 2;
   const centreY = (bounds.minY + bounds.maxY) / 2;
+  const viewWidth = fullWidth / zoom;
+  const viewHeight = fullHeight / zoom;
   const viewBox = [
-    centreX - fullWidth / zoom / 2,
-    centreY - fullHeight / zoom / 2,
-    fullWidth / zoom,
-    fullHeight / zoom
+    centreX + pan.x - viewWidth / 2,
+    centreY + pan.y - viewHeight / 2,
+    viewWidth,
+    viewHeight
   ].join(' ');
+
+  // Drag to pan (mm per pixel derives from the current viewBox).
+  const onPointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
+    dragRef.current = { x: event.clientX, y: event.clientY, panX: pan.x, panY: pan.y };
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
+  const onPointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
+    const drag = dragRef.current;
+    const svg = svgRef.current;
+    if (!drag || !svg) return;
+    const mmPerPx = viewWidth / svg.clientWidth;
+    setPan({
+      x: drag.panX - (event.clientX - drag.x) * mmPerPx,
+      y: drag.panY - (event.clientY - drag.y) * mmPerPx
+    });
+  };
+  const onPointerUp = () => {
+    dragRef.current = null;
+  };
 
   // Slab outline with inset steps: across a BLK-capped bare span the edge
   // steps in by one rebate width (the BLKs form the step faces).
@@ -236,8 +267,18 @@ export const FloorPlanSvg: FC<{
       viewBox={viewBox}
       role="img"
       aria-label={title}
-      style={{ width: '100%', height: 'auto', display: 'block' }}
+      style={{
+        width: '100%',
+        height: 'auto',
+        display: 'block',
+        cursor: dragRef.current ? 'grabbing' : 'grab',
+        touchAction: 'none'
+      }}
       data-testid="floor-plan-svg"
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      onPointerLeave={onPointerUp}
     >
       <title>{title}</title>
 
@@ -277,6 +318,7 @@ export const FloorPlanSvg: FC<{
               centreOffsetMm={shutterThickness / 2}
               thicknessMm={shutterThickness}
               labelOffsetMm={shutterThickness + LABEL_CLEARANCE_MM}
+              stepDepthMm={rebateWidth}
               cuts={wall.shutterCuts}
               section="shutters"
             />
@@ -292,6 +334,7 @@ export const FloorPlanSvg: FC<{
                 centreOffsetMm={-rebateWidth / 2}
                 thicknessMm={rebateWidth}
                 labelOffsetMm={-(rebateWidth + LABEL_CLEARANCE_MM)}
+                stepDepthMm={rebateWidth}
                 cuts={segment.cuts}
                 section="rebate"
               />

@@ -112,7 +112,7 @@ export const FloorPlanPanel: FC<{
 
       <Collapse in={isExpanded} unmountOnExit>
         {hasWalls ? (
-          <Box sx={{ maxWidth: '52rem', mx: 'auto' }}>
+          <Box sx={{ width: '100%' }}>
             <FloorPlanSvg outline={outline} rules={rules} />
           </Box>
         ) : (
