@@ -17,6 +17,7 @@ const rules = DEFAULT_JOBSHEET_RULES;
 const baseWall: Wall = {
   id: 'w1',
   lengthMm: 3000,
+  foundationId: 'main',
   cornerStart: 'external',
   cornerEnd: 'external',
   absorbShutterAtStart: false,

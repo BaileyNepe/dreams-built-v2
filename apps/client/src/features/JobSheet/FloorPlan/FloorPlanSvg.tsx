@@ -180,7 +180,7 @@ export const FloorPlanSvg: FC<{
   /** Drag along a wall to add an opening spanning the dragged range. */
   onDrawSpan?: (wallId: string, fromMm: number, toMm: number) => void;
 }> = ({ outline, rules, title = 'Floor plan', onDrawSpan }) => {
-  const { bounds, walls, vertices, misclosureMm, cornerIssues } = outline;
+  const { bounds, walls, loops, cornerIssues } = outline;
 
   // Scroll to zoom (non-passive listener so the page doesn't scroll too).
   const svgRef = useRef<SVGSVGElement>(null);
@@ -280,38 +280,41 @@ export const FloorPlanSvg: FC<{
   // steps in by one rebate width (the BLKs form the step faces). A bare
   // span touching a wall end IS the corner — the edge stays on the frame
   // line there instead of stepping back out to the nominal brick line.
-  const slabPath = walls.length
-    ? `${walls
-        .map((wall, index) => {
-          const pt = (alongMm: number, inMm: number) =>
-            at(wall.start, wall.direction, alongMm, wall.outwardNormal, -inMm);
-          const parts: string[] = [];
-          const move = index === 0 ? 'M' : 'L';
-          const startsBare = wall.insets.some((inset) => inset.fromMm <= 0);
-          const start = startsBare ? pt(0, rebateWidth) : wall.start;
-          parts.push(`${move} ${start.x} ${start.y}`);
-          for (const inset of wall.insets) {
-            if (inset.fromMm > 0) {
-              const a = pt(inset.fromMm, 0);
-              const b = pt(inset.fromMm, rebateWidth);
-              parts.push(`L ${a.x} ${a.y} L ${b.x} ${b.y}`);
+  // Detached foundations are separate closed subpaths of the one path.
+  const loopSubpath = (loopWalls: typeof walls) =>
+    loopWalls.length
+      ? `${loopWalls
+          .map((wall, index) => {
+            const pt = (alongMm: number, inMm: number) =>
+              at(wall.start, wall.direction, alongMm, wall.outwardNormal, -inMm);
+            const parts: string[] = [];
+            const move = index === 0 ? 'M' : 'L';
+            const startsBare = wall.insets.some((inset) => inset.fromMm <= 0);
+            const start = startsBare ? pt(0, rebateWidth) : wall.start;
+            parts.push(`${move} ${start.x} ${start.y}`);
+            for (const inset of wall.insets) {
+              if (inset.fromMm > 0) {
+                const a = pt(inset.fromMm, 0);
+                const b = pt(inset.fromMm, rebateWidth);
+                parts.push(`L ${a.x} ${a.y} L ${b.x} ${b.y}`);
+              }
+              const c = pt(Math.min(inset.toMm, wall.lengthMm), rebateWidth);
+              parts.push(`L ${c.x} ${c.y}`);
+              if (inset.toMm < wall.lengthMm) {
+                const d = pt(inset.toMm, 0);
+                parts.push(`L ${d.x} ${d.y}`);
+              }
             }
-            const c = pt(Math.min(inset.toMm, wall.lengthMm), rebateWidth);
-            parts.push(`L ${c.x} ${c.y}`);
-            if (inset.toMm < wall.lengthMm) {
-              const d = pt(inset.toMm, 0);
-              parts.push(`L ${d.x} ${d.y}`);
-            }
-          }
-          const endsBare = wall.insets.some((inset) => inset.toMm >= wall.lengthMm);
-          if (!endsBare) parts.push(`L ${wall.end.x} ${wall.end.y}`);
-          return parts.join(' ');
-        })
-        .join(' ')} Z`
-    : '';
-
-  const [first] = vertices;
-  const last = vertices[vertices.length - 1];
+            const endsBare = wall.insets.some((inset) => inset.toMm >= wall.lengthMm);
+            if (!endsBare) parts.push(`L ${wall.end.x} ${wall.end.y}`);
+            return parts.join(' ');
+          })
+          .join(' ')} Z`
+      : '';
+  const slabPath = loops
+    .map((loop) => loopSubpath(loop.walls))
+    .filter((d) => d !== '')
+    .join(' ');
 
   return (
     <svg
@@ -342,18 +345,25 @@ export const FloorPlanSvg: FC<{
         <path d={slabPath} fill="#f2f0ec" stroke="#555" strokeWidth={20} />
       )}
 
-      {misclosureMm > 1 && (
-        <line
-          x1={last.x}
-          y1={last.y}
-          x2={first.x}
-          y2={first.y}
-          stroke="#d32f2f"
-          strokeWidth={40}
-          strokeDasharray="180 120"
-          data-testid="misclosure-line"
-        />
-      )}
+      {loops
+        .filter((loop) => loop.misclosureMm > 1 && loop.vertices.length > 1)
+        .map((loop) => {
+          const [first] = loop.vertices;
+          const last = loop.vertices[loop.vertices.length - 1];
+          return (
+            <line
+              key={loop.foundationId}
+              x1={last.x}
+              y1={last.y}
+              x2={first.x}
+              y2={first.y}
+              stroke="#d32f2f"
+              strokeWidth={40}
+              strokeDasharray="180 120"
+              data-testid="misclosure-line"
+            />
+          );
+        })}
 
       {walls.map((wall) => {
         const numberPos = at(

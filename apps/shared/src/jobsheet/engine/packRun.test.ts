@@ -173,6 +173,7 @@ describe('packRun: edge cases', () => {
 describe('computeShutterRunLength', () => {
   const baseWall: Wall = {
     id: 'w1',
+    foundationId: 'main',
     lengthMm: 1620,
     cornerStart: 'internal',
     cornerEnd: 'internal',

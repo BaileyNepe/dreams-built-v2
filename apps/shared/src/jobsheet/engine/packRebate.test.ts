@@ -8,6 +8,7 @@ const rules = DEFAULT_JOBSHEET_RULES;
 
 const baseWall: Wall = {
   id: 'w1',
+  foundationId: 'main',
   lengthMm: 1000,
   cornerStart: 'external',
   cornerEnd: 'external',

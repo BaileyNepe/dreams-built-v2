@@ -2,6 +2,7 @@ import {
   formatCuts,
   formatRun
 } from '@dreams-built/shared/src/jobsheet/engine/format';
+import { wallLoops } from '@dreams-built/shared/src/jobsheet/engine/loops';
 import { BLK_KEY, SHORTS_KEY } from '@dreams-built/shared/src/jobsheet/engine/tallies';
 import {
   type ComputedSheet,
@@ -83,6 +84,11 @@ const WallGrid = styled.table`
   td.measurement {
     text-align: right;
     width: 6em;
+  }
+  td.foundation {
+    background: #e8e8e8;
+    font-weight: 700;
+    text-transform: uppercase;
   }
   tr {
     break-inside: avoid;
@@ -193,6 +199,8 @@ export const SheetView: FC<{
   const hasOverrides = computed.walls.some((wall) => wall.isOverridden);
   const hasThirdColumn =
     computed.tallies.extra !== undefined || computed.walls.some((wall) => wall.extra);
+  const showFoundationDividers =
+    wallLoops(data).filter((loop) => loop.walls.length > 0).length > 1;
 
   return (
     <Page>
@@ -217,38 +225,55 @@ export const SheetView: FC<{
           </tr>
         </thead>
         <tbody>
-          {computed.walls.map((wall) => (
-            <tr key={wall.id}>
-              <td className="measurement">
-                {wall.lengthMm ? wall.lengthMm.toLocaleString() : ''}
-              </td>
-              <td className="number">{wall.number}</td>
-              <td>
-                <RunText cuts={wall.shutters.cuts} section="shutters" />
-                {wall.isOverridden && ' *'}
-              </td>
-              <td className="number">{wall.number}</td>
-              <td>
-                {wall.rebate.length === 0 ? (
-                  '-'
-                ) : (
-                  wall.rebate.map((run, index) => (
-                    // Rebate segments are positional.
-                    // eslint-disable-next-line react/no-array-index-key
-                    <Fragment key={index}>
-                      {index > 0 && ' | '}
-                      <RunText cuts={run.cuts} section="rebate" />
-                    </Fragment>
-                  ))
-                )}
-              </td>
-              {hasThirdColumn && <td className="number">{wall.number}</td>}
-              {hasThirdColumn && (
-                <td>
-                  {wall.extra ? <RunText cuts={wall.extra.cuts} section="rebate" /> : '-'}
-                </td>
+          {wallLoops(data).map((loop, loopIndex) => (
+            <Fragment key={loop.foundationId}>
+              {showFoundationDividers && loop.walls.length > 0 && (
+                <tr>
+                  <td className="foundation" colSpan={hasThirdColumn ? 7 : 5}>
+                    {loop.name || `Foundation ${loopIndex + 1}`}
+                  </td>
+                </tr>
               )}
-            </tr>
+              {computed.walls
+                .slice(loop.startIndex, loop.startIndex + loop.walls.length)
+                .map((wall) => (
+                  <tr key={wall.id}>
+                    <td className="measurement">
+                      {wall.lengthMm ? wall.lengthMm.toLocaleString() : ''}
+                    </td>
+                    <td className="number">{wall.number}</td>
+                    <td>
+                      <RunText cuts={wall.shutters.cuts} section="shutters" />
+                      {wall.isOverridden && ' *'}
+                    </td>
+                    <td className="number">{wall.number}</td>
+                    <td>
+                      {wall.rebate.length === 0 ? (
+                        '-'
+                      ) : (
+                        wall.rebate.map((run, index) => (
+                          // Rebate segments are positional.
+                          // eslint-disable-next-line react/no-array-index-key
+                          <Fragment key={index}>
+                            {index > 0 && ' | '}
+                            <RunText cuts={run.cuts} section="rebate" />
+                          </Fragment>
+                        ))
+                      )}
+                    </td>
+                    {hasThirdColumn && <td className="number">{wall.number}</td>}
+                    {hasThirdColumn && (
+                      <td>
+                        {wall.extra ? (
+                          <RunText cuts={wall.extra.cuts} section="rebate" />
+                        ) : (
+                          '-'
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                ))}
+            </Fragment>
           ))}
         </tbody>
       </WallGrid>

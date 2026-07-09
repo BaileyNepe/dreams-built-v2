@@ -7,7 +7,9 @@
  * inside the reducer, to keep it pure.
  */
 
+import { neighboursOf, wallLoops } from '@dreams-built/shared/src/jobsheet/engine/loops';
 import {
+  MAIN_FOUNDATION_ID,
   type JobSheetData,
   type SheetItem,
   type Wall,
@@ -16,8 +18,9 @@ import {
 
 export type SectionKey = 'joinery' | 'showerBoxes' | 'garage';
 
-export const emptyWall = (id: string): Wall => ({
+export const emptyWall = (id: string, foundationId: string = MAIN_FOUNDATION_ID): Wall => ({
   id,
+  foundationId,
   lengthMm: 0,
   cornerStart: 'external',
   cornerEnd: 'external',
@@ -44,10 +47,13 @@ export const emptyWall = (id: string): Wall => ({
 const emptyItem = (id: string): SheetItem => ({ id, text: '', qty: null });
 
 export type JobSheetAction =
-  | { type: 'addWall'; id: string }
+  | { type: 'addWall'; id: string; foundationId?: string }
   | { type: 'updateWall'; id: string; patch: Partial<Wall> }
   | { type: 'removeWall'; id: string }
   | { type: 'moveWall'; from: number; to: number }
+  | { type: 'addFoundation'; id: string; name?: string; wallId?: string }
+  | { type: 'renameFoundation'; id: string; name: string }
+  | { type: 'removeFoundation'; id: string }
   | { type: 'setOverride'; id: string; override: WallOverride | null }
   | { type: 'addItem'; section: SectionKey; id: string }
   | { type: 'updateItem'; section: SectionKey; id: string; patch: Partial<SheetItem> }
@@ -63,8 +69,19 @@ export const jobSheetReducer = (
   action: JobSheetAction
 ): JobSheetData => {
   switch (action.type) {
-    case 'addWall':
-      return { ...state, walls: [...state.walls, emptyWall(action.id)] };
+    case 'addWall': {
+      // New walls join the named loop (default: the last foundation) and
+      // are inserted at that loop's end so loops stay contiguous.
+      const foundationId =
+        action.foundationId ??
+        state.foundations[state.foundations.length - 1]?.id ??
+        MAIN_FOUNDATION_ID;
+      const loop = wallLoops(state).find((l) => l.foundationId === foundationId);
+      const at = loop ? loop.startIndex + loop.walls.length : state.walls.length;
+      const walls = [...state.walls];
+      walls.splice(at, 0, emptyWall(action.id, foundationId));
+      return { ...state, walls };
+    }
 
     case 'updateWall': {
       const index = state.walls.findIndex((wall) => wall.id === action.id);
@@ -74,11 +91,13 @@ export const jobSheetReducer = (
       );
 
       // A corner is shared: wall i's end corner IS wall i+1's start corner
-      // (wrapping last -> first around the perimeter). Keep both sides in
-      // sync so the absorb toggles on either wall stay available, and drop
-      // an absorb flag that no longer applies at an external corner.
-      if (walls.length > 1 && action.patch.cornerEnd !== undefined) {
-        const next = (index + 1) % walls.length;
+      // (wrapping last -> first around the wall's own loop). Keep both
+      // sides in sync so the absorb toggles on either wall stay available,
+      // and drop an absorb flag that no longer applies at an external corner.
+      const neighbours = neighboursOf({ ...state, walls }, action.id);
+      const inRing = neighbours !== null && neighbours.loop.walls.length > 1;
+      if (inRing && neighbours.next && action.patch.cornerEnd !== undefined) {
+        const next = walls.findIndex((wall) => wall.id === neighbours.next?.id);
         walls[next] = {
           ...walls[next],
           cornerStart: action.patch.cornerEnd,
@@ -88,8 +107,8 @@ export const jobSheetReducer = (
           rebateOffsetAtStart: null
         };
       }
-      if (walls.length > 1 && action.patch.cornerStart !== undefined) {
-        const previous = (index - 1 + walls.length) % walls.length;
+      if (inRing && neighbours.prev && action.patch.cornerStart !== undefined) {
+        const previous = walls.findIndex((wall) => wall.id === neighbours.prev?.id);
         walls[previous] = {
           ...walls[previous],
           cornerEnd: action.patch.cornerStart,
@@ -119,8 +138,46 @@ export const jobSheetReducer = (
       }
       const walls = [...state.walls];
       const [moved] = walls.splice(from, 1);
-      walls.splice(to, 0, moved);
+      // The wall adopts the loop it lands in, keeping loops contiguous.
+      const anchor = walls[Math.min(to, walls.length - 1)];
+      walls.splice(
+        to,
+        0,
+        anchor ? { ...moved, foundationId: anchor.foundationId } : moved
+      );
       return { ...state, walls };
+    }
+
+    case 'addFoundation': {
+      if (state.foundations.some((f) => f.id === action.id)) return state;
+      const foundations = [
+        ...state.foundations,
+        { id: action.id, name: action.name ?? '' }
+      ];
+      // Optionally seed the loop with its first wall in the same undo step.
+      const walls = action.wallId
+        ? [...state.walls, emptyWall(action.wallId, action.id)]
+        : state.walls;
+      return { ...state, foundations, walls };
+    }
+
+    case 'renameFoundation':
+      return {
+        ...state,
+        foundations: state.foundations.map((f) =>
+          f.id === action.id ? { ...f, name: action.name } : f
+        )
+      };
+
+    case 'removeFoundation': {
+      // The first foundation is the sheet's main loop and can't be removed.
+      const index = state.foundations.findIndex((f) => f.id === action.id);
+      if (index <= 0) return state;
+      return {
+        ...state,
+        foundations: state.foundations.filter((f) => f.id !== action.id),
+        walls: state.walls.filter((wall) => wall.foundationId !== action.id)
+      };
     }
 
     case 'setOverride':
@@ -199,6 +256,8 @@ const editKey = (action: JobSheetAction): string | null => {
         .join(',')}`;
     case 'setNotes':
       return 'setNotes';
+    case 'renameFoundation':
+      return `renameFoundation:${action.id}`;
     default:
       return null;
   }

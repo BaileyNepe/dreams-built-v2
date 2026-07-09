@@ -23,6 +23,7 @@
 import type { JobSheetData, Wall } from '../types';
 
 const wall = (w: Partial<Wall> & Pick<Wall, 'id' | 'lengthMm'>): Wall => ({
+  foundationId: 'main',
   cornerStart: 'external',
   cornerEnd: 'external',
   absorbShutterAtStart: false,
@@ -48,6 +49,7 @@ const wall = (w: Partial<Wall> & Pick<Wall, 'id' | 'lengthMm'>): Wall => ({
 
 export const nineWarrenLaneData: JobSheetData = {
   system: 'DREAMSBUILT',
+  foundations: [{ id: 'main', name: 'Main foundation' }],
   rebatesEnabled: true,
   mode: 'auto',
   manualThirdColumn: false,

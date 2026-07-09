@@ -123,4 +123,42 @@ describe('FloorPlanPanel', () => {
     renderPanel(outlineOf([]));
     expect(screen.getByText('Add walls to see the floor outline.')).toBeInTheDocument();
   });
+
+  describe('detached foundations', () => {
+    const twoLoopOutline = (extPatch: Partial<Wall> = {}) => {
+      const ext = [
+        wall('x1', 3600, { foundationId: 'ext' }),
+        wall('x2', 2400, { foundationId: 'ext' }),
+        wall('x3', 3600, { foundationId: 'ext', ...extPatch }),
+        wall('x4', 2400, { foundationId: 'ext' })
+      ];
+      const data: JobSheetData = {
+        ...jobSheetDataSchema.parse({}),
+        walls: [...sealedRectangle(), ...ext],
+        foundations: [
+          { id: 'main', name: 'Main foundation' },
+          { id: 'ext', name: 'Garage pad' }
+        ]
+      };
+      return computeFloorOutline(data, computeJobSheet(data, rules), rules);
+    };
+
+    it('draws each loop as its own closed subpath', () => {
+      const { container } = renderPanel(twoLoopOutline());
+      const slab = container.querySelector('[data-testid="floor-plan-svg"] path');
+      const d = slab?.getAttribute('d') ?? '';
+      expect(d.match(/M /g)).toHaveLength(2);
+      expect(d.match(/Z/g)).toHaveLength(2);
+      expect(screen.queryByTestId('misclosure-chip')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('corner-issue-chip')).not.toBeInTheDocument();
+    });
+
+    it('warns per loop, named, when only one loop miscloses', () => {
+      renderPanel(twoLoopOutline({ lengthMm: 3000 }));
+      const chips = screen.getAllByTestId('misclosure-chip');
+      expect(chips).toHaveLength(1);
+      expect(chips[0]).toHaveTextContent("Garage pad: doesn't close by 600mm");
+      expect(screen.getAllByTestId('misclosure-line')).toHaveLength(1);
+    });
+  });
 });
