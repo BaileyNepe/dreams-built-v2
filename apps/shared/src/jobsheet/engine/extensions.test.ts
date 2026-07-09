@@ -233,6 +233,33 @@ describe('diffSheets', () => {
   });
 });
 
+describe('absorb convention: departing wall starts 65 in, wall 1 excepted', () => {
+  // Four-wall loop, every corner internal, all tri-states on auto.
+  const loop = {
+    ...nineWarrenLaneData,
+    walls: (['a', 'b', 'c', 'd'] as const).map((id) => ({
+      ...baseWall,
+      id,
+      lengthMm: 2400,
+      cornerStart: 'internal' as const,
+      cornerEnd: 'internal' as const,
+      absorbShutterAtStart: null,
+      absorbShutterAtEnd: null,
+      overhangCapAtEnd: null,
+      hasRebate: false
+    }))
+  };
+
+  it('wall 1 runs full from its very start; the last wall accounts for it', () => {
+    const sheet = computeJobSheet(loop, rules);
+    const runs = sheet.walls.map((w) => w.shutters.effectiveLengthMm);
+    // Wall 1: boxed first, nothing there yet — full length, no absorbs.
+    // Walls 2-3: start 65 in behind the previous wall's board.
+    // Wall 4: starts 65 in AND absorbs at its end against wall 1's board.
+    expect(runs).toEqual([2400, 2335, 2335, 2270]);
+  });
+});
+
 describe('partial-rebate wall (Bailey wall-5 diagram)', () => {
   // 6000 wall: brick 1800 | bare 2400 (BLK caps) | brick 1800; the previous
   // wall carries rebate across the external start corner.

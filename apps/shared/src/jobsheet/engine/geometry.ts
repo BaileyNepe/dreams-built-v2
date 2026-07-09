@@ -208,8 +208,18 @@ const computeCornerIssues = (
     const wallNumber = i + 1;
     const nextWallNumber = j + 1;
 
-    const wallEnds = resolveEnds(wall, { prev: walls[(i - 1 + walls.length) % walls.length], next });
-    const nextEnds = resolveEnds(next, { prev: wall, next: walls[(j + 1) % walls.length] });
+    const wallEnds = resolveEnds(wall, {
+      prev: walls[(i - 1 + walls.length) % walls.length],
+      next,
+      isFirst: i === 0,
+      isLast: i === walls.length - 1
+    });
+    const nextEnds = resolveEnds(next, {
+      prev: wall,
+      next: walls[(j + 1) % walls.length],
+      isFirst: j === 0,
+      isLast: j === walls.length - 1
+    });
 
     if (wall.cornerEnd === 'internal') {
       // The perpendicular shutter consumes one board thickness inside the
@@ -308,7 +318,9 @@ export const computeFloorOutline = (
     // so the offset only applies to the packed run itself.
     const ends = resolveEnds(wall, {
       prev: data.walls[(index - 1 + data.walls.length) % data.walls.length],
-      next: data.walls[(index + 1) % data.walls.length]
+      next: data.walls[(index + 1) % data.walls.length],
+      isFirst: index === 0,
+      isLast: index === data.walls.length - 1
     });
     const absorbOffset = ends.absorbAtStart ? rules.shutterThicknessMm : 0;
 

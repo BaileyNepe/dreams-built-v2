@@ -42,9 +42,12 @@ export const InstructionsDialog: FC<{ open: boolean; onClose: () => void }> = ({
         A shutter runs until it hits the next wall (internal corner — exact) or
         overflows past it (external corner — overhang). The wall LEAVING an
         internal corner starts one shutter width in, because the previous
-        wall&apos;s board already sits against its face — that&apos;s the
-        automatic default; flip it per corner with the &ldquo;Absorb at
-        start/end&rdquo; boxes if the crew runs that joint the other way. The
+        wall&apos;s board already sits against its face. Exception: wall 1 is
+        boxed first, so it always starts from the very beginning of its face —
+        the last wall accounts for wall 1&apos;s board at the closing corner
+        instead. That&apos;s the automatic default; flip any corner with the
+        &ldquo;Absorb at start/end&rdquo; boxes if the crew runs that joint the
+        other way. The
         floor plan flags any corner where boards would overlap (neither wall
         absorbs) or leave a gap (both absorb): concrete escapes through gaps,
         and two boards can&apos;t occupy the same space. Rebate corners work the

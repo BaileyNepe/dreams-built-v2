@@ -58,8 +58,11 @@ export const rebateReachesEnd = (wall: Wall): boolean =>
  * overrides. Shutters: a run goes until it hits the next wall (internal
  * end — exact) or overflows past it (external end — overhang cap); the
  * wall LEAVING an internal corner starts one board thickness in, because
- * the previous wall's board already sits against its face. Rebate joints
- * stay with the arriving wall (offset/extend at its end by corner kind).
+ * the previous wall's board already sits against its face. Exception:
+ * wall 1 is boxed first — nothing is there yet, so it always starts from
+ * the very beginning of its face, and the LAST wall accounts for wall 1's
+ * board at the closing corner instead. Rebate joints stay with the
+ * arriving wall (offset/extend at its end by corner kind).
  */
 export type ResolvedEnds = {
   absorbAtStart: boolean;
@@ -70,7 +73,7 @@ export type ResolvedEnds = {
 
 export const resolveEnds = (
   wall: Wall,
-  neighbours: { prev?: Wall; next?: Wall }
+  neighbours: { prev?: Wall; next?: Wall; isFirst?: boolean; isLast?: boolean }
 ): ResolvedEnds => {
   // Corner rebate joints only exist where BOTH strips reach the corner —
   // a neighbour whose brick stops before the corner never crosses it.
@@ -79,8 +82,10 @@ export const resolveEnds = (
   const endInternal = wall.cornerEnd === 'internal';
 
   return {
-    absorbAtStart: wall.absorbShutterAtStart ?? wall.cornerStart === 'internal',
-    absorbAtEnd: wall.absorbShutterAtEnd ?? false,
+    absorbAtStart:
+      wall.absorbShutterAtStart ??
+      (!(neighbours.isFirst ?? false) && wall.cornerStart === 'internal'),
+    absorbAtEnd: wall.absorbShutterAtEnd ?? ((neighbours.isLast ?? false) && endInternal),
     overhangCapAtEnd: wall.overhangCapAtEnd ?? wall.cornerEnd === 'external',
     rebate: {
       // The departing wall's strip gives way where the previous wall's
@@ -123,7 +128,7 @@ export const computeWall = (
   wall: Wall,
   index: number,
   rules: JobSheetRules,
-  neighbours: { prev?: Wall; next?: Wall } = {}
+  neighbours: { prev?: Wall; next?: Wall; isFirst?: boolean; isLast?: boolean } = {}
 ): ComputedWall => {
   const number = index + 1;
   const polystyreneAuto = isPolystyreneAuto(wall, rules);
@@ -325,7 +330,9 @@ export const computeJobSheet = (
   const walls = sourceWalls.map((wall, index) =>
     computeWall(wall, index, rules, {
       prev: sourceWalls[(index - 1 + sourceWalls.length) % sourceWalls.length],
-      next: sourceWalls[(index + 1) % sourceWalls.length]
+      next: sourceWalls[(index + 1) % sourceWalls.length],
+      isFirst: index === 0,
+      isLast: index === sourceWalls.length - 1
     })
   );
   const perimeterMm = data.walls.reduce((acc, w) => acc + w.lengthMm, 0);

@@ -99,7 +99,9 @@ export const WallRow: FC<{
   const index = data.walls.findIndex((w) => w.id === wall.id);
   const ends = resolveEnds(wall, {
     prev: data.walls[(index - 1 + data.walls.length) % data.walls.length],
-    next: data.walls[(index + 1) % data.walls.length]
+    next: data.walls[(index + 1) % data.walls.length],
+    isFirst: index === 0,
+    isLast: index === data.walls.length - 1
   });
   const auto = (flag: boolean | null) => (flag === null ? ' (auto)' : '');
   const [isExpanded, setIsExpanded] = useState(false);
