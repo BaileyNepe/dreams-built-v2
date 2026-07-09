@@ -19,8 +19,12 @@ import {
   Switch,
   Tooltip
 } from '@mui/material';
-import { useActiveRulesQuery, useRefreshRulesMutation } from 'api/jobsheets';
-import { useMemo, useState, type FC } from 'react';
+import {
+  useActiveRulesQuery,
+  useCreateSnapshotMutation,
+  useRefreshRulesMutation
+} from 'api/jobsheets';
+import { useEffect, useMemo, useRef, useState, type FC } from 'react';
 import { useJobSheetContext } from './state/JobSheetProvider';
 import { type SaveStatus } from './state/useAutosave';
 import { InstructionsDialog } from './InstructionsDialog';
@@ -118,6 +122,34 @@ export const JobSheetToolbar: FC<{
 
   const activeRules = useActiveRulesQuery();
   const refreshRules = useRefreshRulesMutation({ projectId });
+  const createSnapshot = useCreateSnapshotMutation({ sheetId });
+
+  // Cmd/Ctrl+S saves a snapshot. Pending edits are flushed first and the
+  // snapshot fires once the save lands, so it never captures stale data.
+  const snapshotQueued = useRef(false);
+  const { mutate: createSnapshotMutate } = createSnapshot;
+  useEffect(() => {
+    if (saveStatus === 'saved' && snapshotQueued.current) {
+      snapshotQueued.current = false;
+      createSnapshotMutate({ sheetId, label: 'Quick save' });
+    }
+  }, [saveStatus, sheetId, createSnapshotMutate]);
+  useEffect(() => {
+    if (!canEdit) return undefined;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!(event.metaKey || event.ctrlKey) || event.key.toLowerCase() !== 's') return;
+      event.preventDefault();
+      if (snapshotQueued.current) return;
+      if (saveStatus === 'saved') {
+        createSnapshotMutate({ sheetId, label: 'Quick save' });
+      } else {
+        snapshotQueued.current = true;
+        retrySave();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [canEdit, saveStatus, sheetId, createSnapshotMutate, retrySave]);
 
   const rulesAreStale = useMemo(() => {
     if (!activeRules.data) return false;

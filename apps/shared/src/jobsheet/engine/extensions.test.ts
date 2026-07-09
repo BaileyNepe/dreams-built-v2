@@ -392,8 +392,55 @@ describe('brick starting mid-wall (bare at the start, brick to the end)', () => 
       prev: baseWall,
       next: baseWall
     });
-    // 3000 − 65 absorbed = 2935.
-    expect(w.shutters.cuts.map(formatCut)).toEqual(['2400', '535p', 'BLK', '3600']);
+    // 3000 − 65 absorbed = 2935. No "p": the channel opens at the corner,
+    // so the short isn't trapped between two BLKs.
+    expect(w.shutters.cuts.map(formatCut)).toEqual(['2400', '535', 'BLK', '3600']);
+  });
+
+  it('poly only between two BLKs or on a both-ends-internal wall', () => {
+    // Corner-open channel (bare from the wall start): plain short.
+    const open = computeWall(
+      {
+        ...baseWall,
+        ...autoFlags,
+        lengthMm: 6000,
+        rebateInsets: [{ offsetFromStartMm: 0, widthMm: 2900 }]
+      },
+      0,
+      rules,
+      { prev: baseWall, next: baseWall }
+    );
+    expect(open.shutters.cuts.map(formatCut)).toContain('500');
+    // Same channel enclosed between two BLKs: trapped short gets "p".
+    const enclosed = computeWall(
+      {
+        ...baseWall,
+        ...autoFlags,
+        lengthMm: 6000,
+        rebateInsets: [{ offsetFromStartMm: 1800, widthMm: 2900 }]
+      },
+      0,
+      rules,
+      { prev: baseWall, next: baseWall }
+    );
+    expect(enclosed.shutters.cuts.map(formatCut)).toContain('435p');
+    // A both-ends-internal wall flags its shorts wherever they sit.
+    const bothInternal = computeWall(
+      {
+        ...baseWall,
+        ...autoFlags,
+        lengthMm: 6000,
+        cornerStart: 'internal' as const,
+        cornerEnd: 'internal' as const,
+        rebateInsets: [{ offsetFromStartMm: 0, widthMm: 2900 }]
+      },
+      0,
+      rules,
+      { prev: baseWall, next: baseWall }
+    );
+    expect(
+      bothInternal.shutters.cuts.some((cut) => cut.kind === 'short' && cut.polystyrene)
+    ).toBe(true);
   });
 
   it('Auburn wall 9: entering BLK consumes 65, the outset BLK sits above', () => {

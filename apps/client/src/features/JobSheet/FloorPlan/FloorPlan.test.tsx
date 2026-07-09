@@ -56,6 +56,25 @@ describe('FloorPlanPanel', () => {
     expect(screen.getByText('1 ⌂')).toBeInTheDocument();
   });
 
+  it('keeps the slab edge on the frame line at corners between bare stretches', () => {
+    // Wall 1 ends bare, wall 2 starts bare: the true corner sits on the
+    // frame lines — no phantom step back out to the nominal brick line.
+    const { container } = renderPanel(
+      outlineOf([
+        wall('w1', 6000, { rebateInsets: [{ offsetFromStartMm: 3000, widthMm: 3000 }] }),
+        wall('w2', 4000, { rebateInsets: [{ offsetFromStartMm: 0, widthMm: 1000 }] }),
+        wall('w3', 6120),
+        wall('w4', 4120)
+      ])
+    );
+    const slab = container.querySelector('[data-testid="floor-plan-svg"] path');
+    const d = slab?.getAttribute('d') ?? '';
+    // Both walls' edges meet at the frame-line corner (6000, 120)…
+    expect(d).toContain('L 6000 120');
+    // …and never revisit the nominal brick-line corner (6000, 0).
+    expect(d).not.toContain('L 6000 0');
+  });
+
   it('shows the misclosure warning and dashed gap when the walls do not close', () => {
     renderPanel(
       outlineOf([wall('w1', 6000), wall('w2', 4000), wall('w3', 5400), wall('w4', 4000)])

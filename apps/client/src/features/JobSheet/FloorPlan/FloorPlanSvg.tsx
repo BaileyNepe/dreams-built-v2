@@ -277,7 +277,9 @@ export const FloorPlanSvg: FC<{
   };
 
   // Slab outline with inset steps: across a BLK-capped bare span the edge
-  // steps in by one rebate width (the BLKs form the step faces).
+  // steps in by one rebate width (the BLKs form the step faces). A bare
+  // span touching a wall end IS the corner — the edge stays on the frame
+  // line there instead of stepping back out to the nominal brick line.
   const slabPath = walls.length
     ? `${walls
         .map((wall, index) => {
@@ -285,15 +287,24 @@ export const FloorPlanSvg: FC<{
             at(wall.start, wall.direction, alongMm, wall.outwardNormal, -inMm);
           const parts: string[] = [];
           const move = index === 0 ? 'M' : 'L';
-          parts.push(`${move} ${wall.start.x} ${wall.start.y}`);
+          const startsBare = wall.insets.some((inset) => inset.fromMm <= 0);
+          const start = startsBare ? pt(0, rebateWidth) : wall.start;
+          parts.push(`${move} ${start.x} ${start.y}`);
           for (const inset of wall.insets) {
-            const a = pt(inset.fromMm, 0);
-            const b = pt(inset.fromMm, rebateWidth);
-            const c = pt(inset.toMm, rebateWidth);
-            const d = pt(inset.toMm, 0);
-            parts.push(`L ${a.x} ${a.y} L ${b.x} ${b.y} L ${c.x} ${c.y} L ${d.x} ${d.y}`);
+            if (inset.fromMm > 0) {
+              const a = pt(inset.fromMm, 0);
+              const b = pt(inset.fromMm, rebateWidth);
+              parts.push(`L ${a.x} ${a.y} L ${b.x} ${b.y}`);
+            }
+            const c = pt(Math.min(inset.toMm, wall.lengthMm), rebateWidth);
+            parts.push(`L ${c.x} ${c.y}`);
+            if (inset.toMm < wall.lengthMm) {
+              const d = pt(inset.toMm, 0);
+              parts.push(`L ${d.x} ${d.y}`);
+            }
           }
-          parts.push(`L ${wall.end.x} ${wall.end.y}`);
+          const endsBare = wall.insets.some((inset) => inset.toMm >= wall.lengthMm);
+          if (!endsBare) parts.push(`L ${wall.end.x} ${wall.end.y}`);
           return parts.join(' ');
         })
         .join(' ')} Z`
