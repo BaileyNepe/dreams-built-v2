@@ -282,12 +282,12 @@ describe('partial-rebate wall (Bailey wall-5 diagram)', () => {
   it('steps the shutter run: boards over the BLKs, exact poly inset between', () => {
     const w = computeWall(wall5, 4, rules, { prev, next });
     expect(w.shutters.cuts.map(formatCut)).toEqual([
-      '2400', // covers 1800 + 65 (over the BLK), overhang allowed
+      '2400', // covers 1800 + 65 (over the entering BLK), overhang allowed
       'BLK',
       '1800',
-      '470p', // inset run 2400 − 2×65 = 2270, exact, polystyrene
+      '535p', // channel = BLK(65) + 2335 exact; the outset BLK sits above
       'BLK',
-      '2400' // covers 65 + 1800 + corner cap, overhang allowed
+      '2400' // follows the perimeter from the outset line + corner cap
     ]);
   });
 
@@ -348,9 +348,10 @@ describe('brick starting mid-wall (bare at the start, brick to the end)', () => 
 
   it('inset run from the corner, one BLK at the transition, outer board to the end', () => {
     const w = computeWall(wall, 0, rules, { prev: baseWall, next: baseWall });
-    // Inset run 3000 − 65 (BLK) = 2935 exact with a poly short; the outer
-    // board covers 65 + 3000 + the corner cap and overhangs.
-    expect(w.shutters.cuts.map(formatCut)).toEqual(['2400', '535p', 'BLK', '3600']);
+    // Inset run goes all the way to the outset line (3000 exact); the
+    // outset BLK stands above the shutter; the outer board follows the
+    // perimeter from the outset + corner cap.
+    expect(w.shutters.cuts.map(formatCut)).toEqual(['3000', 'BLK', '3600']);
   });
 
   it('rebate covers only the brick stretch with no crossing-strip deduction', () => {
@@ -365,8 +366,40 @@ describe('brick starting mid-wall (bare at the start, brick to the end)', () => 
       prev: baseWall,
       next: baseWall
     });
-    // 2935 − 65 absorbed = 2870.
-    expect(w.shutters.cuts.map(formatCut)).toEqual(['2400', '470p', 'BLK', '3600']);
+    // 3000 − 65 absorbed = 2935.
+    expect(w.shutters.cuts.map(formatCut)).toEqual(['2400', '535p', 'BLK', '3600']);
+  });
+
+  it('Auburn wall 9: entering BLK consumes 65, the outset BLK sits above', () => {
+    // 680 brick | 1300 bare | 2250 brick: channel = BLK(65) + 1200 + 35p.
+    const w = computeWall(
+      {
+        ...baseWall,
+        ...{
+          absorbShutterAtStart: null,
+          absorbShutterAtEnd: null,
+          rebateOffsetAtStart: null,
+          rebateOffsetAtEnd: null,
+          rebateExtendAtStart: null,
+          rebateExtendAtEnd: null,
+          overhangCapAtEnd: null
+        },
+        id: 'w9a',
+        lengthMm: 4230,
+        rebateInsets: [{ offsetFromStartMm: 680, widthMm: 1300 }]
+      },
+      0,
+      rules,
+      { prev: baseWall, next: baseWall }
+    );
+    expect(w.shutters.cuts.map(formatCut)).toEqual([
+      '1200', // 680 + 65 over the entering BLK
+      'BLK',
+      '1200',
+      '35p', // 1300 − 65 consumed by the entering BLK
+      'BLK', // outset — above the shutter, consumes nothing
+      '2400' // 2250 + corner cap from the outset line
+    ]);
   });
 });
 

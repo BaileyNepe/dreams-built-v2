@@ -195,12 +195,15 @@ export const computeWall = (
         );
         cuts.push(...board.cuts, blkCut(rules));
       }
-      // Inset run along the frame line; enclosed ends get poly shorts. A
-      // span reaching a wall end is open at the corner instead, so the
-      // usual corner rules apply there (absorb, overhang, cap).
+      // Inset run along the frame line; enclosed ends get poly shorts. The
+      // entering BLK sits inside the channel and consumes one board
+      // thickness; the outset BLK stands above the shutter at the step, so
+      // the run goes all the way to the outset line. A span reaching a
+      // wall end is open at the corner instead, so the usual corner rules
+      // apply there (absorb, overhang, cap).
       const insetStart = leadingBlk ? spanStart + thickness : cursor;
       const insetEnd = trailingBlk
-        ? spanEnd - thickness
+        ? spanEnd
         : spanEnd - (ends.absorbAtEnd ? thickness : 0);
       const inset = packRun(
         Math.max(0, insetEnd - insetStart + (trailingBlk ? 0 : capExtra)),
