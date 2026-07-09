@@ -37,6 +37,7 @@ const wall = (w: Partial<Wall> & Pick<Wall, 'id' | 'lengthMm'>): Wall => ({
   blkAtEnd: false,
   openings: [],
   rebateInsets: [],
+  manualRuns: [],
   polystyreneOverride: null,
   angledCornerDeg: null,
   isGarageDoorWall: false,
@@ -48,6 +49,9 @@ const wall = (w: Partial<Wall> & Pick<Wall, 'id' | 'lengthMm'>): Wall => ({
 export const nineWarrenLaneData: JobSheetData = {
   system: 'PROBASE',
   rebatesEnabled: true,
+  mode: 'auto',
+  manualThirdColumn: false,
+  thirdColumnLabel: 'Other',
   walls: [
     wall({
       id: 'w01',

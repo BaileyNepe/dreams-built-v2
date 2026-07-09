@@ -19,9 +19,11 @@ const TITLES: Record<SheetSection, string> = {
 };
 
 /** Live totals for one section: each standard size, shorts, and BLKs. */
-export const TallyPanel: FC<{ section: SheetSection }> = ({ section }) => {
-  const { computed, rules } = useJobSheetContext();
-  const tally: Tally = computed.tallies[section];
+export const TallyPanel: FC<{ section: SheetSection | 'extra' }> = ({ section }) => {
+  const { computed, rules, data } = useJobSheetContext();
+  const tally: Tally | undefined =
+    section === 'extra' ? computed.tallies.extra : computed.tallies[section];
+  if (!tally) return null;
 
   const sizes = [...rules.standardSizesMm].sort((a, b) => b - a);
 
@@ -30,14 +32,14 @@ export const TallyPanel: FC<{ section: SheetSection }> = ({ section }) => {
       <Typography
         variant="subtitle2"
         sx={{
-          background: SECTION_COLORS[section].header,
+          background: section === 'extra' ? '#e0e0e0' : SECTION_COLORS[section].header,
           color: '#000',
           fontWeight: 700,
           textAlign: 'center',
           py: 0.5
         }}
       >
-        {TITLES[section]}
+        {section === 'extra' ? data.thirdColumnLabel : TITLES[section]}
       </Typography>
       <Table size="small" data-testid={`tally-${section}`}>
         <TableHead>

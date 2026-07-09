@@ -101,7 +101,7 @@ const JobSheetEditor: FC = () => {
 
       <WallTable />
 
-      <Box sx={{ mt: 2 }}>
+      <Box sx={{ mt: 2, display: data.mode === 'manual' ? 'none' : undefined }}>
         <FloorPlanPanel
           outline={outline}
           rules={rules}
@@ -118,6 +118,11 @@ const JobSheetEditor: FC = () => {
         <Grid item xs={6} sm={3} md={2}>
           <TallyPanel section="rebate" />
         </Grid>
+        {computed.tallies.extra && (
+          <Grid item xs={6} sm={3} md={2}>
+            <TallyPanel section="extra" />
+          </Grid>
+        )}
         <Grid item xs={12} sm={6} md={8}>
           <Stack spacing={2}>
             <SectionItems section="joinery" />
@@ -136,6 +141,9 @@ const JobSheetEditor: FC = () => {
           </Stack>
         </Grid>
       </Grid>
+
+      {/* Breathing room so the sheet never touches the viewport bottom. */}
+      <Box sx={{ pb: 8 }} />
 
       {/* Hidden on screen; cloned into #print by usePrint. */}
       <PrintableContent ref={printRef} isHidden orientation="portrait">

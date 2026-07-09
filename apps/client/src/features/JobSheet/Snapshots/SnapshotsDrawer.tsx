@@ -75,7 +75,7 @@ export const SnapshotsDrawer: FC<{ open: boolean; onClose: () => void }> = ({
         <Typography variant="h6">Sheet history</Typography>
 
         {canEdit && (
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
             <TextField
               size="small"
               label="Label (optional)"
@@ -86,6 +86,8 @@ export const SnapshotsDrawer: FC<{ open: boolean; onClose: () => void }> = ({
             />
             <Button
               variant="contained"
+              size="small"
+              sx={{ alignSelf: 'center', flexShrink: 0 }}
               onClick={saveSnapshot}
               disabled={createSnapshot.isPending}
             >

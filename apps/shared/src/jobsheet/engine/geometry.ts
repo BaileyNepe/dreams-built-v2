@@ -189,6 +189,7 @@ const computeCornerIssues = (
   perimeterCloses: boolean
 ): CornerIssue[] => {
   const issues: CornerIssue[] = [];
+  if (data.mode === 'manual') return issues;
   const { walls } = data;
 
   walls.forEach((wall, i) => {

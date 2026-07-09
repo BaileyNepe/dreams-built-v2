@@ -149,7 +149,12 @@ export const wallSchema = z.object({
   angledCornerDeg: z.number().nullable().default(null),
   isGarageDoorWall: z.boolean().default(false),
   notes: z.string().default(''),
-  override: wallOverrideSchema.nullable().default(null)
+  override: wallOverrideSchema.nullable().default(null),
+  /**
+   * Manual-mode cut lists (one per column). Only used when the sheet's
+   * mode is 'manual': pieces are placed by hand, no corner logic runs.
+   */
+  manualRuns: z.array(z.array(cutSchema)).default([])
 });
 export type Wall = z.infer<typeof wallSchema>;
 
@@ -174,6 +179,16 @@ export const jobSheetDataSchema = z.object({
   system: z.string().default('PROBASE'),
   /** Quick master switch: off = every wall computes as rebate-free. */
   rebatesEnabled: z.boolean().default(true),
+  /**
+   * 'auto' computes breakdowns from measurements + corners; 'manual' is a
+   * free-form sheet for one-off difficult plans: pieces are clicked in by
+   * hand per column and no corner logic or floor plan applies.
+   */
+  mode: z.enum(['auto', 'manual']).default('auto'),
+  /** Manual mode: show a third free-form column. */
+  manualThirdColumn: z.boolean().default(false),
+  /** Heading for the manual third column. */
+  thirdColumnLabel: z.string().default('Other'),
   /** Array order IS the wall numbering: garage-door wall first, clockwise. */
   walls: z.array(wallSchema).default([]),
   joinery: z.array(sheetItemSchema).default([]),
@@ -230,6 +245,8 @@ export type ComputedWall = {
   shutters: PackedRun;
   /** One entry per rebate sub-segment; empty renders as "-". */
   rebate: PackedRun[];
+  /** Manual mode third column. */
+  extra?: PackedRun;
   isOverridden: boolean;
   /** What the both-ends-internal rule says, before any manual override. */
   polystyreneAuto: boolean;
@@ -244,7 +261,7 @@ export type Tally = Record<string, number>;
 export type ComputedSheet = {
   walls: ComputedWall[];
   perimeterMm: number;
-  tallies: { shutters: Tally; rebate: Tally };
+  tallies: { shutters: Tally; rebate: Tally; extra?: Tally };
 };
 
 /* ------------------------------------------------------------------ */

@@ -240,10 +240,52 @@ export const computeWall = (
   };
 };
 
+/** Manual mode: hand-placed cut lists, no corner logic, no packing. */
+const computeManualSheet = (data: JobSheetData, rules: JobSheetRules): ComputedSheet => {
+  const walls = data.walls.map((wall, index) => {
+    const [col1, col2, col3] = wall.manualRuns;
+    return {
+      id: wall.id,
+      number: index + 1,
+      lengthMm: wall.lengthMm,
+      shutters: runFromCuts(col1 ?? []),
+      rebate: col2 && col2.length > 0 ? [runFromCuts(col2)] : [],
+      ...(col3 && col3.length > 0 ? { extra: runFromCuts(col3) } : {}),
+      isOverridden: false,
+      polystyreneAuto: false,
+      warnings: [],
+      notes: wall.notes
+    };
+  });
+  return {
+    walls,
+    perimeterMm: data.walls.reduce((acc, w) => acc + w.lengthMm, 0),
+    tallies: {
+      shutters: tallyRuns(
+        walls.map((w) => w.shutters),
+        rules
+      ),
+      rebate: tallyRuns(
+        walls.flatMap((w) => w.rebate),
+        rules
+      ),
+      ...(data.manualThirdColumn || walls.some((w) => w.extra)
+        ? {
+            extra: tallyRuns(
+              walls.flatMap((w) => (w.extra ? [w.extra] : [])),
+              rules
+            )
+          }
+        : {})
+    }
+  };
+};
+
 export const computeJobSheet = (
   data: JobSheetData,
   rules: JobSheetRules
 ): ComputedSheet => {
+  if (data.mode === 'manual') return computeManualSheet(data, rules);
   const sourceWalls = data.rebatesEnabled
     ? data.walls
     : data.walls.map((wall) => ({ ...wall, hasRebate: false }));

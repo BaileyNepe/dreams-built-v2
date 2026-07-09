@@ -191,6 +191,8 @@ export const SheetView: FC<{
   computed: ComputedSheet;
 }> = ({ headerText, jobNumber, data, rules, computed }) => {
   const hasOverrides = computed.walls.some((wall) => wall.isOverridden);
+  const hasThirdColumn =
+    computed.tallies.extra !== undefined || computed.walls.some((wall) => wall.extra);
 
   return (
     <Page>
@@ -210,6 +212,8 @@ export const SheetView: FC<{
             <th className="shutters">300 Shutters</th>
             <th aria-label="wall number (rebate)" />
             <th className="rebate">REBATE</th>
+            {hasThirdColumn && <th aria-label="wall number (third)" />}
+            {hasThirdColumn && <th>{data.thirdColumnLabel.toUpperCase()}</th>}
           </tr>
         </thead>
         <tbody>
@@ -238,6 +242,12 @@ export const SheetView: FC<{
                   ))
                 )}
               </td>
+              {hasThirdColumn && <td className="number">{wall.number}</td>}
+              {hasThirdColumn && (
+                <td>
+                  {wall.extra ? <RunText cuts={wall.extra.cuts} section="rebate" /> : '-'}
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
@@ -265,6 +275,17 @@ export const SheetView: FC<{
           </thead>
           <TallyRows tally={computed.tallies.rebate} rules={rules} />
         </TallyTable>
+
+        {computed.tallies.extra && (
+          <TallyTable>
+            <thead>
+              <tr>
+                <th colSpan={2}>{data.thirdColumnLabel.toUpperCase()}</th>
+              </tr>
+            </thead>
+            <TallyRows tally={computed.tallies.extra} rules={rules} />
+          </TallyTable>
+        )}
 
         {(['joinery', 'showerBoxes', 'garage'] as const).map((section) => (
           <ItemsBox key={section}>

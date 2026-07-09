@@ -146,20 +146,55 @@ export const JobSheetToolbar: FC<{ onPrint: () => void; onPrintBlank: () => void
               </IconButton>
             </span>
           </Tooltip>
-          <Tooltip title="Master switch: off computes every wall without brick rebate">
+          <Tooltip title="Manual mode: free-form sheet for one-off difficult plans — click pieces in per column, no corner logic or floor plan">
             <FormControlLabel
               control={
                 <Switch
                   size="small"
-                  checked={data.rebatesEnabled}
+                  checked={data.mode === 'manual'}
                   onChange={(event) =>
-                    dispatch({ type: 'setRebatesEnabled', value: event.target.checked })
+                    dispatch({
+                      type: 'setMode',
+                      value: event.target.checked ? 'manual' : 'auto'
+                    })
                   }
                 />
               }
-              label="Rebates"
+              label="Manual"
             />
           </Tooltip>
+          {data.mode === 'manual' ? (
+            <FormControlLabel
+              control={
+                <Switch
+                  size="small"
+                  checked={data.manualThirdColumn}
+                  onChange={(event) =>
+                    dispatch({
+                      type: 'setManualThirdColumn',
+                      value: event.target.checked
+                    })
+                  }
+                />
+              }
+              label="3rd column"
+            />
+          ) : (
+            <Tooltip title="Master switch: off computes every wall without brick rebate">
+              <FormControlLabel
+                control={
+                  <Switch
+                    size="small"
+                    checked={data.rebatesEnabled}
+                    onChange={(event) =>
+                      dispatch({ type: 'setRebatesEnabled', value: event.target.checked })
+                    }
+                  />
+                }
+                label="Rebates"
+              />
+            </Tooltip>
+          )}
         </>
       )}
 

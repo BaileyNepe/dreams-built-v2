@@ -33,6 +33,7 @@ export const emptyWall = (id: string): Wall => ({
   blkAtEnd: false,
   openings: [],
   rebateInsets: [],
+  manualRuns: [],
   polystyreneOverride: null,
   angledCornerDeg: null,
   isGarageDoorWall: false,
@@ -53,6 +54,8 @@ export type JobSheetAction =
   | { type: 'removeItem'; section: SectionKey; id: string }
   | { type: 'setNotes'; notes: string }
   | { type: 'setRebatesEnabled'; value: boolean }
+  | { type: 'setMode'; value: 'auto' | 'manual' }
+  | { type: 'setManualThirdColumn'; value: boolean }
   | { type: 'replaceAll'; data: JobSheetData };
 
 export const jobSheetReducer = (
@@ -153,6 +156,12 @@ export const jobSheetReducer = (
 
     case 'setRebatesEnabled':
       return { ...state, rebatesEnabled: action.value };
+
+    case 'setMode':
+      return { ...state, mode: action.value };
+
+    case 'setManualThirdColumn':
+      return { ...state, manualThirdColumn: action.value };
 
     case 'replaceAll':
       return action.data;

@@ -22,6 +22,7 @@ import { useState, type FC } from 'react';
 import { styled } from 'styled-components';
 import { SECTION_COLORS } from '../constants';
 import { useJobSheetContext } from '../state/JobSheetProvider';
+import { ManualWallRow } from './ManualWallRow';
 import { WallRow } from './WallRow';
 
 const HeaderRow = styled.div`
@@ -41,6 +42,14 @@ const SectionHeader = styled(Typography)<{ $color: string }>`
     padding: 0.35rem;
     text-align: center;
   }
+`;
+
+const ManualHeaderRow = styled.div<{ $columns: number }>`
+  align-items: end;
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: 2rem 2rem 7.5rem repeat(${(p) => p.$columns}, 1fr) 2.5rem;
+  padding: 0 0.5rem;
 `;
 
 const ColumnLabel = styled(Typography)`
@@ -81,30 +90,51 @@ export const WallTable: FC = () => {
     dispatch({ type: 'addWall', id });
   };
 
+  const isManual = data.mode === 'manual';
+  const manualColumns = data.manualThirdColumn ? 3 : 2;
+
   return (
     <div>
-      <HeaderRow>
-        <span />
-        <span />
-        <span />
-        <span />
-        <span />
-        <SectionHeader $color={SECTION_COLORS.shutters.header}>
-          300 Shutters
-        </SectionHeader>
-        <SectionHeader $color={SECTION_COLORS.rebate.header}>Rebate</SectionHeader>
-        <span />
-      </HeaderRow>
-      <HeaderRow>
-        <span />
-        <ColumnLabel>#</ColumnLabel>
-        <ColumnLabel>Measurement</ColumnLabel>
-        <ColumnLabel>Start corner</ColumnLabel>
-        <ColumnLabel>End corner</ColumnLabel>
-        <span />
-        <span />
-        <span />
-      </HeaderRow>
+      {isManual ? (
+        <ManualHeaderRow $columns={manualColumns}>
+          <span />
+          <ColumnLabel>#</ColumnLabel>
+          <ColumnLabel>Measurement</ColumnLabel>
+          <SectionHeader $color={SECTION_COLORS.shutters.header}>
+            300 Shutters
+          </SectionHeader>
+          <SectionHeader $color={SECTION_COLORS.rebate.header}>Rebate</SectionHeader>
+          {manualColumns === 3 && (
+            <SectionHeader $color="#e0e0e0">{data.thirdColumnLabel}</SectionHeader>
+          )}
+          <span />
+        </ManualHeaderRow>
+      ) : (
+        <>
+          <HeaderRow>
+            <span />
+            <span />
+            <span />
+            <span />
+            <span />
+            <SectionHeader $color={SECTION_COLORS.shutters.header}>
+              300 Shutters
+            </SectionHeader>
+            <SectionHeader $color={SECTION_COLORS.rebate.header}>Rebate</SectionHeader>
+            <span />
+          </HeaderRow>
+          <HeaderRow>
+            <span />
+            <ColumnLabel>#</ColumnLabel>
+            <ColumnLabel>Measurement</ColumnLabel>
+            <ColumnLabel>Start corner</ColumnLabel>
+            <ColumnLabel>End corner</ColumnLabel>
+            <span />
+            <span />
+            <span />
+          </HeaderRow>
+        </>
+      )}
 
       <DndContext
         sensors={sensors}
@@ -116,14 +146,24 @@ export const WallTable: FC = () => {
           items={data.walls.map((wall) => wall.id)}
           strategy={verticalListSortingStrategy}
         >
-          {data.walls.map((wall, index) => (
-            <WallRow
-              key={wall.id}
-              wall={wall}
-              computed={computed.walls[index]}
-              isNewlyAdded={wall.id === lastAddedId}
-            />
-          ))}
+          {data.walls.map((wall, index) =>
+            isManual ? (
+              <ManualWallRow
+                key={wall.id}
+                wall={wall}
+                number={index + 1}
+                columns={manualColumns}
+                isNewlyAdded={wall.id === lastAddedId}
+              />
+            ) : (
+              <WallRow
+                key={wall.id}
+                wall={wall}
+                computed={computed.walls[index]}
+                isNewlyAdded={wall.id === lastAddedId}
+              />
+            )
+          )}
         </SortableContext>
       </DndContext>
 
