@@ -97,10 +97,14 @@ export const WallRow: FC<{
   // Corner adjustments resolve automatically from the corner kinds; the
   // checkboxes show the resolved state and clicking forces an override.
   const index = data.walls.findIndex((w) => w.id === wall.id);
-  const ends = resolveEnds(wall, {
-    prev: data.walls[(index - 1 + data.walls.length) % data.walls.length],
-    next: data.walls[(index + 1) % data.walls.length]
-  });
+  const ends = resolveEnds(
+    wall,
+    {
+      prev: data.walls[(index - 1 + data.walls.length) % data.walls.length],
+      next: data.walls[(index + 1) % data.walls.length]
+    },
+    rules
+  );
   const auto = (flag: boolean | null) => (flag === null ? ' (auto)' : '');
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOverrideOpen, setIsOverrideOpen] = useState(false);

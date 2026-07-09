@@ -343,7 +343,7 @@ describe('brick starting mid-wall (bare at the start, brick to the end)', () => 
   });
 });
 
-describe('corner rules skip neighbours whose brick stops before the corner', () => {
+describe('corners displaced by a neighbour’s inset slab edge', () => {
   const autoFlags = {
     absorbShutterAtStart: null,
     absorbShutterAtEnd: null,
@@ -354,9 +354,9 @@ describe('corner rules skip neighbours whose brick stops before the corner', () 
     overhangCapAtEnd: null
   };
 
-  it('no −120 give-way after a wall whose brick terminated mid-wall', () => {
-    // prev's brick stops 2400 before the shared corner; its strip never
-    // crosses, so this wall's rebate runs the full 3000.
+  it('external corner after a brick-terminating wall: everything stops 120 early', () => {
+    // prev's slab is inset at the shared corner, so the corner itself sits
+    // one rebate width into this wall: boards and strip both give way 120.
     const prev: Wall = {
       ...baseWall,
       id: 'w9',
@@ -367,12 +367,15 @@ describe('corner rules skip neighbours whose brick stops before the corner', () 
       prev,
       next: baseWall
     });
-    expect(w.rebate.map((run) => run.cuts.map(formatCut))).toEqual([['3000']]);
+    // Shutters: 3000 − 120 + 65 cap = 2945 → promoted to 3000.
+    expect(w.shutters.cuts.map(formatCut)).toEqual(['3000']);
+    // Rebate: 3000 − 120 = 2880.
+    expect(w.rebate.map((run) => run.cuts.map(formatCut))).toEqual([['2400', '480']]);
   });
 
-  it('no +120 extension into a corner the next wall’s brick never reaches', () => {
-    // Internal end corner, but the next wall is bare at its start — there
-    // is no brick shelf to extend into, so the strip stays exact.
+  it('internal corner into a bare-started wall: everything extends 120 over the step', () => {
+    // The next wall's slab is inset at its start, so this wall's face (and
+    // its brick shelf) runs one rebate width further to the actual corner.
     const next: Wall = {
       ...baseWall,
       id: 'w11',
@@ -380,7 +383,7 @@ describe('corner rules skip neighbours whose brick stops before the corner', () 
       rebateInsets: [{ offsetFromStartMm: 0, widthMm: 3000 }]
     };
     const w = computeWall(
-      // Offset pinned off so the test isolates the end extension.
+      // Offset pinned off so the test isolates the end displacement.
       {
         ...baseWall,
         ...autoFlags,
@@ -392,6 +395,35 @@ describe('corner rules skip neighbours whose brick stops before the corner', () 
       rules,
       { prev: baseWall, next }
     );
-    expect(w.rebate.map((run) => run.cuts.map(formatCut))).toEqual([['3000']]);
+    // Shutters: 3000 + 120 − 65 absorbed against the inset run = 3055.
+    expect(w.shutters.cuts.map(formatCut)).toEqual(['3000', '55']);
+    // Rebate: 3000 + 120 = 3120 to the displaced corner.
+    expect(w.rebate.map((run) => run.cuts.map(formatCut))).toEqual([['3000', '120']]);
+  });
+
+  it('Auburn wall 4: no-brick connector covers to the next wall’s inset face', () => {
+    // 1250 connector, internal end; the next wall starts bare (inset), so
+    // the boards run 1250 + 120 − 65 = 1305 — no unformed strip of face.
+    const next: Wall = {
+      ...baseWall,
+      id: 'w5',
+      lengthMm: 5010,
+      cornerStart: 'internal',
+      rebateInsets: [{ offsetFromStartMm: 0, widthMm: 4200 }]
+    };
+    const w = computeWall(
+      {
+        ...baseWall,
+        ...autoFlags,
+        id: 'w4',
+        lengthMm: 1250,
+        hasRebate: false,
+        cornerEnd: 'internal'
+      },
+      0,
+      rules,
+      { prev: { ...baseWall, hasRebate: false }, next }
+    );
+    expect(w.shutters.cuts.map(formatCut)).toEqual(['1200', '105']);
   });
 });
