@@ -5,6 +5,7 @@ import {
   parseCompoundLength
 } from '@dreams-built/shared/src/jobsheet/engine/compound';
 import { resolveEnds } from '@dreams-built/shared/src/jobsheet/engine/computeSheet';
+import { neighboursOf } from '@dreams-built/shared/src/jobsheet/engine/loops';
 import {
   type ComputedWall,
   type CornerKind,
@@ -90,19 +91,15 @@ export const WallRow: FC<{
   wall: Wall;
   computed: ComputedWall;
   isNewlyAdded?: boolean;
-  onAddWall?: () => void;
+  onAddWall?: (foundationId?: string) => void;
 }> = memo(({ wall, computed, isNewlyAdded = false, onAddWall }) => {
   const { dispatch, canEdit, rules, data } = useJobSheetContext();
 
   // Corner adjustments resolve automatically from the corner kinds; the
   // checkboxes show the resolved state and clicking forces an override.
+  // Neighbours wrap within the wall's own foundation loop.
   const index = data.walls.findIndex((w) => w.id === wall.id);
-  const ends = resolveEnds(wall, {
-    prev: data.walls[(index - 1 + data.walls.length) % data.walls.length],
-    next: data.walls[(index + 1) % data.walls.length],
-    isFirst: index === 0,
-    isLast: index === data.walls.length - 1
-  });
+  const ends = resolveEnds(wall, neighboursOf(data, wall.id) ?? {});
   const auto = (flag: boolean | null) => (flag === null ? ' (auto)' : '');
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOverrideOpen, setIsOverrideOpen] = useState(false);
@@ -157,7 +154,7 @@ export const WallRow: FC<{
       if (focusNav(row + 1, 0)) event.preventDefault();
       else if (isLastRow && canEdit && onAddWall) {
         event.preventDefault();
-        onAddWall();
+        onAddWall(wall.foundationId);
       }
     } else if (event.key === 'Tab' && event.shiftKey) {
       if (focusNav(row - 1, 0)) event.preventDefault();

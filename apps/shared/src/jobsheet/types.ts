@@ -153,6 +153,8 @@ export const wallSchema = z.object({
   /** Corner angle when the wall meets its neighbour at other than 90 degrees. */
   angledCornerDeg: z.number().nullable().default(null),
   isGarageDoorWall: z.boolean().default(false),
+  /** Which perimeter loop this wall belongs to (see foundationSchema). */
+  foundationId: z.string().default('main'),
   notes: z.string().default(''),
   override: wallOverrideSchema.nullable().default(null),
   /**
@@ -162,6 +164,26 @@ export const wallSchema = z.object({
   manualRuns: z.array(z.array(cutSchema)).default([])
 });
 export type Wall = z.infer<typeof wallSchema>;
+
+/* ------------------------------------------------------------------ */
+/* Foundations (perimeter loops)                                        */
+/* ------------------------------------------------------------------ */
+
+/**
+ * One closed perimeter loop. Most sheets have just the main foundation;
+ * plans sometimes carry detached external foundations (a separate garage
+ * slab, porch pad…) which become extra loops on the same sheet. Walls
+ * reference their loop via `wall.foundationId`; walls of a loop stay
+ * contiguous in `data.walls` so numbering runs continuously across loops.
+ */
+export const foundationSchema = z.object({
+  id: z.string(),
+  name: z.string().default('')
+});
+export type Foundation = z.infer<typeof foundationSchema>;
+
+/** The implicit foundation id every legacy wall belongs to. */
+export const MAIN_FOUNDATION_ID = 'main';
 
 /* ------------------------------------------------------------------ */
 /* Simple item sections (Joinery / Shower Boxes / Garage)               */
@@ -196,6 +218,10 @@ export const jobSheetDataSchema = z.object({
   thirdColumnLabel: z.string().default('Other'),
   /** Array order IS the wall numbering: garage-door wall first, clockwise. */
   walls: z.array(wallSchema).default([]),
+  /** Perimeter loops, in display order. Walls group by `foundationId`. */
+  foundations: z
+    .array(foundationSchema)
+    .default([{ id: 'main', name: 'Main foundation' }]),
   joinery: z.array(sheetItemSchema).default([]),
   showerBoxes: z.array(sheetItemSchema).default([]),
   garage: z.array(sheetItemSchema).default([]),
@@ -204,9 +230,49 @@ export const jobSheetDataSchema = z.object({
 export type JobSheetData = z.infer<typeof jobSheetDataSchema>;
 
 /**
+ * Normalize the foundations invariants after parsing:
+ * - every `wall.foundationId` has a metadata entry (orphans get one);
+ * - `foundations` is never empty;
+ * - walls of a foundation are contiguous, in foundations order (a stable
+ *   sort, so within a loop the authored wall order is preserved).
+ */
+const normalizeFoundations = (data: JobSheetData): JobSheetData => {
+  let { foundations } = data;
+  if (foundations.length === 0) {
+    foundations = [{ id: MAIN_FOUNDATION_ID, name: 'Main foundation' }];
+  }
+  const known = new Set(foundations.map((f) => f.id));
+  const orphans: Foundation[] = [];
+  for (const wall of data.walls) {
+    if (!known.has(wall.foundationId)) {
+      known.add(wall.foundationId);
+      orphans.push({ id: wall.foundationId, name: '' });
+    }
+  }
+  if (orphans.length > 0) foundations = [...foundations, ...orphans];
+
+  const order = new Map(foundations.map((f, i) => [f.id, i]));
+  const isSorted = data.walls.every(
+    (wall, i) =>
+      i === 0 ||
+      (order.get(data.walls[i - 1].foundationId) ?? 0) <=
+        (order.get(wall.foundationId) ?? 0)
+  );
+  const walls = isSorted
+    ? data.walls
+    : [...data.walls].sort(
+        (a, b) => (order.get(a.foundationId) ?? 0) - (order.get(b.foundationId) ?? 0)
+      );
+
+  if (foundations === data.foundations && walls === data.walls) return data;
+  return { ...data, foundations, walls };
+};
+
+/**
  * One-time migration: inset transitions used to be modelled as openings
- * with `blk: true`; they are wall.rebateInsets now. Apply after parsing
- * anywhere persisted sheet data is loaded.
+ * with `blk: true`; they are wall.rebateInsets now. Also normalizes the
+ * foundations invariants. Apply after parsing anywhere persisted sheet
+ * data is loaded.
  */
 export const migrateJobSheetData = (data: JobSheetData): JobSheetData => {
   let changed = false;
@@ -226,7 +292,7 @@ export const migrateJobSheetData = (data: JobSheetData): JobSheetData => {
       ]
     };
   });
-  return changed ? { ...data, walls } : data;
+  return normalizeFoundations(changed ? { ...data, walls } : data);
 };
 
 /* ------------------------------------------------------------------ */

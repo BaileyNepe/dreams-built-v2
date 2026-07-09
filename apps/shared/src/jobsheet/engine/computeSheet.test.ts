@@ -12,6 +12,7 @@
 import { describe, expect, it } from 'bun:test';
 
 import { DEFAULT_JOBSHEET_RULES } from '../defaults';
+import type { Wall } from '../types';
 import { nineWarrenLaneData, NINE_WARREN_LANE_PERIMETER_MM } from '../fixtures/nineWarrenLane';
 import { computeJobSheet, isPolystyreneAuto, resolvePolystyrene } from './computeSheet';
 import { formatCut } from './format';
@@ -195,5 +196,95 @@ describe('polystyrene resolution', () => {
         rules
       )
     ).toBe(true);
+  });
+});
+
+describe('computeJobSheet: detached foundations', () => {
+  const wallOf = (id: string, foundationId: string, patch: Partial<Wall> = {}): Wall => ({
+    id,
+    foundationId,
+    lengthMm: 2400,
+    cornerStart: 'internal',
+    cornerEnd: 'internal',
+    absorbShutterAtStart: null,
+    absorbShutterAtEnd: null,
+    hasRebate: false,
+    rebateOffsetAtStart: null,
+    rebateOffsetAtEnd: null,
+    rebateExtendAtStart: null,
+    rebateExtendAtEnd: null,
+    overhangCapAtEnd: null,
+    blkAtStart: false,
+    blkAtEnd: false,
+    openings: [],
+    rebateInsets: [],
+    manualRuns: [],
+    polystyreneOverride: null,
+    angledCornerDeg: null,
+    isGarageDoorWall: false,
+    notes: '',
+    override: null,
+    ...patch
+  });
+
+  const foundations = [
+    { id: 'main', name: 'Main foundation' },
+    { id: 'ext', name: 'Garage pad' }
+  ];
+  const squares = [
+    ...['a1', 'a2', 'a3', 'a4'].map((id) => wallOf(id, 'main')),
+    ...['b1', 'b2', 'b3', 'b4'].map((id) => wallOf(id, 'ext'))
+  ];
+  const data = { ...nineWarrenLaneData, walls: squares, foundations };
+  const sheet = computeJobSheet(data, rules);
+
+  it('numbers walls continuously across foundations', () => {
+    expect(sheet.walls.map((w) => w.number)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+  });
+
+  it('restarts the wall-1 shutter exception in every loop', () => {
+    // Each loop is boxed on its own: its first wall runs full, its last
+    // wall absorbs the closing corner — neighbours never cross loops.
+    const runs = sheet.walls.map((w) => w.shutters.effectiveLengthMm);
+    expect(runs).toEqual([2400, 2335, 2335, 2270, 2400, 2335, 2335, 2270]);
+  });
+
+  it('restarts the wall-1 rebate exception in every loop', () => {
+    const brick = (id: string, foundationId: string) =>
+      wallOf(id, foundationId, {
+        cornerStart: 'external',
+        cornerEnd: 'external',
+        hasRebate: true
+      });
+    const ring = computeJobSheet(
+      {
+        ...data,
+        walls: [
+          ...['a1', 'a2', 'a3', 'a4'].map((id) => brick(id, 'main')),
+          ...['b1', 'b2', 'b3', 'b4'].map((id) => brick(id, 'ext'))
+        ]
+      },
+      rules
+    );
+    const strips = ring.walls.map((w) =>
+      w.rebate.reduce((acc, run) => acc + run.effectiveLengthMm, 0)
+    );
+    expect(strips).toEqual([2400, 2280, 2280, 2160, 2400, 2280, 2280, 2160]);
+  });
+
+  it('pools tallies and perimeter across loops', () => {
+    const alone = (foundationId: string, walls: Wall[]) =>
+      computeJobSheet(
+        { ...data, walls, foundations: [{ id: foundationId, name: '' }] },
+        rules
+      );
+    const a = alone('main', squares.slice(0, 4));
+    const b = alone('ext', squares.slice(4));
+    expect(sheet.perimeterMm).toBe(a.perimeterMm + b.perimeterMm);
+    const merged: Record<string, number> = { ...a.tallies.shutters };
+    for (const [key, count] of Object.entries(b.tallies.shutters)) {
+      merged[key] = (merged[key] ?? 0) + count;
+    }
+    expect(sheet.tallies.shutters).toEqual(merged);
   });
 });

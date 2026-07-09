@@ -10,6 +10,7 @@ const rules = DEFAULT_JOBSHEET_RULES;
 const wall = (id: string, lengthMm: number, patch: Partial<Wall> = {}): Wall => ({
   id,
   lengthMm,
+  foundationId: 'main',
   cornerStart: 'external',
   cornerEnd: 'external',
   absorbShutterAtStart: false,
@@ -35,6 +36,7 @@ const wall = (id: string, lengthMm: number, patch: Partial<Wall> = {}): Wall => 
 
 const sheetOf = (walls: Wall[]): JobSheetData => ({
   system: 'DREAMSBUILT',
+  foundations: [{ id: 'main', name: 'Main foundation' }],
   rebatesEnabled: true,
   mode: 'auto',
   manualThirdColumn: false,
@@ -62,7 +64,7 @@ const cleanRectangle = () => [
 describe('computeFloorOutline: closure', () => {
   it('closes a rectangle exactly', () => {
     const outline = outlineOf(cleanRectangle());
-    expect(outline.misclosureMm).toBe(0);
+    expect(outline.loops[0].misclosureMm).toBe(0);
     expect(outline.walls[0].start).toEqual({ x: 0, y: 0 });
     expect(outline.walls[0].end).toEqual({ x: 6000, y: 0 });
     // Clockwise on screen: second wall heads down (south).
@@ -80,7 +82,7 @@ describe('computeFloorOutline: closure', () => {
       wall('w5', 4000),
       wall('w6', 2000)
     ]);
-    expect(outline.misclosureMm).toBe(0);
+    expect(outline.loops[0].misclosureMm).toBe(0);
   });
 
   it('closes when a bare-started wall displaces a corner (face measurements)', () => {
@@ -94,7 +96,7 @@ describe('computeFloorOutline: closure', () => {
       wall('w3', 6120),
       wall('w4', 4000, { hasRebate: false })
     ]);
-    expect(outline.misclosureMm).toBe(0);
+    expect(outline.loops[0].misclosureMm).toBe(0);
     // w2's nominal (brick) line starts one rebate width past w1's end.
     expect(outline.walls[1].start).toEqual({ x: 6120, y: 0 });
   });
@@ -122,7 +124,7 @@ describe('computeFloorOutline: closure', () => {
       wall('w3', 5400), // 600 short
       wall('w4', 4000)
     ]);
-    expect(outline.misclosureMm).toBe(600);
+    expect(outline.loops[0].misclosureMm).toBe(600);
   });
 
   it('honours an angled corner turn override', () => {
@@ -132,7 +134,7 @@ describe('computeFloorOutline: closure', () => {
       wall(`w${i}`, side, { angledCornerDeg: 45 })
     );
     const outline = outlineOf(octagon);
-    expect(outline.misclosureMm).toBe(0);
+    expect(outline.loops[0].misclosureMm).toBe(0);
   });
 });
 
@@ -239,7 +241,7 @@ describe('computeFloorOutline: corner seal analysis', () => {
       nextWallNumber: 5
     });
     // The marker sits at the corner between walls 4 and 5.
-    expect(shutterIssues[0].at).toEqual(outline.vertices[4]);
+    expect(shutterIssues[0].at).toEqual(outline.loops[0].vertices[4]);
   });
 
   it('is sealed when exactly one wall absorbs at the internal corner', () => {
@@ -303,9 +305,64 @@ describe('computeFloorOutline: corner seal analysis', () => {
       wall('w2', 4000),
       wall('w3', 5400) // open shape: no corner between w3 and w1
     ]);
-    expect(outline.misclosureMm).toBeGreaterThan(0);
+    expect(outline.loops[0].misclosureMm).toBeGreaterThan(0);
     expect(
       outline.cornerIssues.some((i) => i.wallNumber === 3 && i.nextWallNumber === 1)
     ).toBe(false);
+  });
+});
+
+describe('computeFloorOutline: detached foundations', () => {
+  const extRectangle = () => [
+    wall('x1', 3600, { foundationId: 'ext', rebateOffsetAtStart: true }),
+    wall('x2', 2400, { foundationId: 'ext', rebateOffsetAtStart: true }),
+    wall('x3', 3600, { foundationId: 'ext', rebateOffsetAtStart: true }),
+    wall('x4', 2400, { foundationId: 'ext', rebateOffsetAtStart: true })
+  ];
+
+  const outlineOfTwo = (walls: Wall[]) => {
+    const data: JobSheetData = {
+      ...sheetOf(walls),
+      foundations: [
+        { id: 'main', name: 'Main foundation' },
+        { id: 'ext', name: 'Garage pad' }
+      ]
+    };
+    return computeFloorOutline(data, computeJobSheet(data, rules), rules);
+  };
+
+  it('walks each loop independently and places them side by side', () => {
+    const outline = outlineOfTwo([...cleanRectangle(), ...extRectangle()]);
+    expect(outline.loops.map((l) => l.misclosureMm)).toEqual([0, 0]);
+    expect(outline.loops[1].startWallNumber).toBe(5);
+    expect(outline.walls).toHaveLength(8);
+    // Fixed gap to the right of the first loop, tops aligned.
+    expect(outline.loops[1].bounds.minX).toBe(outline.loops[0].bounds.maxX + 3000);
+    expect(outline.loops[1].bounds.minY).toBe(outline.loops[0].bounds.minY);
+    expect(outline.bounds).toEqual({ minX: 0, minY: 0, maxX: 12600, maxY: 4000 });
+  });
+
+  it('sums the slab area over the loops', () => {
+    const outline = outlineOfTwo([...cleanRectangle(), ...extRectangle()]);
+    expect(outline.loops[0].areaM2).toBeCloseTo(24, 3);
+    expect(outline.loops[1].areaM2).toBeCloseTo(8.64, 3);
+    expect(outline.areaM2).toBeCloseTo(32.64, 3);
+  });
+
+  it('a misclosed loop keeps its own gap and nulls only the total area', () => {
+    const outline = outlineOfTwo([
+      ...cleanRectangle(),
+      ...extRectangle().map((w) => (w.id === 'x3' ? { ...w, lengthMm: 3000 } : w))
+    ]);
+    expect(outline.loops[0].misclosureMm).toBe(0);
+    expect(outline.loops[1].misclosureMm).toBe(600);
+    expect(outline.loops[0].areaM2).toBeCloseTo(24, 3);
+    expect(outline.loops[1].areaM2).toBeNull();
+    expect(outline.areaM2).toBeNull();
+  });
+
+  it('reports no phantom corner between detached loops', () => {
+    const outline = outlineOfTwo([...cleanRectangle(), ...extRectangle()]);
+    expect(outline.cornerIssues).toEqual([]);
   });
 });

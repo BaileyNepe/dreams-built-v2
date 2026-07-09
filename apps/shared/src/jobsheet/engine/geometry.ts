@@ -24,6 +24,7 @@ import type {
   Wall
 } from '../types';
 import { rebateReachesEnd, rebateReachesStart, resolveEnds } from './computeSheet';
+import { neighboursInLoop, wallLoops } from './loops';
 import { computeRebateSegments } from './packRebate';
 
 export type Point = { x: number; y: number };
@@ -90,19 +91,37 @@ export type CornerIssue = {
   at: Point;
 };
 
-export type FloorOutline = {
+export type Bounds = { minX: number; minY: number; maxX: number; maxY: number };
+
+/** One placed perimeter loop (a foundation) in shared drawing coordinates. */
+export type LoopOutline = {
+  foundationId: string;
+  name: string;
+  /** Global number of this loop's first wall (numbering runs continuously). */
+  startWallNumber: number;
+  /** The slice of FloorOutline.walls belonging to this loop (same refs). */
   walls: PlacedWall[];
-  /** Polygon vertices (wall start points, plus the final walk end point). */
+  /** Polygon vertices (loop start point, plus one per wall end corner). */
   vertices: Point[];
-  /** Gap between where the walk ended and where it started. */
+  /** Gap between where this loop's walk ended and where it started. */
   misclosureMm: number;
-  /** Corner overlap/gap conflicts in the boxing (see CornerIssue). */
+  /** This loop's slab area; null when the loop doesn't close. */
+  areaM2: number | null;
+  bounds: Bounds;
+};
+
+export type FloorOutline = {
+  /** All loops' walls, flat, in sheet order. */
+  walls: PlacedWall[];
+  /** One entry per non-empty foundation, placed side by side. */
+  loops: LoopOutline[];
+  /** Corner overlap/gap conflicts in the boxing, pooled across loops. */
   cornerIssues: CornerIssue[];
-  bounds: { minX: number; minY: number; maxX: number; maxY: number };
+  bounds: Bounds;
   /**
-   * Slab area in m²: shoelace over the walked polygon minus the strips
-   * shaved off by rebate insets. Null when the perimeter doesn't close —
-   * a broken polygon has no meaningful area.
+   * Total slab area in m² (sum over loops): shoelace of each walked
+   * polygon minus the strips shaved off by rebate insets. Null when any
+   * loop doesn't close — a broken polygon has no meaningful area.
    */
   areaM2: number | null;
 };
@@ -184,19 +203,20 @@ const placeRebate = (
 };
 
 /**
- * Check every corner for boxing conflicts. The corner between wall i and
- * wall i+1 is governed by wall i's end-corner kind; the closing corner
- * (last wall back to wall 1) only exists when the perimeter closes.
+ * Check one loop's corners for boxing conflicts. The corner between wall
+ * i and wall i+1 is governed by wall i's end-corner kind; the closing
+ * corner (last wall back to the loop's first) only exists when the loop
+ * closes. Wall numbers stay global via `numberOffset`.
  */
 const computeCornerIssues = (
-  data: JobSheetData,
+  loopWalls: Wall[],
   rules: JobSheetRules,
   vertices: Point[],
-  perimeterCloses: boolean
+  perimeterCloses: boolean,
+  numberOffset: number
 ): CornerIssue[] => {
   const issues: CornerIssue[] = [];
-  if (data.mode === 'manual') return issues;
-  const { walls } = data;
+  const walls = loopWalls;
 
   walls.forEach((wall, i) => {
     const j = (i + 1) % walls.length;
@@ -205,21 +225,11 @@ const computeCornerIssues = (
     if (wall.lengthMm === 0 || next.lengthMm === 0) return;
 
     const at = vertices[i + 1] ?? vertices[0];
-    const wallNumber = i + 1;
-    const nextWallNumber = j + 1;
+    const wallNumber = numberOffset + i + 1;
+    const nextWallNumber = numberOffset + j + 1;
 
-    const wallEnds = resolveEnds(wall, {
-      prev: walls[(i - 1 + walls.length) % walls.length],
-      next,
-      isFirst: i === 0,
-      isLast: i === walls.length - 1
-    });
-    const nextEnds = resolveEnds(next, {
-      prev: wall,
-      next: walls[(j + 1) % walls.length],
-      isFirst: j === 0,
-      isLast: j === walls.length - 1
-    });
+    const wallEnds = resolveEnds(wall, neighboursInLoop(walls, i));
+    const nextEnds = resolveEnds(next, neighboursInLoop(walls, j));
 
     if (wall.cornerEnd === 'internal') {
       // The perpendicular shutter consumes one board thickness inside the
@@ -284,17 +294,15 @@ const computeCornerIssues = (
   return issues;
 };
 
-export const computeFloorOutline = (
-  sourceData: JobSheetData,
-  computed: ComputedSheet,
+/** Horizontal gap between detached foundations on the drawing. */
+const LOOP_GAP_MM = 3000;
+
+/** Walk one closed loop from a local origin, heading east. */
+const walkLoop = (
+  loopWalls: Wall[],
+  computedSlice: ComputedWall[],
   rules: JobSheetRules
-): FloorOutline => {
-  const data: JobSheetData = sourceData.rebatesEnabled
-    ? sourceData
-    : {
-        ...sourceData,
-        walls: sourceData.walls.map((wall) => ({ ...wall, hasRebate: false }))
-      };
+) => {
   let position: Point = { x: 0, y: 0 };
   let heading: Point = { x: 1, y: 0 };
 
@@ -304,8 +312,8 @@ export const computeFloorOutline = (
   // points at displaced corners, which `vertices` (one per corner) skips.
   const boundary: Point[] = [{ ...position }];
 
-  data.walls.forEach((wall, index) => {
-    const computedWall = computed.walls[index];
+  loopWalls.forEach((wall, index) => {
+    const computedWall = computedSlice[index];
     const start = { ...position };
     const end = {
       x: start.x + heading.x * wall.lengthMm,
@@ -316,12 +324,8 @@ export const computeFloorOutline = (
     // Shutter cuts start after any absorbed board at the wall start; BLK
     // markers at the very start would otherwise push everything sideways,
     // so the offset only applies to the packed run itself.
-    const ends = resolveEnds(wall, {
-      prev: data.walls[(index - 1 + data.walls.length) % data.walls.length],
-      next: data.walls[(index + 1) % data.walls.length],
-      isFirst: index === 0,
-      isLast: index === data.walls.length - 1
-    });
+    const neighbours = neighboursInLoop(loopWalls, index);
+    const ends = resolveEnds(wall, neighbours);
     const absorbOffset = ends.absorbAtStart ? rules.shutterThicknessMm : 0;
 
     // On a partial-rebate wall the shutter run is segmented: outer boards
@@ -405,17 +409,7 @@ export const computeFloorOutline = (
       direction: heading,
       outwardNormal,
       shutterCuts,
-      rebateSegments: placeRebate(
-        wall,
-        {
-          prev: data.walls[(index - 1 + data.walls.length) % data.walls.length],
-          next: data.walls[(index + 1) % data.walls.length],
-          isFirst: index === 0,
-          isLast: index === data.walls.length - 1
-        },
-        computedWall,
-        rules
-      ),
+      rebateSegments: placeRebate(wall, neighbours, computedWall, rules),
       insets: wallInsets
     });
 
@@ -440,8 +434,8 @@ export const computeFloorOutline = (
     heading = rotate(heading, wall.cornerEnd === 'external' ? turn : -turn);
 
     position = corner;
-    const nextWall = data.walls[(index + 1) % data.walls.length];
-    if (nextWall.hasRebate && !rebateReachesStart(nextWall)) {
+    const nextWall = neighbours.next;
+    if (nextWall && nextWall.hasRebate && !rebateReachesStart(nextWall)) {
       position = {
         x: position.x + heading.y * rules.rebateWidthMm,
         y: position.y - heading.x * rules.rebateWidthMm
@@ -454,14 +448,12 @@ export const computeFloorOutline = (
 
   const xs = vertices.map((v) => v.x);
   const ys = vertices.map((v) => v.y);
-  const bounds = {
+  const bounds: Bounds = {
     minX: Math.min(...xs, 0),
     minY: Math.min(...ys, 0),
     maxX: Math.max(...xs, 0),
     maxY: Math.max(...ys, 0)
   };
-
-  const cornerIssues = computeCornerIssues(data, rules, vertices, misclosureMm <= 1);
 
   let areaM2: number | null = null;
   if (misclosureMm <= 10 && boundary.length >= 4) {
@@ -481,5 +473,99 @@ export const computeFloorOutline = (
     areaM2 = areaMm2 / 1_000_000;
   }
 
-  return { walls, vertices, misclosureMm, cornerIssues, bounds, areaM2 };
+  return { walls, vertices, misclosureMm, bounds, areaM2 };
+};
+
+export const computeFloorOutline = (
+  sourceData: JobSheetData,
+  computed: ComputedSheet,
+  rules: JobSheetRules
+): FloorOutline => {
+  const data: JobSheetData = sourceData.rebatesEnabled
+    ? sourceData
+    : {
+        ...sourceData,
+        walls: sourceData.walls.map((wall) => ({ ...wall, hasRebate: false }))
+      };
+
+  const loops: LoopOutline[] = [];
+  const allWalls: PlacedWall[] = [];
+  const cornerIssues: CornerIssue[] = [];
+  // Detached foundations are placed side by side, tops aligned.
+  let cursorX = 0;
+  let anchorY = 0;
+
+  const placedLoops = wallLoops({
+    walls: data.walls,
+    foundations: data.foundations
+  }).filter((loop) => loop.walls.length > 0);
+  for (const loop of placedLoops) {
+    const local = walkLoop(
+      loop.walls,
+      computed.walls.slice(loop.startIndex, loop.startIndex + loop.walls.length),
+      rules
+    );
+
+    const isFirstPlaced = loops.length === 0;
+    const dx = isFirstPlaced ? 0 : cursorX - local.bounds.minX;
+    const dy = isFirstPlaced ? 0 : anchorY - local.bounds.minY;
+    if (dx !== 0 || dy !== 0) {
+      const shift = (p: Point) => {
+        p.x += dx;
+        p.y += dy;
+      };
+      for (const placed of local.walls) {
+        shift(placed.start);
+        shift(placed.end);
+      }
+      local.vertices.forEach(shift);
+      local.bounds.minX += dx;
+      local.bounds.maxX += dx;
+      local.bounds.minY += dy;
+      local.bounds.maxY += dy;
+    }
+    if (isFirstPlaced) anchorY = local.bounds.minY;
+    cursorX = local.bounds.maxX + LOOP_GAP_MM;
+
+    if (data.mode !== 'manual') {
+      cornerIssues.push(
+        ...computeCornerIssues(
+          loop.walls,
+          rules,
+          local.vertices,
+          local.misclosureMm <= 1,
+          loop.startIndex
+        )
+      );
+    }
+
+    loops.push({
+      foundationId: loop.foundationId,
+      name: loop.name,
+      startWallNumber: loop.startIndex + 1,
+      walls: local.walls,
+      vertices: local.vertices,
+      misclosureMm: local.misclosureMm,
+      areaM2: local.areaM2,
+      bounds: local.bounds
+    });
+    allWalls.push(...local.walls);
+  }
+
+  const bounds: Bounds =
+    loops.length === 0
+      ? { minX: 0, minY: 0, maxX: 0, maxY: 0 }
+      : {
+          minX: Math.min(...loops.map((l) => l.bounds.minX)),
+          minY: Math.min(...loops.map((l) => l.bounds.minY)),
+          maxX: Math.max(...loops.map((l) => l.bounds.maxX)),
+          maxY: Math.max(...loops.map((l) => l.bounds.maxY))
+        };
+
+  const areaM2 =
+    loops.length > 0 && loops.every((l) => l.areaM2 !== null)
+      ? loops.reduce((acc, l) => acc + (l.areaM2 ?? 0), 0)
+      : null;
+
+  return { walls: allWalls, loops, cornerIssues, bounds, areaM2 };
 };

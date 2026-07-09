@@ -16,6 +16,7 @@ import type {
   PackedRun,
   Wall
 } from '../types';
+import { neighboursInLoop, wallLoops } from './loops';
 import { packRebateForWall, type ResolvedRebateEnds } from './packRebate';
 import { packRun } from './packRun';
 import { tallyRuns } from './tallies';
@@ -342,13 +343,20 @@ export const computeJobSheet = (
   const sourceWalls = data.rebatesEnabled
     ? data.walls
     : data.walls.map((wall) => ({ ...wall, hasRebate: false }));
-  const walls = sourceWalls.map((wall, index) =>
-    computeWall(wall, index, rules, {
-      prev: sourceWalls[(index - 1 + sourceWalls.length) % sourceWalls.length],
-      next: sourceWalls[(index + 1) % sourceWalls.length],
-      isFirst: index === 0,
-      isLast: index === sourceWalls.length - 1
-    })
+  // Each foundation is its own closed loop: neighbours, the wall-1
+  // exception and the closing corner all wrap within the loop.
+  const loops = wallLoops({ walls: sourceWalls, foundations: data.foundations }).filter(
+    (loop) => loop.walls.length > 0
+  );
+  const walls = loops.flatMap((loop) =>
+    loop.walls.map((wall, indexInLoop) =>
+      computeWall(
+        wall,
+        loop.startIndex + indexInLoop,
+        rules,
+        neighboursInLoop(loop.walls, indexInLoop)
+      )
+    )
   );
   const perimeterMm = data.walls.reduce((acc, w) => acc + w.lengthMm, 0);
 

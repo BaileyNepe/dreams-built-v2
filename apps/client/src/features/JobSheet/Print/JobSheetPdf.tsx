@@ -7,6 +7,7 @@ import {
   View
 } from '@react-pdf/renderer';
 import { formatCuts } from '@dreams-built/shared/src/jobsheet/engine/format';
+import { wallLoops } from '@dreams-built/shared/src/jobsheet/engine/loops';
 import { BLK_KEY, SHORTS_KEY } from '@dreams-built/shared/src/jobsheet/engine/tallies';
 import {
   type ComputedSheet,
@@ -57,6 +58,7 @@ const styles = StyleSheet.create({
   measurement: { width: 52, textAlign: 'right' },
   number: { width: 22, textAlign: 'center', fontFamily: 'Helvetica-Bold' },
   run: { flex: 1 },
+  foundation: { flex: 1, backgroundColor: '#e8e8e8' },
   headShutters: {
     backgroundColor: SECTION_COLORS.shutters.header,
     textAlign: 'center',
@@ -167,6 +169,8 @@ export const JobSheetPdf: FC<{
   const hasThirdColumn =
     computed.tallies.extra !== undefined || computed.walls.some((wall) => wall.extra);
   const wallNotes = computed.walls.filter((wall) => wall.notes);
+  const showFoundationDividers =
+    wallLoops(data).filter((loop) => loop.walls.length > 0).length > 1;
 
   return (
     <Document title={`Job ${jobNumber} — job sheet`}>
@@ -199,41 +203,56 @@ export const JobSheetPdf: FC<{
               </View>
             )}
           </View>
-          {computed.walls.map((wall) => (
-            <View key={wall.id} style={styles.row} wrap={false}>
-              <View style={[styles.cell, styles.measurement]}>
-                <Text>{wall.lengthMm ? wall.lengthMm.toLocaleString() : ''}</Text>
-              </View>
-              <View style={[styles.cell, styles.number]}>
-                <Text>{wall.number}</Text>
-              </View>
-              <View style={[styles.cell, styles.run]}>
-                <Text>
-                  <RunText cuts={wall.shutters.cuts} section="shutters" />
-                  {wall.isOverridden ? ' *' : ''}
-                </Text>
-              </View>
-              <View style={[styles.cell, styles.number]}>
-                <Text>{wall.number}</Text>
-              </View>
-              <View style={[styles.cell, styles.run]}>
-                <RebateCell wall={wall} />
-              </View>
-              {hasThirdColumn && (
-                <View style={[styles.cell, styles.number]}>
-                  <Text>{wall.number}</Text>
+          {wallLoops(data).map((loop, loopIndex) => (
+            <Fragment key={loop.foundationId}>
+              {showFoundationDividers && loop.walls.length > 0 && (
+                <View style={styles.row} wrap={false}>
+                  <View style={[styles.cell, styles.foundation]}>
+                    <Text style={styles.bold}>
+                      {(loop.name || `Foundation ${loopIndex + 1}`).toUpperCase()}
+                    </Text>
+                  </View>
                 </View>
               )}
-              {hasThirdColumn && (
-                <View style={[styles.cell, styles.run]}>
-                  {wall.extra ? (
-                    <RunText cuts={wall.extra.cuts} section="rebate" />
-                  ) : (
-                    <Text>-</Text>
-                  )}
-                </View>
-              )}
-            </View>
+              {computed.walls
+                .slice(loop.startIndex, loop.startIndex + loop.walls.length)
+                .map((wall) => (
+                  <View key={wall.id} style={styles.row} wrap={false}>
+                    <View style={[styles.cell, styles.measurement]}>
+                      <Text>{wall.lengthMm ? wall.lengthMm.toLocaleString() : ''}</Text>
+                    </View>
+                    <View style={[styles.cell, styles.number]}>
+                      <Text>{wall.number}</Text>
+                    </View>
+                    <View style={[styles.cell, styles.run]}>
+                      <Text>
+                        <RunText cuts={wall.shutters.cuts} section="shutters" />
+                        {wall.isOverridden ? ' *' : ''}
+                      </Text>
+                    </View>
+                    <View style={[styles.cell, styles.number]}>
+                      <Text>{wall.number}</Text>
+                    </View>
+                    <View style={[styles.cell, styles.run]}>
+                      <RebateCell wall={wall} />
+                    </View>
+                    {hasThirdColumn && (
+                      <View style={[styles.cell, styles.number]}>
+                        <Text>{wall.number}</Text>
+                      </View>
+                    )}
+                    {hasThirdColumn && (
+                      <View style={[styles.cell, styles.run]}>
+                        {wall.extra ? (
+                          <RunText cuts={wall.extra.cuts} section="rebate" />
+                        ) : (
+                          <Text>-</Text>
+                        )}
+                      </View>
+                    )}
+                  </View>
+                ))}
+            </Fragment>
           ))}
         </View>
 

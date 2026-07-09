@@ -144,3 +144,78 @@ describe('jobSheetReducer: section items and notes', () => {
     expect(replaced.notes).toBe('');
   });
 });
+
+describe('jobSheetReducer: foundations', () => {
+  const twoLoops = () => ({
+    ...emptyData,
+    foundations: [
+      { id: 'main', name: 'Main foundation' },
+      { id: 'ext', name: 'Garage pad' }
+    ],
+    walls: [emptyWall('a1'), emptyWall('a2'), emptyWall('x1', 'ext'), emptyWall('x2', 'ext')]
+  });
+
+  it('addWall inserts at the named loop end, keeping loops contiguous', () => {
+    const state = jobSheetReducer(twoLoops(), {
+      type: 'addWall',
+      id: 'a3',
+      foundationId: 'main'
+    });
+    expect(state.walls.map((w) => w.id)).toEqual(['a1', 'a2', 'a3', 'x1', 'x2']);
+    expect(state.walls[2].foundationId).toBe('main');
+  });
+
+  it('addWall without a foundationId joins the last foundation', () => {
+    const state = jobSheetReducer(twoLoops(), { type: 'addWall', id: 'x3' });
+    expect(state.walls.map((w) => w.id)).toEqual(['a1', 'a2', 'x1', 'x2', 'x3']);
+    expect(state.walls[4].foundationId).toBe('ext');
+  });
+
+  it('corner sync wraps within the loop, never across foundations', () => {
+    // a2 is the LAST wall of the main loop: its end corner is a1's start
+    // corner, not x1's.
+    const state = jobSheetReducer(twoLoops(), {
+      type: 'updateWall',
+      id: 'a2',
+      patch: { cornerEnd: 'internal' }
+    });
+    expect(state.walls[0].cornerStart).toBe('internal'); // a1
+    expect(state.walls[2].cornerStart).toBe('external'); // x1 untouched
+  });
+
+  it('moveWall re-stamps the moved wall with the loop it lands in', () => {
+    const state = jobSheetReducer(twoLoops(), { type: 'moveWall', from: 1, to: 3 });
+    expect(state.walls.map((w) => w.id)).toEqual(['a1', 'x1', 'x2', 'a2']);
+    expect(state.walls[3].foundationId).toBe('ext');
+  });
+
+  it('addFoundation appends metadata and optionally seeds the first wall', () => {
+    const state = jobSheetReducer(twoLoops(), {
+      type: 'addFoundation',
+      id: 'porch',
+      name: 'Porch pad',
+      wallId: 'p1'
+    });
+    expect(state.foundations.map((f) => f.id)).toEqual(['main', 'ext', 'porch']);
+    expect(state.walls.at(-1)).toMatchObject({ id: 'p1', foundationId: 'porch' });
+    // Duplicate ids are refused.
+    expect(jobSheetReducer(state, { type: 'addFoundation', id: 'ext' })).toBe(state);
+  });
+
+  it('renameFoundation updates only the named loop', () => {
+    const state = jobSheetReducer(twoLoops(), {
+      type: 'renameFoundation',
+      id: 'ext',
+      name: 'Sleepout'
+    });
+    expect(state.foundations[1].name).toBe('Sleepout');
+    expect(state.foundations[0].name).toBe('Main foundation');
+  });
+
+  it('removeFoundation drops the metadata and its walls, but never the first', () => {
+    const state = jobSheetReducer(twoLoops(), { type: 'removeFoundation', id: 'ext' });
+    expect(state.foundations.map((f) => f.id)).toEqual(['main']);
+    expect(state.walls.map((w) => w.id)).toEqual(['a1', 'a2']);
+    expect(jobSheetReducer(state, { type: 'removeFoundation', id: 'main' })).toBe(state);
+  });
+});

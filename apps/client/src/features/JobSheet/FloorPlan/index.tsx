@@ -61,17 +61,26 @@ export const FloorPlanPanel: FC<{
           Floor plan
         </Typography>
 
-        {outline.misclosureMm > 1 && (
-          <Tooltip title="The wall measurements and corner directions don't return to the start point — check lengths and internal/external corners. The gap is drawn dashed red.">
-            <Chip
-              icon={<WarningAmberIcon />}
-              size="small"
-              color="warning"
-              label={`Doesn't close by ${outline.misclosureMm.toLocaleString()}mm`}
-              data-testid="misclosure-chip"
-            />
-          </Tooltip>
-        )}
+        {outline.loops
+          .filter((loop) => loop.misclosureMm > 1)
+          .map((loop) => (
+            <Tooltip
+              key={loop.foundationId}
+              title="The wall measurements and corner directions don't return to the start point — check lengths and internal/external corners. The gap is drawn dashed red."
+            >
+              <Chip
+                icon={<WarningAmberIcon />}
+                size="small"
+                color="warning"
+                label={`${
+                  outline.loops.length > 1
+                    ? `${loop.name || `Foundation ${outline.loops.indexOf(loop) + 1}`}: doesn't`
+                    : "Doesn't"
+                } close by ${loop.misclosureMm.toLocaleString()}mm`}
+                data-testid="misclosure-chip"
+              />
+            </Tooltip>
+          ))}
 
         {outline.cornerIssues.map((issue) => (
           <Tooltip key={`${issue.kind}-${issue.wallNumber}`} title={issue.message}>

@@ -16,8 +16,10 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy
 } from '@dnd-kit/sortable';
+import { wallLoops } from '@dreams-built/shared/src/jobsheet/engine/loops';
 import AddIcon from '@mui/icons-material/Add';
-import { Button, Typography } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/DeleteOutline';
+import { Button, IconButton, TextField, Tooltip, Typography } from '@mui/material';
 import { useState, type FC } from 'react';
 import { styled } from 'styled-components';
 import { SECTION_COLORS } from '../constants';
@@ -61,6 +63,16 @@ const ColumnLabel = styled(Typography)`
   }
 `;
 
+const FoundationBar = styled.div`
+  align-items: center;
+  background: ${(p) => p.theme.palette.action.hover};
+  border-bottom: 2px solid ${(p) => p.theme.palette.divider};
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  padding: 0.35rem 0.5rem;
+`;
+
 /**
  * The editable wall list. One row per wall — the paper sheet's two
  * numbered columns are the two breakdown cells of the same wall. Rows
@@ -84,14 +96,24 @@ export const WallTable: FC = () => {
     dispatch({ type: 'moveWall', from, to });
   };
 
-  const addWall = () => {
+  const addWall = (foundationId?: string) => {
     const id = crypto.randomUUID();
     setLastAddedId(id);
-    dispatch({ type: 'addWall', id });
+    dispatch({ type: 'addWall', id, foundationId });
+  };
+
+  // A detached slab (garage pad, porch...) on the same plan: its own loop,
+  // seeded with its first wall in one undo step.
+  const addFoundation = () => {
+    const wallId = crypto.randomUUID();
+    setLastAddedId(wallId);
+    dispatch({ type: 'addFoundation', id: crypto.randomUUID(), wallId });
   };
 
   const isManual = data.mode === 'manual';
   const manualColumns = data.manualThirdColumn ? 3 : 2;
+  const loops = wallLoops(data);
+  const showDividers = loops.length > 1;
 
   return (
     <div>
@@ -150,27 +172,79 @@ export const WallTable: FC = () => {
           items={data.walls.map((wall) => wall.id)}
           strategy={verticalListSortingStrategy}
         >
-          {data.walls.map((wall, index) =>
-            isManual ? (
-              <ManualWallRow
-                key={wall.id}
-                wall={wall}
-                number={index + 1}
-                columns={manualColumns}
-                isNewlyAdded={wall.id === lastAddedId}
-                isLastRow={index === data.walls.length - 1}
-                onAddWall={addWall}
-              />
-            ) : (
-              <WallRow
-                key={wall.id}
-                wall={wall}
-                computed={computed.walls[index]}
-                isNewlyAdded={wall.id === lastAddedId}
-                onAddWall={addWall}
-              />
-            )
-          )}
+          {loops.map((loop, loopIndex) => (
+            <div key={loop.foundationId}>
+              {showDividers && (
+                <FoundationBar>
+                  <TextField
+                    size="small"
+                    variant="standard"
+                    placeholder={loopIndex === 0 ? 'Main foundation' : 'External foundation'}
+                    value={loop.name}
+                    disabled={!canEdit}
+                    inputProps={{
+                      'aria-label': `Foundation ${loopIndex + 1} name`,
+                      style: { fontWeight: 700 }
+                    }}
+                    onChange={(event) =>
+                      dispatch({
+                        type: 'renameFoundation',
+                        id: loop.foundationId,
+                        name: event.target.value
+                      })
+                    }
+                  />
+                  <Typography variant="caption" color="text.secondary" sx={{ flex: 1 }}>
+                    {loop.walls.length} wall{loop.walls.length === 1 ? '' : 's'}
+                  </Typography>
+                  {canEdit && (
+                    <Button
+                      size="small"
+                      startIcon={<AddIcon />}
+                      onClick={() => addWall(loop.foundationId)}
+                    >
+                      Add wall
+                    </Button>
+                  )}
+                  {canEdit && loopIndex > 0 && (
+                    <Tooltip title="Remove this foundation and its walls">
+                      <IconButton
+                        size="small"
+                        aria-label={`Remove foundation ${loopIndex + 1}`}
+                        onClick={() =>
+                          dispatch({ type: 'removeFoundation', id: loop.foundationId })
+                        }
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                </FoundationBar>
+              )}
+              {loop.walls.map((wall, i) => {
+                const index = loop.startIndex + i;
+                return isManual ? (
+                  <ManualWallRow
+                    key={wall.id}
+                    wall={wall}
+                    number={index + 1}
+                    columns={manualColumns}
+                    isNewlyAdded={wall.id === lastAddedId}
+                    isLastRow={index === data.walls.length - 1}
+                    onAddWall={addWall}
+                  />
+                ) : (
+                  <WallRow
+                    key={wall.id}
+                    wall={wall}
+                    computed={computed.walls[index]}
+                    isNewlyAdded={wall.id === lastAddedId}
+                    onAddWall={addWall}
+                  />
+                );
+              })}
+            </div>
+          ))}
         </SortableContext>
       </DndContext>
 
@@ -182,9 +256,21 @@ export const WallTable: FC = () => {
       )}
 
       {canEdit && (
-        <Button startIcon={<AddIcon />} onClick={addWall} sx={{ m: 1 }}>
-          Add wall
-        </Button>
+        <>
+          <Button startIcon={<AddIcon />} onClick={() => addWall()} sx={{ m: 1 }}>
+            Add wall
+          </Button>
+          {!isManual && (
+            <Button
+              startIcon={<AddIcon />}
+              onClick={addFoundation}
+              sx={{ m: 1 }}
+              color="secondary"
+            >
+              Add external foundation
+            </Button>
+          )}
+        </>
       )}
     </div>
   );
