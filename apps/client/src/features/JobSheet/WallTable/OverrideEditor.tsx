@@ -135,7 +135,7 @@ export const OverrideEditor: FC<{
   onOpen: () => void;
   onClose: () => void;
 }> = ({ wall, computed, isOpen, onOpen, onClose }) => {
-  const { dispatch, canEdit } = useJobSheetContext();
+  const { dispatch, canEdit, rules } = useJobSheetContext();
   const [shutterCuts, setShutterCuts] = useState<CutDraft[]>([]);
   const [rebateRuns, setRebateRuns] = useState<CutDraft[][]>([]);
 
@@ -191,7 +191,7 @@ export const OverrideEditor: FC<{
       >
         <Box sx={{ display: 'grid', gap: 2 }}>
           <CutListEditor
-            title="300 Shutters"
+            title={rules.shutterLabel}
             cuts={shutterCuts}
             onChange={setShutterCuts}
           />

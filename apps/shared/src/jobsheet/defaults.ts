@@ -18,5 +18,8 @@ export const DEFAULT_JOBSHEET_RULES: JobSheetRules = {
   // TODO(bailey): confirm BLK inset length (BLK described as a 120x65 shutter)
   blkLengthMm: 120,
   // TODO(bailey): confirm polystyrene is wanted automatically on both-ends-internal walls
-  autoPolystyreneWhenBothEndsInternal: true
+  autoPolystyreneWhenBothEndsInternal: true,
+  // Pure labels: the "300" is the shutter height as written on the paper sheet.
+  shutterLabel: '300 Shutters',
+  rebateLabel: 'Rebate'
 };

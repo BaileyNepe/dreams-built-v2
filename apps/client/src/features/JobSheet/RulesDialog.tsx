@@ -27,6 +27,8 @@ type Draft = {
   rebateWidthMm: string;
   blkLengthMm: string;
   autoPolystyreneWhenBothEndsInternal: boolean;
+  shutterLabel: string;
+  rebateLabel: string;
 };
 
 const toDraft = (rules: JobSheetRules): Draft => ({
@@ -34,7 +36,9 @@ const toDraft = (rules: JobSheetRules): Draft => ({
   shutterThicknessMm: String(rules.shutterThicknessMm),
   rebateWidthMm: String(rules.rebateWidthMm),
   blkLengthMm: String(rules.blkLengthMm),
-  autoPolystyreneWhenBothEndsInternal: rules.autoPolystyreneWhenBothEndsInternal
+  autoPolystyreneWhenBothEndsInternal: rules.autoPolystyreneWhenBothEndsInternal,
+  shutterLabel: rules.shutterLabel,
+  rebateLabel: rules.rebateLabel
 });
 
 const fromDraft = (draft: Draft): unknown => ({
@@ -42,7 +46,9 @@ const fromDraft = (draft: Draft): unknown => ({
   shutterThicknessMm: Number(draft.shutterThicknessMm),
   rebateWidthMm: Number(draft.rebateWidthMm),
   blkLengthMm: Number(draft.blkLengthMm),
-  autoPolystyreneWhenBothEndsInternal: draft.autoPolystyreneWhenBothEndsInternal
+  autoPolystyreneWhenBothEndsInternal: draft.autoPolystyreneWhenBothEndsInternal,
+  shutterLabel: draft.shutterLabel.trim() || '300 Shutters',
+  rebateLabel: draft.rebateLabel.trim() || 'Rebate'
 });
 
 const RulesForm: FC<{ onClose: () => void }> = ({ onClose }) => {
@@ -120,6 +126,23 @@ const RulesForm: FC<{ onClose: () => void }> = ({ onClose }) => {
           sx={{ width: '10rem' }}
           onChange={(event) => setDraft({ ...draft, blkLengthMm: event.target.value })}
           helperText="Inset piece length"
+        />
+      </Box>
+
+      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+        <TextField
+          label="Shutter column label"
+          value={draft.shutterLabel}
+          sx={{ width: '14rem' }}
+          onChange={(event) => setDraft({ ...draft, shutterLabel: event.target.value })}
+          helperText='The "300" is the shutter height'
+        />
+        <TextField
+          label="Rebate column label"
+          value={draft.rebateLabel}
+          sx={{ width: '14rem' }}
+          onChange={(event) => setDraft({ ...draft, rebateLabel: event.target.value })}
+          helperText="Heading only — widths unchanged"
         />
       </Box>
 

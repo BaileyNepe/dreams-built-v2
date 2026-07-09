@@ -28,7 +28,11 @@ export const jobSheetRulesSchema = z.object({
   /** Length of a BLK inset piece (a rebate-width x shutter-thickness block). */
   blkLengthMm: z.number().int().positive(),
   /** Auto-flag shorts as polystyrene-padded when both wall ends are internal. */
-  autoPolystyreneWhenBothEndsInternal: z.boolean()
+  autoPolystyreneWhenBothEndsInternal: z.boolean(),
+  /** Column heading for the shutter run (the "300" is the shutter height). */
+  shutterLabel: z.string().default('300 Shutters'),
+  /** Column heading for the rebate run. */
+  rebateLabel: z.string().default('Rebate')
 });
 export type JobSheetRules = z.infer<typeof jobSheetRulesSchema>;
 
