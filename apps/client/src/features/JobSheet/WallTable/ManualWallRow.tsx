@@ -234,7 +234,7 @@ export const ManualWallRow: FC<{
 
         <TextField
           size="small"
-          label="mm"
+          placeholder="mm"
           value={wall.lengthMm === 0 ? '' : wall.lengthMm}
           disabled={!canEdit}
           inputRef={lengthInputRef}

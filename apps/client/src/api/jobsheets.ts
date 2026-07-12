@@ -17,7 +17,23 @@ export const useCreateJobSheetMutation = () => {
  * Autosave mutation: silent on success (a toolbar chip shows the state);
  * conflicts and failures are surfaced by the autosave hook, not here.
  */
-export const useSaveJobSheetMutation = () => api.jobSheets.save.useMutation();
+export const useSaveJobSheetMutation = ({ projectId }: { projectId: string }) => {
+  const utils = api.useUtils();
+  return api.jobSheets.save.useMutation({
+    // Mirror the accepted document into the getByProject cache. Without
+    // this, re-entering the sheet within staleTime mounts the editor from
+    // the pre-edit cache entry (walls without their measurements). A
+    // mutation-level onSuccess still runs for the flush save fired while
+    // the editor unmounts, unlike callbacks passed to mutate().
+    onSuccess: (result, variables) => {
+      utils.jobSheets.getByProject.setData({ projectId }, (previous) =>
+        previous && previous.id === variables.sheetId
+          ? { ...previous, data: variables.data, revision: result.revision }
+          : previous
+      );
+    }
+  });
+};
 
 export const useRemoveJobSheetMutation = ({ projectId }: { projectId: string }) => {
   const utils = api.useUtils();

@@ -18,6 +18,7 @@ const renderAutosave = (initialDirty = false) =>
     ({ data }) =>
       useAutosave({
         sheetId: 'sheet1',
+        projectId: 'project1',
         initialRevision: 3,
         data,
         enabled: true,

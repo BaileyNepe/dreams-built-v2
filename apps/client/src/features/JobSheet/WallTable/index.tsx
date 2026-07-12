@@ -31,7 +31,7 @@ const HeaderRow = styled.div`
   align-items: stretch;
   display: grid;
   gap: 0.5rem;
-  grid-template-columns: 2rem 2rem 7.5rem 8.5rem 8.5rem 1fr 1fr 4.5rem;
+  grid-template-columns: 2rem 2rem 7.5rem 6.5rem 6.5rem 1fr 1fr 4.5rem;
   padding: 0 0.5rem;
 `;
 
@@ -134,32 +134,20 @@ export const WallTable: FC = () => {
           <span />
         </ManualHeaderRow>
       ) : (
-        <>
-          <HeaderRow>
-            <span />
-            <span />
-            <span />
-            <span />
-            <span />
-            <SectionHeader $color={SECTION_COLORS.shutters.header}>
-              {rules.shutterLabel}
-            </SectionHeader>
-            <SectionHeader $color={SECTION_COLORS.rebate.header}>
-              {rules.rebateLabel}
-            </SectionHeader>
-            <span />
-          </HeaderRow>
-          <HeaderRow>
-            <span />
-            <ColumnLabel>#</ColumnLabel>
-            <ColumnLabel>Measurement</ColumnLabel>
-            <ColumnLabel>Start corner</ColumnLabel>
-            <ColumnLabel>End corner</ColumnLabel>
-            <span />
-            <span />
-            <span />
-          </HeaderRow>
-        </>
+        <HeaderRow>
+          <span />
+          <ColumnLabel>#</ColumnLabel>
+          <ColumnLabel>Measurement</ColumnLabel>
+          <ColumnLabel>Start corner</ColumnLabel>
+          <ColumnLabel>End corner</ColumnLabel>
+          <SectionHeader $color={SECTION_COLORS.shutters.header}>
+            {rules.shutterLabel}
+          </SectionHeader>
+          <SectionHeader $color={SECTION_COLORS.rebate.header}>
+            {rules.rebateLabel}
+          </SectionHeader>
+          <span />
+        </HeaderRow>
       )}
 
       <DndContext
