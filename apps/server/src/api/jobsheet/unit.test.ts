@@ -16,7 +16,9 @@ import {
   removeSheet,
   restoreSnapshot,
   saveSheet,
+  snapshotIfChanged,
   updateRules,
+  updateSheetRules,
   type Db
 } from './service';
 
@@ -342,5 +344,96 @@ describe('restoreSnapshot', () => {
         revision: liveSheet.revision + 1
       }
     });
+  });
+});
+
+describe('updateSheetRules', () => {
+  it('rejects a rules payload that fails the shared schema', async () => {
+    const db = createMockDb();
+    await expect(
+      updateSheetRules(asDb(db), {
+        sheetId: 'sheet1',
+        data: { ...DEFAULT_JOBSHEET_RULES, standardSizesMm: [] }
+      })
+    ).rejects.toThrow();
+    expect(db.jobSheet.update).not.toHaveBeenCalled();
+  });
+
+  it('writes this sheet\'s rules only and bumps the revision', async () => {
+    const db = createMockDb();
+    db.jobSheet.findFirst.mockResolvedValue(liveSheet);
+    db.jobSheet.update.mockImplementation(async (args: never) => args);
+
+    await updateSheetRules(asDb(db), {
+      sheetId: 'sheet1',
+      data: { ...DEFAULT_JOBSHEET_RULES, shutterThicknessMm: 90 }
+    });
+    expect(db.jobSheet.update).toHaveBeenCalledWith({
+      where: { id: 'sheet1' },
+      data: {
+        rules: { ...DEFAULT_JOBSHEET_RULES, shutterThicknessMm: 90 },
+        revision: liveSheet.revision + 1
+      }
+    });
+    // The shared default rule set is never written by a sheet-level edit.
+    expect(db.jobSheetRules.update).not.toHaveBeenCalled();
+  });
+});
+
+describe('snapshotIfChanged', () => {
+  const editedData = { ...emptyData, notes: 'changed' };
+
+  it('skips when the latest snapshot already has the current data', async () => {
+    const db = createMockDb();
+    db.jobSheet.findFirst.mockResolvedValue(liveSheet);
+    db.jobSheetSnapshot.findFirst.mockResolvedValue({
+      version: 4,
+      blob: { data: emptyData, rules: DEFAULT_JOBSHEET_RULES, computed: {} }
+    });
+
+    const result = await snapshotIfChanged(asDb(db), {
+      sheetId: 'sheet1',
+      label: 'Printed',
+      userId: 'user1'
+    });
+    expect(result).toEqual({ created: false, version: 4 });
+    expect(db.jobSheetSnapshot.create).not.toHaveBeenCalled();
+  });
+
+  it('creates a snapshot when the content moved since the last one', async () => {
+    const db = createMockDb();
+    db.jobSheet.findFirst.mockResolvedValue({ ...liveSheet, data: editedData });
+    db.jobSheetSnapshot.findFirst.mockResolvedValue({
+      version: 4,
+      blob: { data: emptyData, rules: DEFAULT_JOBSHEET_RULES, computed: {} }
+    });
+    db.jobSheetSnapshot.aggregate.mockResolvedValue({ _max: { version: 4 } });
+    db.jobSheetSnapshot.create.mockImplementation(async ({ data }: never) => data);
+
+    const result = await snapshotIfChanged(asDb(db), {
+      sheetId: 'sheet1',
+      label: 'Printed',
+      userId: 'user1'
+    });
+    expect(result).toEqual({ created: true, version: 5 });
+    const created = db.jobSheetSnapshot.create.mock.calls[0][0].data;
+    expect(created.label).toBe('Printed');
+    expect(created.createdById).toBe('user1');
+    expect(created.blob.data).toEqual(editedData);
+  });
+
+  it('creates the first snapshot when none exists yet', async () => {
+    const db = createMockDb();
+    db.jobSheet.findFirst.mockResolvedValue(liveSheet);
+    db.jobSheetSnapshot.findFirst.mockResolvedValue(null);
+    db.jobSheetSnapshot.aggregate.mockResolvedValue({ _max: { version: null } });
+    db.jobSheetSnapshot.create.mockImplementation(async ({ data }: never) => data);
+
+    const result = await snapshotIfChanged(asDb(db), {
+      sheetId: 'sheet1',
+      label: 'PDF export',
+      userId: 'user1'
+    });
+    expect(result).toEqual({ created: true, version: 1 });
   });
 });

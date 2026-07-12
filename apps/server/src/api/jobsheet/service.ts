@@ -140,7 +140,7 @@ export const saveSheet = async (
   return { revision: input.revision + 1 };
 };
 
-/** Re-copy the active global rules onto the sheet (explicit user action). */
+/** Re-copy the shared default rules onto the sheet (explicit user action). */
 export const refreshSheetRules = async (db: Db, sheetId: string) => {
   const sheet = await getSheetOrThrow(db, sheetId);
   const activeRules = await getActiveRules(db);
@@ -150,6 +150,23 @@ export const refreshSheetRules = async (db: Db, sheetId: string) => {
       rules: activeRules.data as Prisma.InputJsonValue,
       revision: sheet.revision + 1
     }
+  });
+};
+
+/**
+ * Edit THIS sheet's rules only. The shared defaults stay untouched — most
+ * jobs use them, but some differ, and one job's tweak must never leak into
+ * everyone else's new sheets.
+ */
+export const updateSheetRules = async (
+  db: Db,
+  input: { sheetId: string; data: unknown }
+) => {
+  const rules = jobSheetRulesSchema.parse(input.data);
+  const sheet = await getSheetOrThrow(db, input.sheetId);
+  return db.jobSheet.update({
+    where: { id: sheet.id },
+    data: { rules: asJson(rules), revision: sheet.revision + 1 }
   });
 };
 
@@ -263,4 +280,32 @@ export const restoreSnapshot = async (
       }
     });
   });
+};
+
+/**
+ * Snapshot the sheet only when its content differs from the latest
+ * snapshot. Called when the sheet leaves the app (print, PDF export) so
+ * there is always a record of exactly what was issued, without flooding
+ * the history with identical versions.
+ */
+export const snapshotIfChanged = async (
+  db: Db,
+  input: { sheetId: string; label?: string; userId: string }
+) => {
+  const sheet = await getSheetOrThrow(db, input.sheetId);
+  const latest = await db.jobSheetSnapshot.findFirst({
+    where: { jobSheetId: sheet.id, deleted: false },
+    orderBy: { version: 'desc' },
+    select: { version: true, blob: true }
+  });
+
+  // Both sides come back from jsonb (normalized key order), so plain
+  // stringify equality is stable.
+  const latestData = latest ? (latest.blob as { data?: unknown }).data : undefined;
+  if (latest && JSON.stringify(latestData) === JSON.stringify(sheet.data)) {
+    return { created: false as const, version: latest.version };
+  }
+
+  const snapshot = await createSnapshot(db, input);
+  return { created: true as const, version: snapshot.version };
 };

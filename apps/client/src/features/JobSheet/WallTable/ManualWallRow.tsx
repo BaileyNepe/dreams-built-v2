@@ -25,14 +25,42 @@ import { SECTION_COLORS } from '../constants';
 import { useJobSheetContext } from '../state/JobSheetProvider';
 import { focusNav, navId } from './nav';
 
+const runAreas = (columns: number) =>
+  Array.from({ length: columns }, (_, i) => `'. run${i} run${i}'`).join(' ');
+
 const Row = styled.div<{ $columns: number }>`
   align-items: center;
   background: ${(p) => p.theme.palette.background.paper};
   border-bottom: 1px solid ${(p) => p.theme.palette.divider};
   display: grid;
   gap: 0.5rem;
+  grid-template-areas: 'drag num len ${(p) =>
+    Array.from({ length: p.$columns }, (_, i) => `run${i}`).join(' ')} del';
   grid-template-columns: 2rem 2rem 7.5rem repeat(${(p) => p.$columns}, 1fr) 2.5rem;
   padding: 0.25rem 0.5rem;
+
+  /* Small screens: one manual run per line, tagged with its section. */
+  ${(p) => p.theme.breakpoints.down('md')} {
+    grid-template-areas: 'drag num len del' ${(p) => runAreas(p.$columns)};
+    grid-template-columns: 2rem 1.5rem 1fr auto;
+    row-gap: 0.4rem;
+  }
+`;
+
+const SectionTag = styled.span<{ $color: string }>`
+  background: ${(p) => p.$color};
+  border-radius: 4px;
+  color: #000;
+  display: none;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1.6;
+  padding: 0 0.4rem;
+  white-space: nowrap;
+
+  ${(p) => p.theme.breakpoints.down('md')} {
+    display: inline-block;
+  }
 `;
 
 const highlightFor = (column: number) =>
@@ -181,7 +209,12 @@ export const ManualWallRow: FC<{
   isLastRow?: boolean;
   onAddWall?: () => void;
 }> = memo(({ wall, number, columns, isNewlyAdded = false, isLastRow = false, onAddWall }) => {
-  const { dispatch, canEdit } = useJobSheetContext();
+  const { dispatch, canEdit, rules, data } = useJobSheetContext();
+  const sectionTags = [
+    { label: rules.shutterLabel, color: SECTION_COLORS.shutters.header },
+    { label: rules.rebateLabel, color: SECTION_COLORS.rebate.header },
+    { label: data.thirdColumnLabel, color: '#e0e0e0' }
+  ];
   const row = number - 1;
   const onMeasurementKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Tab' && !event.shiftKey) {
@@ -220,7 +253,7 @@ export const ManualWallRow: FC<{
         <IconButton
           size="small"
           aria-label={`Reorder wall ${number}`}
-          sx={{ cursor: 'grab', touchAction: 'none' }}
+          sx={{ cursor: 'grab', touchAction: 'none', gridArea: 'drag' }}
           disabled={!canEdit}
           {...attributes}
           {...listeners}
@@ -228,13 +261,19 @@ export const ManualWallRow: FC<{
           <DragIndicatorIcon fontSize="small" />
         </IconButton>
 
-        <Typography variant="body2" fontWeight={700} textAlign="center">
+        <Typography
+          variant="body2"
+          fontWeight={700}
+          textAlign="center"
+          sx={{ gridArea: 'num' }}
+        >
           {number}
         </Typography>
 
         <TextField
           size="small"
           placeholder="mm"
+          sx={{ gridArea: 'len' }}
           value={wall.lengthMm === 0 ? '' : wall.lengthMm}
           disabled={!canEdit}
           inputRef={lengthInputRef}
@@ -255,14 +294,30 @@ export const ManualWallRow: FC<{
         />
 
         {Array.from({ length: columns }, (_, column) => (
-          // Fixed column positions.
-          // eslint-disable-next-line react/no-array-index-key
-          <ManualRunCell key={column} wall={wall} column={column} />
+          <Box
+            // Fixed column positions.
+            // eslint-disable-next-line react/no-array-index-key
+            key={column}
+            sx={{
+              gridArea: `run${column}`,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.75
+            }}
+          >
+            <SectionTag $color={sectionTags[column]?.color ?? '#e0e0e0'}>
+              {sectionTags[column]?.label}
+            </SectionTag>
+            <Box sx={{ flex: 1 }}>
+              <ManualRunCell wall={wall} column={column} />
+            </Box>
+          </Box>
         ))}
 
         <IconButton
           size="small"
           aria-label={`Remove wall ${number}`}
+          sx={{ gridArea: 'del' }}
           disabled={!canEdit}
           onClick={() => dispatch({ type: 'removeWall', id: wall.id })}
         >

@@ -33,6 +33,12 @@ const HeaderRow = styled.div`
   gap: 0.5rem;
   grid-template-columns: 2rem 2rem 7.5rem 6.5rem 6.5rem 1fr 1fr 4.5rem;
   padding: 0 0.5rem;
+
+  /* Small screens stack each wall vertically; rows carry their own
+     section tags instead of a shared header. */
+  ${(p) => p.theme.breakpoints.down('md')} {
+    display: none;
+  }
 `;
 
 const SectionHeader = styled(Typography)<{ $color: string }>`
@@ -52,6 +58,10 @@ const ManualHeaderRow = styled.div<{ $columns: number }>`
   gap: 0.5rem;
   grid-template-columns: 2rem 2rem 7.5rem repeat(${(p) => p.$columns}, 1fr) 2.5rem;
   padding: 0 0.5rem;
+
+  ${(p) => p.theme.breakpoints.down('md')} {
+    display: none;
+  }
 `;
 
 const ColumnLabel = styled(Typography)`

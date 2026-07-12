@@ -244,14 +244,42 @@ export const FloorPlanSvg: FC<{
     return Math.max(0, Math.min(wall.lengthMm, Math.round(t / 10) * 10));
   };
 
+  // Touch pinch-to-zoom: track active pointers; two fingers zoom, one pans.
+  const pointersRef = useRef(new Map<number, { x: number; y: number }>());
+  const pinchDistanceRef = useRef<number | null>(null);
+  const pinchDistance = () => {
+    const [a, b] = [...pointersRef.current.values()];
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  };
+
   // Drag to pan (mm per pixel derives from the current viewBox).
   const onPointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
     // Text elements (wall numbers) keep their click behaviour.
     if ((event.target as Element).tagName === 'text') return;
+    pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    if (pointersRef.current.size === 2) {
+      // Second finger: switch from pan/draw to pinch.
+      dragRef.current = null;
+      setSpanDraw(null);
+      pinchDistanceRef.current = pinchDistance();
+      return;
+    }
     dragRef.current = { x: event.clientX, y: event.clientY, panX: pan.x, panY: pan.y };
     event.currentTarget.setPointerCapture(event.pointerId);
   };
   const onPointerMove = (event: React.PointerEvent<SVGSVGElement>) => {
+    if (pointersRef.current.has(event.pointerId)) {
+      pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+    }
+    if (pinchDistanceRef.current !== null && pointersRef.current.size === 2) {
+      const distance = pinchDistance();
+      const ratio = distance / pinchDistanceRef.current;
+      if (Number.isFinite(ratio) && ratio > 0) {
+        setZoom((z) => Math.min(10, Math.max(0.2, z * ratio)));
+        pinchDistanceRef.current = distance;
+      }
+      return;
+    }
     if (spanDraw) {
       const wall = walls.find((w) => w.id === spanDraw.wallId);
       if (wall) setSpanDraw({ ...spanDraw, currentMm: toWallMm(wall, event) });
@@ -266,7 +294,9 @@ export const FloorPlanSvg: FC<{
       y: drag.panY - (event.clientY - drag.y) * mmPerPx
     });
   };
-  const onPointerUp = () => {
+  const onPointerUp = (event: React.PointerEvent<SVGSVGElement>) => {
+    pointersRef.current.delete(event.pointerId);
+    if (pointersRef.current.size < 2) pinchDistanceRef.current = null;
     if (spanDraw && onDrawSpan) {
       const fromMm = Math.min(spanDraw.startMm, spanDraw.currentMm);
       const toMm = Math.max(spanDraw.startMm, spanDraw.currentMm);

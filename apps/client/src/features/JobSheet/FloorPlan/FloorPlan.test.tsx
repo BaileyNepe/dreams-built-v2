@@ -10,7 +10,9 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { FloorPlanPanel } from '.';
 
-const rules = DEFAULT_JOBSHEET_RULES;
+// Geometry expectations were computed at the prototype's 65mm shutter
+// thickness; the live default is now 45. Pin 65 so the numbers stay exact.
+const rules = { ...DEFAULT_JOBSHEET_RULES, shutterThicknessMm: 65 };
 
 const wall = (id: string, lengthMm: number, patch: Partial<Wall> = {}): Wall => ({
   ...jobSheetDataSchema.parse({ walls: [{ id, lengthMm }] }).walls[0],

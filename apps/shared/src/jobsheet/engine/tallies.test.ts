@@ -4,7 +4,10 @@ import { DEFAULT_JOBSHEET_RULES } from '../defaults';
 import type { Cut, JobSheetRules, PackedRun } from '../types';
 import { emptyTally, tallyRuns } from './tallies';
 
-const rules = DEFAULT_JOBSHEET_RULES;
+// Expectations in this file were hand-computed at the prototype's 65mm
+// shutter thickness; the live default is now 45. Pin 65 so the numbers
+// stay meaningful (the engine is fully parameterised by rules).
+const rules = { ...DEFAULT_JOBSHEET_RULES, shutterThicknessMm: 65 };
 
 const run = (standards: number[], shorts: number[] = [], blks = 0): PackedRun => {
   const cuts: Cut[] = [

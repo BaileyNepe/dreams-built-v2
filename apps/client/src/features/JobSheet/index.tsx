@@ -12,7 +12,9 @@ import {
   Skeleton,
   Stack,
   TextField,
-  Typography
+  Typography,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import { useClient } from 'api/clients';
 import { notify } from 'libs/Notify';
@@ -29,6 +31,7 @@ import { FloorPlanPanel } from './FloorPlan';
 import { FloorPlanSvg } from './FloorPlan/FloorPlanSvg';
 import { JobSheetHeader } from './JobSheetHeader';
 import { JobSheetToolbar } from './JobSheetToolbar';
+import { MobileJobSheet } from './Mobile';
 import { SectionItems } from './SectionItems';
 import { SheetView } from './SheetView';
 import { emptyWall } from './state/jobSheetReducer';
@@ -41,6 +44,8 @@ const JobSheetEditor: FC = () => {
   const { projectId, data, rules, computed, dispatch, canEdit } = useJobSheetContext();
   const project = useProject(projectId);
   const client = useClient(project.clientId);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const [printMode, setPrintMode] = useState<'live' | 'blank'>('live');
   const { printRef, handlePrint } = usePrint<HTMLDivElement>({
     isPrimaryContent: true,
@@ -122,51 +127,62 @@ const JobSheetEditor: FC = () => {
       <JobSheetHeader />
       <Divider sx={{ my: 2 }} />
 
-      <WallTable />
-
-      <Box sx={{ mt: 2, display: data.mode === 'manual' ? 'none' : undefined }}>
-        <FloorPlanPanel
+      {isMobile ? (
+        <MobileJobSheet
           outline={outline}
-          rules={rules}
-          includeInPrint={planInPrint}
-          onIncludeInPrintChange={setPlanInPrint}
+          planInPrint={planInPrint}
+          onPlanInPrintChange={setPlanInPrint}
           onDrawSpan={canEdit ? handleDrawSpan : undefined}
         />
-      </Box>
+      ) : (
+        <>
+          <WallTable />
 
-      <Grid container spacing={2} sx={{ mt: 1 }}>
-        <Grid item xs={6} sm={3} md={2}>
-          <TallyPanel section="shutters" />
-        </Grid>
-        <Grid item xs={6} sm={3} md={2}>
-          <TallyPanel section="rebate" />
-        </Grid>
-        {computed.tallies.extra && (
-          <Grid item xs={6} sm={3} md={2}>
-            <TallyPanel section="extra" />
-          </Grid>
-        )}
-        <Grid item xs={12} sm={6} md={8}>
-          <Stack spacing={2}>
-            <SectionItems section="joinery" />
-            <SectionItems section="showerBoxes" />
-            <SectionItems section="garage" />
-            <TextField
-              label="Sheet notes"
-              multiline
-              minRows={2}
-              value={data.notes}
-              disabled={!canEdit}
-              onChange={(event) =>
-                dispatch({ type: 'setNotes', notes: event.target.value })
-              }
+          <Box sx={{ mt: 2, display: data.mode === 'manual' ? 'none' : undefined }}>
+            <FloorPlanPanel
+              outline={outline}
+              rules={rules}
+              includeInPrint={planInPrint}
+              onIncludeInPrintChange={setPlanInPrint}
+              onDrawSpan={canEdit ? handleDrawSpan : undefined}
             />
-          </Stack>
-        </Grid>
-      </Grid>
+          </Box>
 
-      {/* Breathing room so the sheet never touches the viewport bottom. */}
-      <Box sx={{ pb: 8 }} />
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={6} sm={3} md={2}>
+              <TallyPanel section="shutters" />
+            </Grid>
+            <Grid item xs={6} sm={3} md={2}>
+              <TallyPanel section="rebate" />
+            </Grid>
+            {computed.tallies.extra && (
+              <Grid item xs={6} sm={3} md={2}>
+                <TallyPanel section="extra" />
+              </Grid>
+            )}
+            <Grid item xs={12} sm={6} md={8}>
+              <Stack spacing={2}>
+                <SectionItems section="joinery" />
+                <SectionItems section="showerBoxes" />
+                <SectionItems section="garage" />
+                <TextField
+                  label="Sheet notes"
+                  multiline
+                  minRows={2}
+                  value={data.notes}
+                  disabled={!canEdit}
+                  onChange={(event) =>
+                    dispatch({ type: 'setNotes', notes: event.target.value })
+                  }
+                />
+              </Stack>
+            </Grid>
+          </Grid>
+
+          {/* Breathing room so the sheet never touches the viewport bottom. */}
+          <Box sx={{ pb: 8 }} />
+        </>
+      )}
 
       {/* Hidden on screen; cloned into #print by usePrint. */}
       <PrintableContent ref={printRef} isHidden orientation="portrait">

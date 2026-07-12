@@ -51,7 +51,23 @@ export const useRefreshRulesMutation = ({ projectId }: { projectId: string }) =>
   const utils = api.useUtils();
   return api.jobSheets.refreshRules.useMutation({
     onSuccess: () => {
-      notify('Sheet updated to the latest rules', { type: 'success' });
+      notify('Sheet rules reset to the shared defaults', { type: 'success' });
+    },
+    onSettled: () => {
+      utils.jobSheets.getByProject.invalidate({ projectId });
+    }
+  });
+};
+
+/**
+ * Per-sheet rules edit: only this sheet changes; the shared defaults that
+ * seed new sheets are never touched from here.
+ */
+export const useUpdateSheetRulesMutation = ({ projectId }: { projectId: string }) => {
+  const utils = api.useUtils();
+  return api.jobSheets.updateSheetRules.useMutation({
+    onSuccess: () => {
+      notify('Rules updated for this sheet', { type: 'success' });
     },
     onSettled: () => {
       utils.jobSheets.getByProject.invalidate({ projectId });
@@ -84,6 +100,19 @@ export const useCreateSnapshotMutation = ({ sheetId }: { sheetId: string }) => {
   });
 };
 
+/**
+ * Print/export record: snapshots only when the sheet changed since the
+ * last snapshot. Silent — the user asked to print, not to manage versions.
+ */
+export const useSnapshotIfChangedMutation = ({ sheetId }: { sheetId: string }) => {
+  const utils = api.useUtils();
+  return api.jobSheets.snapshotIfChanged.useMutation({
+    onSuccess: (result) => {
+      if (result.created) utils.jobSheets.listSnapshots.invalidate({ sheetId });
+    }
+  });
+};
+
 export const useRestoreSnapshotMutation = ({
   sheetId,
   projectId
@@ -103,23 +132,3 @@ export const useRestoreSnapshotMutation = ({
   });
 };
 
-/* ------------------------------------------------------------------ */
-/* Rules                                                                */
-/* ------------------------------------------------------------------ */
-
-export const useActiveRules = () => api.jobSheetRules.getActive.useSuspenseQuery()[0];
-
-/** Non-suspense variant for passive UI like the "rules changed" hint. */
-export const useActiveRulesQuery = () => api.jobSheetRules.getActive.useQuery();
-
-export const useUpdateRulesMutation = () => {
-  const utils = api.useUtils();
-  return api.jobSheetRules.update.useMutation({
-    onSuccess: () => {
-      notify('Rules updated — new sheets will use them', { type: 'success' });
-    },
-    onSettled: () => {
-      utils.jobSheetRules.getActive.invalidate();
-    }
-  });
-};
