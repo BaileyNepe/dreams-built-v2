@@ -1,9 +1,5 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import {
-  formatCompoundLength,
-  parseCompoundLength
-} from '@dreams-built/shared/src/jobsheet/engine/compound';
 import { resolveEnds } from '@dreams-built/shared/src/jobsheet/engine/computeSheet';
 import { neighboursOf } from '@dreams-built/shared/src/jobsheet/engine/loops';
 import {
@@ -32,9 +28,11 @@ import {
 } from '@mui/material';
 import { memo, useEffect, useRef, useState, type FC } from 'react';
 import { styled } from 'styled-components';
+import { SECTION_COLORS } from '../constants';
 import { useJobSheetContext } from '../state/JobSheetProvider';
 import { BreakdownCell } from './BreakdownCell';
 import { focusNav, navId } from './nav';
+import { useWallLengthField } from './useWallLengthField';
 import { OpeningsEditor } from './OpeningsEditor';
 import { OverrideEditor } from './OverrideEditor';
 import { RebateInsetsEditor } from './RebateInsetsEditor';
@@ -45,8 +43,49 @@ const Row = styled.div`
   border-bottom: 1px solid ${(p) => p.theme.palette.divider};
   display: grid;
   gap: 0.5rem;
+  grid-template-areas: 'drag num len start end shut reb actions';
   grid-template-columns: 2rem 2rem 7.5rem 6.5rem 6.5rem 1fr 1fr 4.5rem;
   padding: 0.25rem 0.5rem;
+
+  /* Tablet: the breakdowns get their own lines under the inputs. */
+  ${(p) => p.theme.breakpoints.down('md')} {
+    grid-template-areas:
+      'drag num len start end actions'
+      '. shut shut shut shut shut'
+      '. reb reb reb reb reb';
+    grid-template-columns: 2rem 1.5rem minmax(6rem, 1fr) 6.5rem 6.5rem auto;
+    row-gap: 0.4rem;
+  }
+
+  /* Phone: corner toggles move to their own line too. */
+  ${(p) => p.theme.breakpoints.down('sm')} {
+    grid-template-areas:
+      'drag num len len actions'
+      '. start start end end'
+      '. shut shut shut shut'
+      '. reb reb reb reb';
+    grid-template-columns: 2rem 1.5rem 1fr 1fr auto;
+  }
+`;
+
+/**
+ * Colour-coded section label shown next to each breakdown when the stacked
+ * (small-screen) layout is active — the table header bands are hidden there.
+ */
+const SectionTag = styled.span<{ $color: string }>`
+  background: ${(p) => p.$color};
+  border-radius: 4px;
+  color: #000;
+  display: none;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1.6;
+  padding: 0 0.4rem;
+  white-space: nowrap;
+
+  ${(p) => p.theme.breakpoints.down('md')} {
+    display: inline-block;
+  }
 `;
 
 const DetailPanel = styled.div`
@@ -55,6 +94,10 @@ const DetailPanel = styled.div`
   display: grid;
   gap: 0.9rem;
   padding: 0.75rem 1rem 1rem 5.5rem;
+
+  ${(p) => p.theme.breakpoints.down('sm')} {
+    padding: 0.75rem 0.75rem 1rem;
+  }
 `;
 
 /**
@@ -151,30 +194,7 @@ export const WallRow: FC<{
   const polystyreneValue =
     wall.polystyreneOverride === null ? 'auto' : String(wall.polystyreneOverride);
 
-  // The measurement accepts compound notation — `4200/810b` = 4200 bare
-  // then 810 of brick (b or r) — which sets the length AND the rebate
-  // insets in one go. While the field is focused the raw text is kept;
-  // on blur it reverts to the canonical form derived from state.
-  const canonicalLength =
-    wall.hasRebate && wall.rebateInsets.some((inset) => inset.widthMm > 0)
-      ? formatCompoundLength(wall.lengthMm, wall.rebateInsets)
-      : `${wall.lengthMm === 0 ? '' : wall.lengthMm}`;
-  const [lengthDraft, setLengthDraft] = useState<string | null>(null);
-  const onLengthChange = (raw: string) => {
-    setLengthDraft(raw);
-    if (raw.trim() === '') {
-      patch({ lengthMm: 0, rebateInsets: [] });
-      return;
-    }
-    const parsed = parseCompoundLength(raw);
-    // Mid-typing states ("4200/") just don't dispatch yet.
-    if (!parsed) return;
-    patch({
-      lengthMm: parsed.lengthMm,
-      rebateInsets: parsed.rebateInsets,
-      ...(parsed.hasBrick && { hasRebate: true })
-    });
-  };
+  const lengthField = useWallLengthField(wall, patch);
 
   const row = index;
   const isLastRow = index === data.walls.length - 1;
@@ -212,7 +232,7 @@ export const WallRow: FC<{
         <IconButton
           size="small"
           aria-label={`Reorder wall ${computed.number}`}
-          sx={{ cursor: 'grab', touchAction: 'none' }}
+          sx={{ cursor: 'grab', touchAction: 'none', gridArea: 'drag' }}
           disabled={!canEdit}
           {...attributes}
           {...listeners}
@@ -220,7 +240,12 @@ export const WallRow: FC<{
           <DragIndicatorIcon fontSize="small" />
         </IconButton>
 
-        <Typography variant="body2" fontWeight={700} textAlign="center">
+        <Typography
+          variant="body2"
+          fontWeight={700}
+          textAlign="center"
+          sx={{ gridArea: 'num' }}
+        >
           {computed.number}
         </Typography>
 
@@ -231,7 +256,8 @@ export const WallRow: FC<{
           <TextField
             size="small"
             placeholder="mm"
-            value={lengthDraft ?? canonicalLength}
+            sx={{ gridArea: 'len' }}
+            value={lengthField.value}
             disabled={!canEdit}
             inputRef={lengthInputRef}
             inputProps={{
@@ -239,46 +265,64 @@ export const WallRow: FC<{
               'data-nav': navId(row, 0),
               onKeyDown: onMeasurementKeyDown
             }}
-            onChange={(event) => onLengthChange(event.target.value)}
-            onBlur={() => setLengthDraft(null)}
+            onChange={(event) => lengthField.onChange(event.target.value)}
+            onBlur={lengthField.onBlur}
           />
         </Tooltip>
 
-        <CornerToggle
-          label={`Wall ${computed.number} start corner`}
-          value={wall.cornerStart}
-          disabled={!canEdit}
-          row={row}
-          col={1}
-          onChange={(cornerStart) =>
-            patch({
-              cornerStart,
-              // Absorb only applies at internal corners.
-              ...(cornerStart === 'external' && { absorbShutterAtStart: false })
-            })
-          }
-        />
-        <CornerToggle
-          label={`Wall ${computed.number} end corner`}
-          value={wall.cornerEnd}
-          disabled={!canEdit}
-          row={row}
-          col={2}
-          onChange={(cornerEnd) =>
-            patch({
-              cornerEnd,
-              ...(cornerEnd === 'external' && { absorbShutterAtEnd: false })
-            })
-          }
-        />
+        <Box sx={{ gridArea: 'start' }}>
+          <CornerToggle
+            label={`Wall ${computed.number} start corner`}
+            value={wall.cornerStart}
+            disabled={!canEdit}
+            row={row}
+            col={1}
+            onChange={(cornerStart) =>
+              patch({
+                cornerStart,
+                // Absorb only applies at internal corners.
+                ...(cornerStart === 'external' && { absorbShutterAtStart: false })
+              })
+            }
+          />
+        </Box>
+        <Box sx={{ gridArea: 'end' }}>
+          <CornerToggle
+            label={`Wall ${computed.number} end corner`}
+            value={wall.cornerEnd}
+            disabled={!canEdit}
+            row={row}
+            col={2}
+            onChange={(cornerEnd) =>
+              patch({
+                cornerEnd,
+                ...(cornerEnd === 'external' && { absorbShutterAtEnd: false })
+              })
+            }
+          />
+        </Box>
 
-        <BreakdownCell
-          section="shutters"
-          shutters={computed.shutters}
-          isOverridden={computed.isOverridden}
-          onEdit={canEdit ? () => setIsOverrideOpen(true) : undefined}
-        />
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+        <Box
+          sx={{ gridArea: 'shut', display: 'flex', alignItems: 'center', gap: 0.75 }}
+        >
+          <SectionTag $color={SECTION_COLORS.shutters.header}>
+            {rules.shutterLabel}
+          </SectionTag>
+          <Box sx={{ flex: 1 }}>
+            <BreakdownCell
+              section="shutters"
+              shutters={computed.shutters}
+              isOverridden={computed.isOverridden}
+              onEdit={canEdit ? () => setIsOverrideOpen(true) : undefined}
+            />
+          </Box>
+        </Box>
+        <Box
+          sx={{ gridArea: 'reb', display: 'flex', alignItems: 'center', gap: 0.5 }}
+        >
+          <SectionTag $color={SECTION_COLORS.rebate.header}>
+            {rules.rebateLabel}
+          </SectionTag>
           <Tooltip title="Brick rebate on/off for this wall">
             <Checkbox
               size="small"
@@ -288,15 +332,24 @@ export const WallRow: FC<{
               onChange={(event) => patch({ hasRebate: event.target.checked })}
             />
           </Tooltip>
-          <BreakdownCell
-            section="rebate"
-            rebateRuns={computed.rebate}
-            isOverridden={computed.isOverridden}
-            onEdit={canEdit ? () => setIsOverrideOpen(true) : undefined}
-          />
+          <Box sx={{ flex: 1 }}>
+            <BreakdownCell
+              section="rebate"
+              rebateRuns={computed.rebate}
+              isOverridden={computed.isOverridden}
+              onEdit={canEdit ? () => setIsOverrideOpen(true) : undefined}
+            />
+          </Box>
         </Box>
 
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <Box
+          sx={{
+            gridArea: 'actions',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end'
+          }}
+        >
           {computed.warnings.length > 0 && (
             <Tooltip title={computed.warnings.join(' ')}>
               <WarningAmberIcon color="warning" fontSize="small" />

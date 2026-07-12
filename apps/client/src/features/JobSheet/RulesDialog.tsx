@@ -2,6 +2,7 @@ import {
   jobSheetRulesSchema,
   type JobSheetRules
 } from '@dreams-built/shared/src/jobsheet/types';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import {
   Alert,
   Box,
@@ -11,9 +12,10 @@ import {
   TextField,
   Typography
 } from '@mui/material';
-import { useActiveRules, useUpdateRulesMutation } from 'api/jobsheets';
+import { useRefreshRulesMutation, useUpdateSheetRulesMutation } from 'api/jobsheets';
 import BasicModal from 'components/Modal';
 import { useState, type FC } from 'react';
+import { useJobSheetContext } from './state/JobSheetProvider';
 
 const parseSizes = (raw: string): number[] =>
   raw
@@ -52,11 +54,10 @@ const fromDraft = (draft: Draft): unknown => ({
 });
 
 const RulesForm: FC<{ onClose: () => void }> = ({ onClose }) => {
-  const activeRules = useActiveRules();
-  const update = useUpdateRulesMutation();
-  const [draft, setDraft] = useState<Draft>(() =>
-    toDraft(jobSheetRulesSchema.parse(activeRules.data))
-  );
+  const { sheetId, projectId, rules, applyServerSheet } = useJobSheetContext();
+  const update = useUpdateSheetRulesMutation({ projectId });
+  const reset = useRefreshRulesMutation({ projectId });
+  const [draft, setDraft] = useState<Draft>(() => toDraft(rules));
   const [error, setError] = useState<string | null>(null);
 
   const sizes = parseSizes(draft.sizesText);
@@ -73,17 +74,34 @@ const RulesForm: FC<{ onClose: () => void }> = ({ onClose }) => {
       return;
     }
     update.mutate(
-      { id: activeRules.id, data: parsed.data },
-      { onSuccess: () => onClose() }
+      { sheetId, data: parsed.data },
+      {
+        onSuccess: (sheet) => {
+          applyServerSheet(sheet);
+          onClose();
+        }
+      }
+    );
+  };
+
+  const resetToDefaults = () => {
+    reset.mutate(
+      { sheetId },
+      {
+        onSuccess: (sheet) => {
+          applyServerSheet(sheet);
+          onClose();
+        }
+      }
     );
   };
 
   return (
     <Box sx={{ display: 'grid', gap: 2 }}>
       <Alert severity="info">
-        Rules apply to <strong>new</strong> sheets (and sheets you explicitly update
-        via &ldquo;Use latest rules&rdquo;). Existing sheets keep the rules they were
-        created with.
+        These rules apply to <strong>this sheet only</strong> — the shared defaults
+        that new sheets start from are never changed here. Non-overridden walls
+        recompute when you save.
       </Alert>
 
       <TextField
@@ -163,10 +181,21 @@ const RulesForm: FC<{ onClose: () => void }> = ({ onClose }) => {
 
       {error && <Alert severity="error">{error}</Alert>}
 
-      <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+      <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+        <Button
+          size="small"
+          color="inherit"
+          startIcon={<RestartAltIcon />}
+          sx={{ color: 'text.secondary' }}
+          disabled={reset.isPending}
+          onClick={resetToDefaults}
+        >
+          Reset to defaults
+        </Button>
+        <Box sx={{ flex: 1 }} />
         <Button onClick={onClose}>Cancel</Button>
         <Button variant="contained" onClick={save} disabled={update.isPending}>
-          Save rules
+          Save for this sheet
         </Button>
       </Box>
     </Box>

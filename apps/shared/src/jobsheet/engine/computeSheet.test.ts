@@ -17,7 +17,10 @@ import { nineWarrenLaneData, NINE_WARREN_LANE_PERIMETER_MM } from '../fixtures/n
 import { computeJobSheet, isPolystyreneAuto, resolvePolystyrene } from './computeSheet';
 import { formatCut } from './format';
 
-const rules = DEFAULT_JOBSHEET_RULES;
+// Expectations in this file were hand-computed at the prototype's 65mm
+// shutter thickness; the live default is now 45. Pin 65 so the numbers
+// stay meaningful (the engine is fully parameterised by rules).
+const rules = { ...DEFAULT_JOBSHEET_RULES, shutterThicknessMm: 65 };
 
 describe('computeJobSheet: 9 Warren Lane (job 26035)', () => {
   const sheet = computeJobSheet(nineWarrenLaneData, rules);
