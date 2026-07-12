@@ -212,7 +212,7 @@ const JobSheetContent: FC = () => {
   const { projectId } = useJobSheetParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const canEdit = user.permissions?.includes(authz.jobs_edit) || false;
+  const canEdit = user.permissions?.includes(authz.jobsheets_edit) || false;
 
   const sheet = useJobSheet(projectId);
   const createSheet = useCreateJobSheetMutation();
