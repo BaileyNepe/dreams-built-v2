@@ -64,7 +64,7 @@ const JobSheetEditor: FC = () => {
     () => computeFloorOutline(data, computed, rules),
     [data, computed, rules]
   );
-  const [planInPrint, setPlanInPrint] = useState(false);
+  const [planInPrint, setPlanInPrint] = useState(true);
 
   // Drag along a wall in the plan to add an opening spanning that range.
   const handleDrawSpan = (wallId: string, fromMm: number, toMm: number) => {
@@ -177,7 +177,12 @@ const JobSheetEditor: FC = () => {
           rules={rules}
           computed={printMode === 'blank' ? blank.computed : computed}
         />
-        {printMode === 'live' && planInPrint && outline.walls.length > 0 && (
+        {/* Manual sheets have no meaningful outline (and the panel with the
+            include-in-print toggle is hidden), so never print one. */}
+        {printMode === 'live' &&
+          planInPrint &&
+          data.mode !== 'manual' &&
+          outline.walls.length > 0 && (
           <div style={{ breakInside: 'avoid', paddingTop: '4mm' }}>
             <FloorPlanSvg outline={outline} rules={rules} />
           </div>

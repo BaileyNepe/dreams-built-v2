@@ -25,6 +25,8 @@ import {
   IconButton,
   MenuItem,
   TextField,
+  ToggleButton,
+  ToggleButtonGroup,
   Tooltip,
   Typography
 } from '@mui/material';
@@ -43,7 +45,7 @@ const Row = styled.div`
   border-bottom: 1px solid ${(p) => p.theme.palette.divider};
   display: grid;
   gap: 0.5rem;
-  grid-template-columns: 2rem 2rem 7.5rem 8.5rem 8.5rem 1fr 1fr 4.5rem;
+  grid-template-columns: 2rem 2rem 7.5rem 6.5rem 6.5rem 1fr 1fr 4.5rem;
   padding: 0.25rem 0.5rem;
 `;
 
@@ -55,7 +57,12 @@ const DetailPanel = styled.div`
   padding: 0.75rem 1rem 1rem 5.5rem;
 `;
 
-const CornerSelect: FC<{
+/**
+ * Ext | Int segmented toggle. One tab stop per cell: the selected side
+ * carries the data-nav id, so grid focus always lands on the current value.
+ * Space/Enter flip the corner; arrows move between cells like a spreadsheet.
+ */
+const CornerToggle: FC<{
   label: string;
   value: CornerKind;
   disabled: boolean;
@@ -63,28 +70,51 @@ const CornerSelect: FC<{
   row: number;
   col: number;
 }> = ({ label, value, disabled, onChange, row, col }) => (
-  <TextField
-    select
+  <ToggleButtonGroup
+    exclusive
     size="small"
-    label={label}
+    color="primary"
+    fullWidth
     value={value}
     disabled={disabled}
-    onChange={(event) => onChange(event.target.value as CornerKind)}
-    fullWidth
-    SelectProps={{
-      SelectDisplayProps: {
-        // @ts-expect-error data attribute for grid navigation
-        'data-nav': navId(row, col),
-        onKeyDown: (event: React.KeyboardEvent) => {
-          if (event.key === 'ArrowLeft' && focusNav(row, col - 1)) event.preventDefault();
-          if (event.key === 'ArrowRight' && focusNav(row, col + 1)) event.preventDefault();
-        }
+    aria-label={label}
+    onChange={(event, next: CornerKind | null) => {
+      // Keyboard flips are handled in onKeyDown; a browser-synthesised
+      // click (detail 0) would flip the value a second time.
+      if (next && event.detail > 0) onChange(next);
+    }}
+    onKeyDown={(event) => {
+      if (event.key === ' ' || event.key === 'Enter') {
+        event.preventDefault();
+        onChange(value === 'external' ? 'internal' : 'external');
+      } else if (event.key === 'ArrowLeft' && focusNav(row, col - 1)) {
+        event.preventDefault();
+      } else if (event.key === 'ArrowRight' && focusNav(row, col + 1)) {
+        event.preventDefault();
+      } else if (event.key === 'ArrowDown' && focusNav(row + 1, col)) {
+        event.preventDefault();
+      } else if (event.key === 'ArrowUp' && focusNav(row - 1, col)) {
+        event.preventDefault();
       }
     }}
   >
-    <MenuItem value="external">External</MenuItem>
-    <MenuItem value="internal">Internal</MenuItem>
-  </TextField>
+    <ToggleButton
+      value="external"
+      sx={{ px: 0.5, textTransform: 'none' }}
+      tabIndex={value === 'external' ? 0 : -1}
+      data-nav={value === 'external' ? navId(row, col) : undefined}
+    >
+      Ext
+    </ToggleButton>
+    <ToggleButton
+      value="internal"
+      sx={{ px: 0.5, textTransform: 'none' }}
+      tabIndex={value === 'internal' ? 0 : -1}
+      data-nav={value === 'internal' ? navId(row, col) : undefined}
+    >
+      Int
+    </ToggleButton>
+  </ToggleButtonGroup>
 );
 
 export const WallRow: FC<{
@@ -200,7 +230,7 @@ export const WallRow: FC<{
         >
           <TextField
             size="small"
-            label="mm"
+            placeholder="mm"
             value={lengthDraft ?? canonicalLength}
             disabled={!canEdit}
             inputRef={lengthInputRef}
@@ -214,8 +244,8 @@ export const WallRow: FC<{
           />
         </Tooltip>
 
-        <CornerSelect
-          label="Start corner"
+        <CornerToggle
+          label={`Wall ${computed.number} start corner`}
           value={wall.cornerStart}
           disabled={!canEdit}
           row={row}
@@ -228,8 +258,8 @@ export const WallRow: FC<{
             })
           }
         />
-        <CornerSelect
-          label="End corner"
+        <CornerToggle
+          label={`Wall ${computed.number} end corner`}
           value={wall.cornerEnd}
           disabled={!canEdit}
           row={row}

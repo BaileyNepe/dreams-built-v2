@@ -32,19 +32,21 @@ const isOnline = () =>
  */
 export const useAutosave = ({
   sheetId,
+  projectId,
   initialRevision,
   data,
   enabled,
   initialDirty = false
 }: {
   sheetId: string;
+  projectId: string;
   initialRevision: number;
   data: JobSheetData;
   enabled: boolean;
   /** True when the provider restored an unsaved local draft on mount. */
   initialDirty?: boolean;
 }) => {
-  const save = useSaveJobSheetMutation();
+  const save = useSaveJobSheetMutation({ projectId });
   const [status, setStatus] = useState<SaveStatus>(
     initialDirty ? 'pending' : 'saved'
   );

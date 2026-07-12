@@ -108,6 +108,7 @@ export const JobSheetProvider: FC<
 
   const { status, retry, setRevision } = useAutosave({
     sheetId: sheet.id,
+    projectId,
     initialRevision: sheet.revision,
     data,
     enabled: canEdit,
