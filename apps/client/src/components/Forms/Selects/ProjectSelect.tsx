@@ -12,11 +12,13 @@ export const ProjectSelect: FC<{
   label?: string;
   error?: boolean;
   helperText?: string;
-}> = memo(({ value, onChange, label, error, helperText }) => {
+  size?: 'small' | 'medium';
+}> = memo(({ value, onChange, label, error, helperText, size }) => {
   const { data: projects, isLoading } = useProjectsLargeList();
 
   return (
     <Autocomplete
+      size={size}
       options={projects?.projects ?? []}
       getOptionLabel={(option) => `${option.jobNumber} - ${option.address}`}
       value={projects?.projects.find((proj) => proj.id === value) ?? null}

@@ -15,6 +15,9 @@ export const TaskBar = styled(Box)<{
   font-weight: bold;
   overflow: visible;
   padding: 0.25rem 0.5rem;
+  /* Anchor for the resize grips; keep vertical touch scrolling alive. */
+  position: relative;
+  touch-action: pan-y;
   white-space: normal;
 
   @media print {

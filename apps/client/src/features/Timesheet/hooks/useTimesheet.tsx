@@ -45,6 +45,8 @@ interface TimesheetContextValue {
   errors: FieldError[];
   isSubmitting: boolean;
   addEntry: (day: string) => void;
+  /** Duplicate one day's entries onto another (crews often repeat days). */
+  copyDay: (fromDay: string, toDay: string) => void;
   deleteEntry: (id: string) => void;
   updateComment: (comment: { day: string; message: string }) => void;
   changeDate: (date: string) => void;
@@ -97,6 +99,17 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
     },
     [weekStart]
   );
+
+  const copyDay = useCallback((fromDay: string, toDay: string) => {
+    setEntries((prev) => {
+      const source = prev.filter((entry) => entry.day === fromDay);
+      if (source.length === 0) return prev;
+      return [
+        ...prev,
+        ...source.map((entry) => ({ ...entry, id: generateCuid(), day: toDay }))
+      ];
+    });
+  }, []);
 
   const deleteEntry = useCallback((id: string) => {
     setEntries((prev) => prev.filter((entry) => entry.id !== id));
@@ -337,6 +350,7 @@ export const TimesheetProvider: FC<PropsWithChildren> = ({ children }) => {
         notes,
         errors,
         addEntry,
+        copyDay,
         deleteEntry,
         updateComment,
         changeDate,

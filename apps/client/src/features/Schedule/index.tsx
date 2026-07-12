@@ -1,10 +1,11 @@
 import PrintRoundedIcon from '@mui/icons-material/PrintRounded';
-import { Box, IconButton } from '@mui/material';
+import { Box, ButtonBase, IconButton, Typography } from '@mui/material';
 import { DateSelector } from 'components/DateSelector';
 import { PrintableContent } from 'components/PrintableContent';
 import { usePrint } from 'components/PrintableContent/hooks';
 import React, { type FC } from 'react';
 import styled from 'styled-components';
+import { formatDate, generateWeekArray, getDate } from 'utils/date';
 import { ScheduleHeader } from './Header';
 import { InteractiveScheduleRow } from './Row';
 import { projectPartWidth } from './components/constants';
@@ -38,6 +39,61 @@ const Header = styled.div`
   justify-content: space-between;
 `;
 
+/* Small screens show one day at a time: the strip jumps between days. */
+
+const Strip = styled.div`
+  display: grid;
+  gap: 4px;
+  grid-template-columns: repeat(7, 1fr);
+`;
+
+const DayChip = styled(ButtonBase)<{ $selected: boolean; $isToday: boolean }>`
+  && {
+    background: ${({ theme, $selected }) =>
+      $selected ? theme.palette.primary.main : theme.palette.background.paper};
+    border: 1px solid
+      ${({ theme, $selected, $isToday }) => {
+        if ($selected) return theme.palette.primary.main;
+        return $isToday ? theme.palette.primary.main : theme.palette.divider;
+      }};
+    border-radius: 10px;
+    color: ${({ theme, $selected }) =>
+      $selected ? theme.palette.primary.contrastText : theme.palette.text.primary};
+    display: flex;
+    flex-direction: column;
+    padding: 0.35rem 0;
+  }
+`;
+
+const DayStrip: FC = () => {
+  const { selectedDate, changeDate } = useScheduler();
+  const weekArray = generateWeekArray(
+    formatDate({ date: selectedDate.startOf('week') })
+  );
+  const todayIso = getDate().toISODate();
+
+  return (
+    <Strip>
+      {weekArray.map((d) => (
+        <DayChip
+          key={d.day}
+          $selected={d.dateFormat.hasSame(selectedDate, 'day')}
+          $isToday={d.dateFormat.toISODate() === todayIso}
+          onClick={() => changeDate(formatDate({ date: d.dateFormat }))}
+          aria-label={d.day}
+        >
+          <Typography variant="caption" sx={{ opacity: 0.75, lineHeight: 1.2 }}>
+            {d.day.slice(0, 3)}
+          </Typography>
+          <Typography fontWeight={800} sx={{ lineHeight: 1.2 }}>
+            {d.date}
+          </Typography>
+        </DayChip>
+      ))}
+    </Strip>
+  );
+};
+
 /* Component */
 
 export const Schedule: FC = () => {
@@ -47,7 +103,8 @@ export const Schedule: FC = () => {
     selectedDate,
     changeDate,
     getNextWeek,
-    getPreviousWeek
+    getPreviousWeek,
+    isSmallScreen
   } = useScheduler();
   const { printRef, handlePrint } = usePrint<HTMLDivElement>({
     isPrimaryContent: true,
@@ -77,6 +134,8 @@ export const Schedule: FC = () => {
           <PrintRoundedIcon />
         </IconButton>
       </Header>
+
+      {isSmallScreen && <DayStrip />}
 
       <PrintableContent orientation="landscape" ref={printRef}>
         <ScheduleHeader />

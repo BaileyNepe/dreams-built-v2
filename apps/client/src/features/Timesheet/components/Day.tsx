@@ -6,7 +6,6 @@ import Loader from 'components/Loader';
 import { useMemo, useState, type FC, type JSX } from 'react';
 import styled from 'styled-components';
 import { calculateTimeDifference } from 'utils/date';
-import { useResponsive } from 'utils/hooks/useResponsive';
 import { useTimesheet } from '../hooks/useTimesheet';
 import { CommentModal } from './CommentModal';
 import { Entry, timesheetTemplateColumns } from './Entry';
@@ -152,39 +151,6 @@ const TimesheetDayDesktopView: FC<TimesheetDayViewProps> = ({
   </>
 );
 
-/* ----------------------------- Mobile View ---------------------------- */
-
-const TimesheetDayMobileView: FC<TimesheetDayViewProps> = ({
-  day,
-  dateLabel,
-  dayEntriesLength,
-  totalTime,
-  isLoading,
-  onAddEntry,
-  dayEntriesJSX,
-  openCommentModal,
-  hasNote
-}) => (
-  <>
-    <CardHeader>
-      <Typography variant="h5" component="h2">
-        {day} - {dateLabel}
-      </Typography>
-      <NoteIconButton hasNote={hasNote} onClick={openCommentModal} />
-    </CardHeader>
-
-    <Body>{isLoading ? <Loader /> : dayEntriesJSX}</Body>
-
-    {Boolean(dayEntriesLength) && (
-      <Typography variant="body1" align="right" sx={{ marginBottom: 2 }}>
-        <strong>Total:</strong> {totalTime}
-      </Typography>
-    )}
-
-    <AddEntryButton fullWidth onClick={onAddEntry} />
-  </>
-);
-
 /* ----------------------------- Main TimesheetDay ---------------------------- */
 
 export const TimesheetDay: FC<{
@@ -195,7 +161,6 @@ export const TimesheetDay: FC<{
 }> = ({ day, date, ordinal, month }) => {
   const { entries, addEntry, notes, isLoading } = useTimesheet();
   const [isCommentModalOpen, setIsCommentModalOpen] = useState(false);
-  const isDesktop = useResponsive('up', 'md');
 
   // Filter the day-specific entries and note
   const dayEntries = entries.filter((entry) => entry.day === day);
@@ -235,11 +200,7 @@ export const TimesheetDay: FC<{
   return (
     <>
       <Container>
-        {isDesktop ? (
-          <TimesheetDayDesktopView {...viewProps} />
-        ) : (
-          <TimesheetDayMobileView {...viewProps} />
-        )}
+        <TimesheetDayDesktopView {...viewProps} />
       </Container>
       <CommentModal
         isOpen={isCommentModalOpen}

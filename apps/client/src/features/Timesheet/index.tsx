@@ -5,7 +5,9 @@ import { SubmitButton } from 'components/SubmitButton';
 import styled from 'styled-components';
 import { useAuth } from 'utils/contexts/AuthProvider';
 import { getDate, getEndOfWeek } from 'utils/date';
+import { useResponsive } from 'utils/hooks/useResponsive';
 import { UserSelect } from '../../components/Forms/Selects/UserSelect';
+import { MobileTimesheetWeek } from './components/MobileWeek';
 import { TimesheetWeek } from './components/Week';
 import { useTimesheet } from './hooks/useTimesheet';
 
@@ -61,6 +63,7 @@ export const Timesheet = () => {
   const {
     user: { permissions }
   } = useAuth();
+  const isDesktop = useResponsive('up', 'md');
 
   const canEditOtherUsers = permissions?.includes(authz.timesheet_view_all);
 
@@ -108,16 +111,24 @@ export const Timesheet = () => {
           ) : (
             <CenterItem />
           )}
-          <RightItem>
-            <SubmitButton isLoading={isSubmitting} />
-          </RightItem>
+          {isDesktop && (
+            <RightItem>
+              <SubmitButton isLoading={isSubmitting} />
+            </RightItem>
+          )}
         </HeaderContainer>
 
-        <TimesheetWeek />
-
-        <FooterContainer>
-          <SubmitButton isLoading={isSubmitting} />
-        </FooterContainer>
+        {isDesktop ? (
+          <>
+            <TimesheetWeek />
+            <FooterContainer>
+              <SubmitButton isLoading={isSubmitting} />
+            </FooterContainer>
+          </>
+        ) : (
+          // Keyed by week so the selected day resets when the week changes.
+          <MobileTimesheetWeek key={weekStart} />
+        )}
       </Form>
     </Container>
   );

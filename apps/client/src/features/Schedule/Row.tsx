@@ -32,6 +32,8 @@ const ScheduleRowContainer = styled(Box)`
   cursor: pointer;
   padding: ${taskBarSpacing} 0 calc(${taskBarHeight} + ${taskBarSpacing});
   position: relative;
+  /* Horizontal drags select a range; vertical touch drags still scroll. */
+  touch-action: pan-y;
   user-select: none;
 
   @media print {
@@ -75,28 +77,34 @@ export const InteractiveScheduleRow = ({
 
   const modalOpen = range !== null || isTaskModalOpen;
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (modalOpen) return;
+  // Pointer events (not mouse events) so range selection works with touch
+  // and pen too. Capturing the pointer keeps the drag alive when the finger
+  // wanders off the row — no more selections lost at the row edge.
+  const rowX = (e: React.PointerEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
+    return Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+  };
+
+  const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (modalOpen || !e.isPrimary) return;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const x = rowX(e);
     setDragStart(x);
     setDragEnd(x);
   };
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
     if (modalOpen || dragStart === null) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    setDragEnd(x);
+    setDragEnd(rowX(e));
   };
 
-  const handleMouseLeave = () => {
-    if (modalOpen) return;
+  // The browser took the gesture over (e.g. the page scrolled): abandon.
+  const handlePointerCancel = () => {
     setDragStart(null);
     setDragEnd(null);
   };
 
-  const handleMouseUp = () => {
+  const handlePointerUp = () => {
     if (modalOpen) return;
     if (dragStart !== null && dragEnd !== null && containerRef.current) {
       const containerWidth = containerRef.current.getBoundingClientRect().width;
@@ -156,10 +164,10 @@ export const InteractiveScheduleRow = ({
   return (
     <ScheduleRowContainer
       ref={containerRef}
-      onMouseDown={hasPermissionToEdit ? handleMouseDown : undefined}
-      onMouseMove={hasPermissionToEdit ? handleMouseMove : undefined}
-      onMouseUp={hasPermissionToEdit ? handleMouseUp : undefined}
-      onMouseLeave={hasPermissionToEdit ? handleMouseLeave : undefined}
+      onPointerDown={hasPermissionToEdit ? handlePointerDown : undefined}
+      onPointerMove={hasPermissionToEdit ? handlePointerMove : undefined}
+      onPointerUp={hasPermissionToEdit ? handlePointerUp : undefined}
+      onPointerCancel={hasPermissionToEdit ? handlePointerCancel : undefined}
     >
       {skeleton}
       <BlockDaysOverlay />
