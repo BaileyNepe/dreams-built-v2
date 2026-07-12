@@ -26,7 +26,7 @@ export const jobSheetsRouter = trpc.router({
     .input(z.object({ projectId: z.string() }))
     .query(({ ctx, input }) => getSheetByProject(ctx.db, input.projectId)),
 
-  create: protectedProcedure([authz.jobs_edit])
+  create: protectedProcedure([authz.jobsheets_edit])
     .input(
       z.object({
         projectId: z.string(),
@@ -36,32 +36,32 @@ export const jobSheetsRouter = trpc.router({
     .mutation(({ ctx, input }) => createSheet(ctx.db, input.projectId, input.wallCount)),
 
   // Autosave endpoint: optimistic-lock save of the whole document.
-  save: protectedProcedure([authz.jobs_edit])
+  save: protectedProcedure([authz.jobsheets_edit])
     .input(saveJobSheetInputSchema)
     .mutation(({ ctx, input }) => saveSheet(ctx.db, input)),
 
   // Reset this sheet's rules back to the shared defaults.
-  refreshRules: protectedProcedure([authz.jobs_edit])
+  refreshRules: protectedProcedure([authz.jobsheets_edit])
     .input(z.object({ sheetId: z.string() }))
     .mutation(({ ctx, input }) => refreshSheetRules(ctx.db, input.sheetId)),
 
   // Edit THIS sheet's rules only — the shared defaults are never touched.
-  updateSheetRules: protectedProcedure([authz.jobs_edit])
+  updateSheetRules: protectedProcedure([authz.jobsheets_edit])
     .input(z.object({ sheetId: z.string(), data: jobSheetRulesSchema }))
     .mutation(({ ctx, input }) => updateSheetRules(ctx.db, input)),
 
-  remove: protectedProcedure([authz.jobs_edit])
+  remove: protectedProcedure([authz.jobsheets_edit])
     .input(z.object({ sheetId: z.string() }))
     .mutation(({ ctx, input }) => removeSheet(ctx.db, input.sheetId)),
 
-  createSnapshot: protectedProcedure([authz.jobs_edit])
+  createSnapshot: protectedProcedure([authz.jobsheets_edit])
     .input(createJobSheetSnapshotInputSchema)
     .mutation(({ ctx, input }) =>
       createSnapshot(ctx.db, { ...input, userId: ctx.user.id })
     ),
 
   // Print/export safety net: snapshot only when content actually changed.
-  snapshotIfChanged: protectedProcedure([authz.jobs_edit])
+  snapshotIfChanged: protectedProcedure([authz.jobsheets_edit])
     .input(createJobSheetSnapshotInputSchema)
     .mutation(({ ctx, input }) =>
       snapshotIfChanged(ctx.db, { ...input, userId: ctx.user.id })
@@ -75,7 +75,7 @@ export const jobSheetsRouter = trpc.router({
     .input(z.object({ snapshotId: z.string() }))
     .query(({ ctx, input }) => getSnapshot(ctx.db, input.snapshotId)),
 
-  restoreSnapshot: protectedProcedure([authz.jobs_edit])
+  restoreSnapshot: protectedProcedure([authz.jobsheets_edit])
     .input(z.object({ sheetId: z.string(), snapshotId: z.string() }))
     .mutation(({ ctx, input }) =>
       restoreSnapshot(ctx.db, { ...input, userId: ctx.user.id })

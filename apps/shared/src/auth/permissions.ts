@@ -16,6 +16,8 @@ export const authz = {
   jobs_read: 'jobs:read',
   jobs_edit: 'jobs:edit',
 
+  jobsheets_edit: 'jobsheets:edit',
+
   schedule_read: 'schedule:read',
   schedule_edit: 'schedule:edit',
 
@@ -96,6 +98,11 @@ const jobsPermissions: Permission = [
     id: authz.jobs_edit,
     name: 'Jobs Edit',
     roles: ['MANAGER']
+  },
+  {
+    id: authz.jobsheets_edit,
+    name: 'Job Sheets Edit',
+    roles: ['EMPLOYEE', 'MANAGER']
   },
   { id: authz.upload, name: 'Upload', roles: ['EMPLOYEE', 'MANAGER', 'CONTRACTOR'] },
   {
